@@ -1,8 +1,6 @@
 "use client";
 
-import type React from "react";
-
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -36,8 +34,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
 import dynamic from "next/dynamic";
+import axiosInstance from "@/lib/axiosInstance";
 
-// Dynamically import the Map component to avoid SSR issues with Leaflet
+// Dynamically import the Map component to avoid SSR issues
 const MapComponent = dynamic(() => import("@/components/map-component"), {
   ssr: false,
   loading: () => (
@@ -47,50 +46,66 @@ const MapComponent = dynamic(() => import("@/components/map-component"), {
   ),
 });
 
+// تعريف نوع صورة المشروع
 type ProjectImage = {
   id: string;
   file: File;
   url: string;
 };
 
-export default function AddProjectPage() {
+// تعريف واجهة المشروع الجديد، مع إضافة "amenities" كمجموعة نصوص مفصولة بفواصل
+interface INewProject {
+  id: string;
+  name: string;
+  location: string;
+  price: string;
+  status: string;
+  completionDate: string;
+  units: number;
+  developer: string;
+  description: string;
+  featured: boolean;
+  latitude: number;
+  longitude: number;
+  amenities: string; // مدخل نصي للمرافق، مفصول بفواصل
+}
+
+export default function AddProjectPage(): JSX.Element {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const plansInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  const [newProject, setNewProject] = useState({
+  // حالة المشروع الجديدة مع إضافة amenities
+  const [newProject, setNewProject] = useState<INewProject>({
     id: "",
     name: "",
     location: "",
     price: "",
     status: "",
-    lastUpdated: "",
     completionDate: "",
     units: 0,
     developer: "",
     description: "",
     featured: false,
-    latitude: 25.276987, // Default latitude (Dubai)
-    longitude: 55.296249, // Default longitude (Dubai)
+    latitude: 25.276987, // افتراضي (دبي)
+    longitude: 55.296249, // افتراضي (دبي)
+    amenities: "",
   });
 
-  const [thumbnailImage, setThumbnailImage] = useState<ProjectImage | null>(
-    null,
-  );
+  const [thumbnailImage, setThumbnailImage] = useState<ProjectImage | null>(null);
   const [planImages, setPlanImages] = useState<ProjectImage[]>([]);
   const [galleryImages, setGalleryImages] = useState<ProjectImage[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
 
   useEffect(() => {
-    // Set map as loaded after component mounts
     setMapLoaded(true);
   }, []);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { id, value } = e.target;
     setNewProject((prev) => ({
@@ -98,7 +113,6 @@ export default function AddProjectPage() {
       [id]: value,
     }));
 
-    // Clear error for this field if it exists
     if (formErrors[id]) {
       setFormErrors((prev) => {
         const updated = { ...prev };
@@ -110,12 +124,10 @@ export default function AddProjectPage() {
 
   const handleCoordinateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-
-    // Only update if value is a valid number or empty
     if (value === "" || !isNaN(Number.parseFloat(value))) {
       setNewProject((prev) => ({
         ...prev,
-        [id]: value === "" ? value : Number.parseFloat(value),
+        [id]: value === "" ? 0 : Number.parseFloat(value),
       }));
     }
   };
@@ -134,7 +146,6 @@ export default function AddProjectPage() {
       [id]: value,
     }));
 
-    // Clear error for this field if it exists
     if (formErrors[id]) {
       setFormErrors((prev) => {
         const updated = { ...prev };
@@ -154,10 +165,8 @@ export default function AddProjectPage() {
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-
     const file = files[0];
     const reader = new FileReader();
-
     reader.onload = (event) => {
       if (event.target && event.target.result) {
         setThumbnailImage({
@@ -165,8 +174,6 @@ export default function AddProjectPage() {
           file,
           url: event.target.result.toString(),
         });
-
-        // Clear thumbnail error if it exists
         if (formErrors.thumbnail) {
           setFormErrors((prev) => {
             const updated = { ...prev };
@@ -176,32 +183,26 @@ export default function AddProjectPage() {
         }
       }
     };
-
     reader.readAsDataURL(file);
   };
 
   const handlePlansUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
-
       reader.onload = (event) => {
         if (event.target && event.target.result) {
           setPlanImages((prev) => [
             ...prev,
             {
-              id:
-                Date.now().toString() +
-                Math.random().toString(36).substring(2, 9),
+              id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
               file,
               url: event.target.result.toString(),
             },
           ]);
         }
       };
-
       reader.readAsDataURL(file);
     });
   };
@@ -209,25 +210,20 @@ export default function AddProjectPage() {
   const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
-
       reader.onload = (event) => {
         if (event.target && event.target.result) {
           setGalleryImages((prev) => [
             ...prev,
             {
-              id:
-                Date.now().toString() +
-                Math.random().toString(36).substring(2, 9),
+              id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
               file,
               url: event.target.result.toString(),
             },
           ]);
         }
       };
-
       reader.readAsDataURL(file);
     });
   };
@@ -247,82 +243,73 @@ export default function AddProjectPage() {
     setGalleryImages((prev) => prev.filter((image) => image.id !== id));
   };
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
-
     if (!newProject.name.trim()) {
       errors.name = "اسم المشروع مطلوب";
     }
-
     if (!newProject.location.trim()) {
       errors.location = "الموقع مطلوب";
     }
-
     if (!newProject.price.trim()) {
       errors.price = "السعر مطلوب";
     }
-
     if (!newProject.status) {
       errors.status = "الحالة مطلوبة";
     }
-
     if (!newProject.completionDate.trim()) {
       errors.completionDate = "تاريخ الإنجاز مطلوب";
     }
-
     if (!newProject.developer.trim()) {
       errors.developer = "المطور مطلوب";
     }
-
     if (!newProject.description.trim()) {
       errors.description = "الوصف مطلوب";
     }
-
     if (!thumbnailImage) {
       errors.thumbnail = "صورة المشروع الرئيسية مطلوبة";
     }
-
-    if (
-      isNaN(Number(newProject.latitude)) ||
-      isNaN(Number(newProject.longitude))
-    ) {
+    if (isNaN(newProject.latitude) || isNaN(newProject.longitude)) {
       errors.coordinates = "إحداثيات الموقع غير صحيحة";
     }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSaveProject = async (status: "منشور" | "مسودة") => {
+  const handleSaveProject = async (status: "منشور" | "مسودة" | "Pre-construction") => {
     if (!validateForm()) {
       return;
     }
-
     setIsLoading(true);
-
     try {
-      // In a real app, you would upload the images and save the project to your backend here
-      // For now, we'll simulate a delay and then redirect
-
-      // Prepare the project data with image information
+      // إعداد بيانات المشروع المطلوب إرسالها
       const projectData = {
-        ...newProject,
-        status,
-        lastUpdated: new Date().toISOString(),
-        thumbnail: thumbnailImage ? thumbnailImage.url : null,
-        plans: planImages.map((image) => image.url),
-        gallery: galleryImages.map((image) => image.url),
+        name: newProject.name,
+        location: newProject.location,
+        price: newProject.price,
+        status: newProject.status, // يمكنك تعديلها إذا أردت استخدام status المُرسل كوسيلة
+        completion_date: newProject.completionDate,
+        units: newProject.units,
+        developer: newProject.developer,
+        description: newProject.description,
+        thumbnail: thumbnailImage ? thumbnailImage.url : "",
+        featured: newProject.featured,
+        gallery: galleryImages.map((img) => img.url),
+        amenities: newProject.amenities
+          ? newProject.amenities.split(",").map((amenity) => amenity.trim())
+          : [],
       };
 
       console.log("Saving project:", projectData);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // إرسال الطلب عبر POST إلى API
+      await axiosInstance.post("https://taearif.com/api/projects", projectData);
 
-      // Redirect back to projects page
+      // إعادة التوجيه بعد النجاح
       router.push("/projects");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving project:", error);
+      // يمكنك إضافة إشعار (toast) هنا لإظهار الخطأ للمستخدم
     } finally {
       setIsLoading(false);
     }
@@ -335,6 +322,7 @@ export default function AddProjectPage() {
         <EnhancedSidebar activeTab="projects" setActiveTab={() => {}} />
         <main className="flex-1 p-4 md:p-6">
           <div className="space-y-6">
+            {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Button
@@ -367,6 +355,7 @@ export default function AddProjectPage() {
               </div>
             </div>
 
+            {/* معلومات المشروع */}
             <Card>
               <CardHeader>
                 <CardTitle>معلومات المشروع</CardTitle>
@@ -443,6 +432,7 @@ export default function AddProjectPage() {
                       <SelectContent>
                         <SelectItem value="منشور">منشور</SelectItem>
                         <SelectItem value="مسودة">مسودة</SelectItem>
+                        <SelectItem value="Pre-construction">Pre-construction</SelectItem>
                       </SelectContent>
                     </Select>
                     {formErrors.status && (
@@ -458,9 +448,7 @@ export default function AddProjectPage() {
                       placeholder="2025"
                       value={newProject.completionDate}
                       onChange={handleInputChange}
-                      className={
-                        formErrors.completionDate ? "border-red-500" : ""
-                      }
+                      className={formErrors.completionDate ? "border-red-500" : ""}
                     />
                     {formErrors.completionDate && (
                       <p className="text-xs text-red-500">
@@ -482,6 +470,15 @@ export default function AddProjectPage() {
                         {formErrors.developer}
                       </p>
                     )}
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="amenities">المرافق (افصلها بفواصل)</Label>
+                    <Input
+                      id="amenities"
+                      placeholder="حمام سباحة, نادي رياضي, حديقة على السطح"
+                      value={newProject.amenities}
+                      onChange={handleInputChange}
+                    />
                   </div>
                   <div className="flex items-center space-x-2 h-10">
                     <Switch
@@ -526,20 +523,19 @@ export default function AddProjectPage() {
                 <div className="h-[400px] w-full rounded-md overflow-hidden border">
                   {mapLoaded && (
                     <MapComponent
-                      latitude={Number(newProject.latitude)}
-                      longitude={Number(newProject.longitude)}
+                      latitude={newProject.latitude}
+                      longitude={newProject.longitude}
                       onPositionChange={handleMapPositionChange}
                     />
                   )}
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="grid gap-2">
                     <Label htmlFor="latitude">خط العرض (Latitude)</Label>
                     <Input
                       id="latitude"
                       placeholder="25.276987"
-                      value={newProject.latitude}
+                      value={newProject.latitude.toString()}
                       onChange={handleCoordinateChange}
                       className={formErrors.coordinates ? "border-red-500" : ""}
                     />
@@ -549,7 +545,7 @@ export default function AddProjectPage() {
                     <Input
                       id="longitude"
                       placeholder="55.296249"
-                      value={newProject.longitude}
+                      value={newProject.longitude.toString()}
                       onChange={handleCoordinateChange}
                       className={formErrors.coordinates ? "border-red-500" : ""}
                     />
@@ -560,7 +556,6 @@ export default function AddProjectPage() {
                     {formErrors.coordinates}
                   </p>
                 )}
-
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4" />
                   <p>
@@ -623,8 +618,7 @@ export default function AddProjectPage() {
                       </div>
                     </Button>
                     <p className="text-sm text-muted-foreground">
-                      يمكنك رفع صورة بصيغة JPG أو PNG. الحد الأقصى لحجم الملف هو
-                      5 ميجابايت.
+                      يمكنك رفع صورة بصيغة JPG أو PNG. الحد الأقصى لحجم الملف هو 5 ميجابايت.
                     </p>
                     {formErrors.thumbnail && (
                       <p className="text-xs text-red-500">
@@ -693,8 +687,7 @@ export default function AddProjectPage() {
                     onChange={handlePlansUpload}
                   />
                   <p className="text-sm text-muted-foreground">
-                    يمكنك رفع مخططات بصيغة JPG أو PNG. الحد الأقصى لعدد المخططات
-                    هو 10.
+                    يمكنك رفع مخططات بصيغة JPG أو PNG. الحد الأقصى لعدد المخططات هو 10.
                   </p>
                 </div>
               </CardContent>
@@ -757,8 +750,7 @@ export default function AddProjectPage() {
                     onChange={handleGalleryUpload}
                   />
                   <p className="text-sm text-muted-foreground">
-                    يمكنك رفع صور بصيغة JPG أو PNG. الحد الأقصى لعدد الصور هو
-                    20.
+                    يمكنك رفع صور بصيغة JPG أو PNG. الحد الأقصى لعدد الصور هو 20.
                   </p>
                 </div>
               </CardContent>
@@ -795,3 +787,4 @@ export default function AddProjectPage() {
     </div>
   );
 }
+

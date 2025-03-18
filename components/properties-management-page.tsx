@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Bath,
   Bed,
@@ -58,11 +58,40 @@ import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
+import axiosInstance from "@/lib/axiosInstance";
 
 export function PropertiesManagementPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState([200000, 1000000]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get(
+          "https://taearif.com/api/properties"
+        );
+        setProperties(response.data.data.properties.map((property: any) => ({
+          ...property,
+          thumbnail: property.featured_image,
+          listingType: property.type === "residential" ? "للبيع" : "للإيجار",
+          status: property.status === 1 ? "منشور" : "مسودة",
+          lastUpdated: new Date(property.updated_at).toLocaleDateString('ar-AE')
+        })));
+      } catch (err: any) {
+        console.error("Error fetching properties:", err);
+        setError(err.message || "حدث خطأ أثناء جلب بيانات العقارات");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
 
   const toggleFavorite = (id: string) => {
     if (favorites.includes(id)) {
@@ -71,105 +100,6 @@ export function PropertiesManagementPage() {
       setFavorites([...favorites, id]);
     }
   };
-
-  const properties = [
-    {
-      id: "1",
-      title: "شقة حديثة مع إطلالة على المدينة",
-      address: "123 شارع الرئيسي، دبي، الإمارات العربية المتحدة",
-      price: 750000,
-      type: "شقة",
-      bedrooms: 2,
-      bathrooms: 2,
-      size: 1200,
-      features: ["شرفة", "صالة رياضية", "موقف سيارات", "حارس أمن"],
-      status: "منشور",
-      lastUpdated: "منذ يومين",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: true,
-      listingType: "للبيع",
-    },
-    {
-      id: "2",
-      title: "منزل عائلي واسع",
-      address: "456 شارع البلوط، أبو ظبي، الإمارات العربية المتحدة",
-      price: 1250000,
-      type: "منزل",
-      bedrooms: 4,
-      bathrooms: 3,
-      size: 2800,
-      features: ["حديقة", "حوض سباحة", "مرآب", "مدفأة"],
-      status: "منشور",
-      lastUpdated: "منذ أسبوع",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: false,
-      listingType: "للبيع",
-    },
-    {
-      id: "3",
-      title: "شقة علوية في وسط المدينة",
-      address: "789 شارع الحضري، الشارقة، الإمارات العربية المتحدة",
-      price: 3500,
-      type: "شقة علوية",
-      bedrooms: 1,
-      bathrooms: 1,
-      size: 950,
-      features: ["أسقف عالية", "طوب مكشوف", "أرضيات خشبية"],
-      status: "منشور",
-      lastUpdated: "منذ 3 أيام",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: true,
-      listingType: "للإيجار",
-    },
-    {
-      id: "4",
-      title: "شقة فاخرة على الواجهة البحرية",
-      address: "101 طريق الشاطئ، رأس الخيمة، الإمارات العربية المتحدة",
-      price: 890000,
-      type: "شقة",
-      bedrooms: 3,
-      bathrooms: 2,
-      size: 1800,
-      features: ["إطلالة على المحيط", "حوض سباحة", "صالة رياضية", "أمن"],
-      status: "مسودة",
-      lastUpdated: "منذ 5 أيام",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: true,
-      listingType: "للبيع",
-    },
-    {
-      id: "5",
-      title: "تاون هاوس في الضواحي",
-      address: "222 شارع مابل، عجمان، الإمارات العربية المتحدة",
-      price: 4200,
-      type: "تاون هاوس",
-      bedrooms: 3,
-      bathrooms: 2.5,
-      size: 1950,
-      features: ["فناء خلفي", "مرآب", "تم تجديده حديثًا"],
-      status: "مسودة",
-      lastUpdated: "منذ يوم واحد",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: false,
-      listingType: "للإيجار",
-    },
-    {
-      id: "6",
-      title: "منزل تاريخي من الطوب الرملي",
-      address: "333 شارع التراث، الفجيرة، الإمارات العربية المتحدة",
-      price: 1750000,
-      type: "منزل",
-      bedrooms: 5,
-      bathrooms: 3,
-      size: 3200,
-      features: ["تفاصيل أصلية", "حديقة", "مدفأة", "قبو"],
-      status: "مسودة",
-      lastUpdated: "منذ 4 أيام",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: false,
-      listingType: "للبيع",
-    },
-  ];
 
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
@@ -343,186 +273,192 @@ export function PropertiesManagementPage() {
               </div>
             </div>
 
-            <Tabs defaultValue="all">
-              <TabsList>
-                <TabsTrigger value="all">جميع العقارات</TabsTrigger>
-                <TabsTrigger value="for-sale">للبيع</TabsTrigger>
-                <TabsTrigger value="for-rent">للإيجار</TabsTrigger>
-                <TabsTrigger value="published">منشور</TabsTrigger>
-                <TabsTrigger value="drafts">مسودات</TabsTrigger>
-                <TabsTrigger value="featured">مميزة</TabsTrigger>
-              </TabsList>
-              <TabsContent value="all" className="mt-4">
-                {viewMode === "grid" ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {properties.map((property) => (
-                      <PropertyCard
-                        key={property.id}
-                        property={property}
-                        isFavorite={favorites.includes(property.id)}
-                        onToggleFavorite={toggleFavorite}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {properties.map((property) => (
-                      <PropertyListItem
-                        key={property.id}
-                        property={property}
-                        isFavorite={favorites.includes(property.id)}
-                        onToggleFavorite={toggleFavorite}
-                      />
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-              <TabsContent value="for-sale" className="mt-4">
-                {viewMode === "grid" ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {properties
-                      .filter((property) => property.listingType === "للبيع")
-                      .map((property) => (
+            {loading ? (
+              <div className="text-center py-10">جاري التحميل...</div>
+            ) : error ? (
+              <div className="text-center text-red-500 py-10">{error}</div>
+            ) : (
+              <Tabs defaultValue="all">
+                <TabsList>
+                  <TabsTrigger value="all">جميع العقارات</TabsTrigger>
+                  <TabsTrigger value="for-sale">للبيع</TabsTrigger>
+                  <TabsTrigger value="for-rent">للإيجار</TabsTrigger>
+                  <TabsTrigger value="published">منشور</TabsTrigger>
+                  <TabsTrigger value="drafts">مسودات</TabsTrigger>
+                  <TabsTrigger value="featured">مميزة</TabsTrigger>
+                </TabsList>
+                <TabsContent value="all" className="mt-4">
+                  {viewMode === "grid" ? (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {properties.map((property) => (
                         <PropertyCard
                           key={property.id}
                           property={property}
-                          isFavorite={favorites.includes(property.id)}
-                          onToggleFavorite={toggleFavorite}
+                          isFavorite={favorites.includes(property.id.toString())}
+                          onToggleFavorite={(id) => toggleFavorite(id)}
                         />
                       ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {properties
-                      .filter((property) => property.listingType === "للبيع")
-                      .map((property) => (
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {properties.map((property) => (
                         <PropertyListItem
                           key={property.id}
                           property={property}
-                          isFavorite={favorites.includes(property.id)}
-                          onToggleFavorite={toggleFavorite}
+                          isFavorite={favorites.includes(property.id.toString())}
+                          onToggleFavorite={(id) => toggleFavorite(id)}
                         />
                       ))}
-                  </div>
-                )}
-              </TabsContent>
-              <TabsContent value="for-rent" className="mt-4">
-                {viewMode === "grid" ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {properties
-                      .filter((property) => property.listingType === "للإيجار")
-                      .map((property) => (
-                        <PropertyCard
-                          key={property.id}
-                          property={property}
-                          isFavorite={favorites.includes(property.id)}
-                          onToggleFavorite={toggleFavorite}
-                        />
-                      ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {properties
-                      .filter((property) => property.listingType === "للإيجار")
-                      .map((property) => (
-                        <PropertyListItem
-                          key={property.id}
-                          property={property}
-                          isFavorite={favorites.includes(property.id)}
-                          onToggleFavorite={toggleFavorite}
-                        />
-                      ))}
-                  </div>
-                )}
-              </TabsContent>
-              <TabsContent value="published" className="mt-4">
-                {viewMode === "grid" ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {properties
-                      .filter((property) => property.status === "منشور")
-                      .map((property) => (
-                        <PropertyCard
-                          key={property.id}
-                          property={property}
-                          isFavorite={favorites.includes(property.id)}
-                          onToggleFavorite={toggleFavorite}
-                        />
-                      ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {properties
-                      .filter((property) => property.status === "منشور")
-                      .map((property) => (
-                        <PropertyListItem
-                          key={property.id}
-                          property={property}
-                          isFavorite={favorites.includes(property.id)}
-                          onToggleFavorite={toggleFavorite}
-                        />
-                      ))}
-                  </div>
-                )}
-              </TabsContent>
-              <TabsContent value="drafts" className="mt-4">
-                {viewMode === "grid" ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {properties
-                      .filter((property) => property.status === "مسودة")
-                      .map((property) => (
-                        <PropertyCard
-                          key={property.id}
-                          property={property}
-                          isFavorite={favorites.includes(property.id)}
-                          onToggleFavorite={toggleFavorite}
-                        />
-                      ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {properties
-                      .filter((property) => property.status === "مسودة")
-                      .map((property) => (
-                        <PropertyListItem
-                          key={property.id}
-                          property={property}
-                          isFavorite={favorites.includes(property.id)}
-                          onToggleFavorite={toggleFavorite}
-                        />
-                      ))}
-                  </div>
-                )}
-              </TabsContent>
-              <TabsContent value="featured" className="mt-4">
-                {viewMode === "grid" ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {properties
-                      .filter((property) => property.featured)
-                      .map((property) => (
-                        <PropertyCard
-                          key={property.id}
-                          property={property}
-                          isFavorite={favorites.includes(property.id)}
-                          onToggleFavorite={toggleFavorite}
-                        />
-                      ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {properties
-                      .filter((property) => property.featured)
-                      .map((property) => (
-                        <PropertyListItem
-                          key={property.id}
-                          property={property}
-                          isFavorite={favorites.includes(property.id)}
-                          onToggleFavorite={toggleFavorite}
-                        />
-                      ))}
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="for-sale" className="mt-4">
+                  {viewMode === "grid" ? (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {properties
+                        .filter((property) => property.listingType === "للبيع")
+                        .map((property) => (
+                          <PropertyCard
+                            key={property.id}
+                            property={property}
+                            isFavorite={favorites.includes(property.id.toString())}
+                            onToggleFavorite={(id) => toggleFavorite(id)}
+                          />
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {properties
+                        .filter((property) => property.listingType === "للبيع")
+                        .map((property) => (
+                          <PropertyListItem
+                            key={property.id}
+                            property={property}
+                            isFavorite={favorites.includes(property.id.toString())}
+                            onToggleFavorite={(id) => toggleFavorite(id)}
+                          />
+                        ))}
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="for-rent" className="mt-4">
+                  {viewMode === "grid" ? (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {properties
+                        .filter((property) => property.listingType === "للإيجار")
+                        .map((property) => (
+                          <PropertyCard
+                            key={property.id}
+                            property={property}
+                            isFavorite={favorites.includes(property.id.toString())}
+                            onToggleFavorite={(id) => toggleFavorite(id)}
+                          />
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {properties
+                        .filter((property) => property.listingType === "للإيجار")
+                        .map((property) => (
+                          <PropertyListItem
+                            key={property.id}
+                            property={property}
+                            isFavorite={favorites.includes(property.id.toString())}
+                            onToggleFavorite={(id) => toggleFavorite(id)}
+                          />
+                        ))}
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="published" className="mt-4">
+                  {viewMode === "grid" ? (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {properties
+                        .filter((property) => property.status === "منشور")
+                        .map((property) => (
+                          <PropertyCard
+                            key={property.id}
+                            property={property}
+                            isFavorite={favorites.includes(property.id.toString())}
+                            onToggleFavorite={(id) => toggleFavorite(id)}
+                          />
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {properties
+                        .filter((property) => property.status === "منشور")
+                        .map((property) => (
+                          <PropertyListItem
+                            key={property.id}
+                            property={property}
+                            isFavorite={favorites.includes(property.id.toString())}
+                            onToggleFavorite={(id) => toggleFavorite(id)}
+                          />
+                        ))}
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="drafts" className="mt-4">
+                  {viewMode === "grid" ? (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {properties
+                        .filter((property) => property.status === "مسودة")
+                        .map((property) => (
+                          <PropertyCard
+                            key={property.id}
+                            property={property}
+                            isFavorite={favorites.includes(property.id.toString())}
+                            onToggleFavorite={(id) => toggleFavorite(id)}
+                          />
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {properties
+                        .filter((property) => property.status === "مسودة")
+                        .map((property) => (
+                          <PropertyListItem
+                            key={property.id}
+                            property={property}
+                            isFavorite={favorites.includes(property.id.toString())}
+                            onToggleFavorite={(id) => toggleFavorite(id)}
+                          />
+                        ))}
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="featured" className="mt-4">
+                  {viewMode === "grid" ? (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {properties
+                        .filter((property) => property.featured)
+                        .map((property) => (
+                          <PropertyCard
+                            key={property.id}
+                            property={property}
+                            isFavorite={favorites.includes(property.id.toString())}
+                            onToggleFavorite={(id) => toggleFavorite(id)}
+                          />
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {properties
+                        .filter((property) => property.featured)
+                        .map((property) => (
+                          <PropertyListItem
+                            key={property.id}
+                            property={property}
+                            isFavorite={favorites.includes(property.id.toString())}
+                            onToggleFavorite={(id) => toggleFavorite(id)}
+                          />
+                        ))}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            )}
           </div>
         </main>
       </div>

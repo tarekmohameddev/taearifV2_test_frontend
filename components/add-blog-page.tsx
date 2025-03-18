@@ -1,13 +1,16 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { EnhancedSidebar } from "./enhanced-sidebar";
 import { DashboardHeader } from "./dashboard-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,26 +39,33 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import axiosInstance from "@/lib/axiosInstance";
 
-// Sample categories
-const categories = [
-  { id: 1, name: "تصميم داخلي" },
-  { id: 2, name: "نصائح التصميم" },
-  { id: 3, name: "مساحات صغيرة" },
-  { id: 4, name: "نباتات منزلية" },
-  { id: 5, name: "تجديد" },
-  { id: 6, name: "ديكور" },
-  { id: 7, name: "أثاث" },
-  { id: 8, name: "إضاءة" },
-];
+// تعريف الواجهات
+interface ICategory {
+  id: number;
+  name: string;
+}
 
-export default function AddBlogPage() {
+interface IFormData {
+  title: string;
+  content: string;
+  excerpt: string;
+  category: string;
+  status: string;
+  tags: string;
+  seoTitle: string;
+  seoDescription: string;
+}
+
+export default function AddBlogPage(): JSX.Element {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("blog");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("blog");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  const [formData, setFormData] = useState({
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [formData, setFormData] = useState<IFormData>({
     title: "",
     content: "",
     excerpt: "",
@@ -66,8 +76,22 @@ export default function AddBlogPage() {
     seoDescription: "",
   });
 
+  // جلب التصنيفات من API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosInstance.get("https://taearif.com/api/blog-categories");
+        // نفترض أن الاستجابة تكون بالشكل { status: "success", data: { categories: [...] } }
+        setCategories(response.data.data.categories);
+      } catch (error: any) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -80,11 +104,10 @@ export default function AddBlogPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      // In a real app, you would upload the file to a server
-      // For this demo, we'll just create a placeholder URL
+      // في التطبيق الحقيقي يتم رفع الصور للسيرفر
       const newImages = Array.from(files).map(
         (_, index) =>
-          `/placeholder.svg?height=200&width=350&text=صورة+${selectedImages.length + index + 1}`,
+          `/placeholder.svg?height=200&width=350&text=صورة+${selectedImages.length + index + 1}`
       );
       setSelectedImages([...selectedImages, ...newImages]);
     }
@@ -94,15 +117,37 @@ export default function AddBlogPage() {
     setSelectedImages(selectedImages.filter((_, i) => i !== index));
   };
 
+  // دالة إرسال بيانات المقال إلى API
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    // بناء جسم الطلب (Request Body)
+    const requestBody = {
+      title: formData.title,
+      excerpt: formData.excerpt,
+      content: formData.content,
+      category: formData.category,
+      status: formData.status,
+      tags: formData.tags
+        ? formData.tags.split(",").map((t) => t.trim())
+        : [],
+      seo_title: formData.seoTitle,
+      seo_description: formData.seoDescription,
+      featured_image: selectedImages[0] || "",
+      published_at: date ? format(date, "yyyy-MM-dd HH:mm:ss") : null,
+      featured: false,
+    };
+
+    try {
+      await axiosInstance.post("https://taearif.com/api/blogs", requestBody);
       router.push("/blogs");
-    }, 1500);
+    } catch (error: any) {
+      console.error("Error submitting blog:", error);
+      // يمكنك إضافة إشعار (toast) لعرض الخطأ للمستخدم هنا
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -273,8 +318,7 @@ export default function AddBlogPage() {
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          يمكنك إضافة حتى 4 صور. الصورة الأولى ستكون الصورة
-                          الرئيسية للمقال.
+                          يمكنك إضافة حتى 4 صور. الصورة الأولى ستكون الصورة الرئيسية للمقال.
                         </p>
                       </div>
                     </CardContent>
@@ -297,12 +341,9 @@ export default function AddBlogPage() {
                             <SelectValue placeholder="اختر تصنيفًا" />
                           </SelectTrigger>
                           <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem
-                                key={category.id}
-                                value={category.name}
-                              >
-                                {category.name}
+                            {categories.map((cat) => (
+                              <SelectItem key={cat.id} value={cat.name}>
+                                {cat.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -369,7 +410,7 @@ export default function AddBlogPage() {
                                 variant="outline"
                                 className={cn(
                                   "w-full justify-start text-right font-normal",
-                                  !date && "text-muted-foreground",
+                                  !date && "text-muted-foreground"
                                 )}
                               >
                                 <CalendarIcon className="ml-2 h-4 w-4" />
@@ -378,10 +419,7 @@ export default function AddBlogPage() {
                                   : "اختر تاريخًا"}
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
+                            <PopoverContent className="w-auto p-0" align="start">
                               <Calendar
                                 mode="single"
                                 selected={date}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Building2,
@@ -35,99 +35,120 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
+import axiosInstance from "@/lib/axiosInstance";
+
+// تعريف الواجهات بناءً على API response
+export interface IProject {
+  id: number;
+  name: string;
+  location: string;
+  price: string;
+  status: number; // 1 => منشور، 0 => مسودة
+  completion_date: string;
+  units: number;
+  developer: string;
+  description: string;
+  thumbnail: string;
+  featured: number; // 1 => مميز، 0 => غير مميز
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IPagination {
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
+  from: number;
+  to: number;
+}
+
+interface IProjectsApiResponse {
+  status: string;
+  data: {
+    projects: IProject[];
+    pagination: IPagination;
+  };
+}
+
+// مكون SkeletonProjectCard لعرض بطاقة تحميل تحاكي شكل بطاقة المشروع
+function SkeletonProjectCard() {
+  return (
+    <Card className="overflow-hidden animate-pulse">
+      <div className="relative">
+        <div className="aspect-[16/9] w-full bg-gray-300"></div>
+      </div>
+      <CardHeader className="p-4">
+        <div className="h-4 w-3/4 bg-gray-300 rounded mb-2"></div>
+        <div className="h-3 w-1/2 bg-gray-300 rounded"></div>
+      </CardHeader>
+      <CardContent className="p-4 pt-0 space-y-2">
+        <div className="h-3 w-full bg-gray-300 rounded"></div>
+        <div className="h-3 w-5/6 bg-gray-300 rounded"></div>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="h-3 bg-gray-300 rounded"></div>
+          <div className="h-3 bg-gray-300 rounded"></div>
+          <div className="h-3 bg-gray-300 rounded"></div>
+        </div>
+      </CardContent>
+      <CardFooter className="flex gap-2 p-4 pt-0">
+        <div className="h-8 w-full bg-gray-300 rounded"></div>
+        <div className="h-8 w-full bg-gray-300 rounded"></div>
+      </CardFooter>
+    </Card>
+  );
+}
 
 export function ProjectsManagementPage() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [projects, setProjects] = useState<IProject[]>([]);
+  const [pagination, setPagination] = useState<IPagination | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState([500000, 2000000]);
 
-  const [projects, setProjects] = useState([
-    {
-      id: "1",
-      name: "سكاي لاين ريزيدنس",
-      location: "وسط المدينة، نيويورك",
-      price: "من $750,000",
-      status: "منشور",
-      lastUpdated: "منذ يومين",
-      completionDate: "2025",
-      units: 120,
-      developer: "مجموعة التطوير الحضري",
-      description: "شقق فاخرة عالية الارتفاع مع إطلالات بانورامية على المدينة",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: true,
-    },
-    {
-      id: "2",
-      name: "حدائق ريفرسايد",
-      location: "ريفرسايد، شيكاغو",
-      price: "من $550,000",
-      status: "منشور",
-      lastUpdated: "منذ أسبوع",
-      completionDate: "2024",
-      units: 85,
-      developer: "ريفر هومز إنك",
-      description: "منازل حديثة مع حدائق خاصة على طول الواجهة النهرية",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: true,
-    },
-    {
-      id: "3",
-      name: "ذا أوكس",
-      location: "ويستسايد، لوس أنجلوس",
-      price: "من $1,200,000",
-      status: "منشور",
-      lastUpdated: "منذ 3 أيام",
-      completionDate: "2023",
-      units: 45,
-      developer: "عقارات فاخرة",
-      description: "مجتمع مسور حصري مع منازل فاخرة مبنية حسب الطلب",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: false,
-    },
-    {
-      id: "4",
-      name: "مترو هايتس",
-      location: "وسط المدينة، أتلانتا",
-      price: "من $450,000",
-      status: "مسودة",
-      lastUpdated: "منذ 5 أيام",
-      completionDate: "2024",
-      units: 200,
-      developer: "مطورون مدنيون",
-      description:
-        "تطوير متعدد الاستخدامات مع شقق ومحلات تجارية ومساحات مكتبية",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: false,
-    },
-    {
-      id: "5",
-      name: "كوستال فيلاز",
-      location: "واجهة المحيط، ميامي",
-      price: "من $1,800,000",
-      status: "مسودة",
-      lastUpdated: "منذ يوم واحد",
-      completionDate: "2026",
-      units: 30,
-      developer: "عقارات شاطئية",
-      description: "فيلات حصرية على شاطئ البحر مع مسابح خاصة ووصول إلى الشاطئ",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: true,
-    },
-    {
-      id: "6",
-      name: "جرين فالي",
-      location: "ضواحي، سياتل",
-      price: "من $650,000",
-      status: "مسودة",
-      lastUpdated: "منذ 4 أيام",
-      completionDate: "2024",
-      units: 75,
-      developer: "إيكو هومز",
-      description: "مجتمع مستدام مع منازل موفرة للطاقة ومساحات خضراء",
-      thumbnail: "/placeholder.svg?height=300&width=500",
-      featured: false,
-    },
-  ]);
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get<IProjectsApiResponse>(
+          "https://taearif.com/api/projects"
+        );
+        setProjects(response.data.data.projects);
+        setPagination(response.data.data.pagination);
+      } catch (err: any) {
+        console.error("Error fetching projects:", err);
+        setError(err.message || "حدث خطأ أثناء جلب بيانات المشاريع");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
+  }, []);
+
+  const renderSkeletons = () => (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, idx) => (
+        <SkeletonProjectCard key={idx} />
+      ))}
+    </div>
+  );
+
+  const renderProjectCards = (projectsToRender: IProject[]) =>
+    viewMode === "grid" ? (
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {projectsToRender.map((project) => (
+          <ProjectCard key={project.id} project={project} />
+        ))}
+      </div>
+    ) : (
+      <div className="space-y-4">
+        {projectsToRender.map((project) => (
+          <ProjectListItem key={project.id} project={project} />
+        ))}
+      </div>
+    );
 
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
@@ -136,11 +157,10 @@ export function ProjectsManagementPage() {
         <EnhancedSidebar activeTab="projects" setActiveTab={() => {}} />
         <main className="flex-1 p-4 md:p-6">
           <div className="space-y-6">
+            {/* Header and Controls */}
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">
-                  إدارة المشاريع
-                </h1>
+                <h1 className="text-2xl font-bold tracking-tight">إدارة المشاريع</h1>
                 <p className="text-muted-foreground">
                   إضافة وإدارة مشاريع التطوير العقاري لموقعك الإلكتروني
                 </p>
@@ -164,106 +184,59 @@ export function ProjectsManagementPage() {
                   <List className="h-4 w-4" />
                   <span className="sr-only">عرض القائمة</span>
                 </Button>
-                <Button
-                  variant="outline"
-                  className="gap-1"
-                  onClick={() => {
-                    // Open filter dialog
-                  }}
-                >
+                <Button variant="outline" className="gap-1" onClick={() => { /* Open filter dialog */ }}>
                   <Filter className="h-4 w-4" />
                   تصفية
                 </Button>
-                <Button
-                  className="gap-1"
-                  onClick={() => router.push("/projects/add")}
-                >
+                <Button className="gap-1" onClick={() => router.push("/projects/add")}>
                   <Plus className="h-4 w-4" />
                   إضافة مشروع
                 </Button>
               </div>
             </div>
 
+            {/* Tabs for filtering by status */}
             <Tabs defaultValue="all">
               <TabsList>
                 <TabsTrigger value="all">جميع المشاريع</TabsTrigger>
-                <TabsTrigger value="published">منشور</TabsTrigger>
-                <TabsTrigger value="drafts">مسودات</TabsTrigger>
+                <TabsTrigger value="1">منشور</TabsTrigger>
+                <TabsTrigger value="0">مسودات</TabsTrigger>
                 <TabsTrigger value="featured">مميز</TabsTrigger>
               </TabsList>
               <TabsContent value="all" className="mt-4">
-                {viewMode === "grid" ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {projects.map((project) => (
-                      <ProjectCard key={project.id} project={project} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {projects.map((project) => (
-                      <ProjectListItem key={project.id} project={project} />
-                    ))}
-                  </div>
-                )}
+                {loading ? renderSkeletons() : renderProjectCards(projects)}
               </TabsContent>
-              <TabsContent value="published" className="mt-4">
-                {viewMode === "grid" ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {projects
-                      .filter((project) => project.status === "منشور")
-                      .map((project) => (
-                        <ProjectCard key={project.id} project={project} />
-                      ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {projects
-                      .filter((project) => project.status === "منشور")
-                      .map((project) => (
-                        <ProjectListItem key={project.id} project={project} />
-                      ))}
-                  </div>
-                )}
+              <TabsContent value="1" className="mt-4">
+                {loading
+                  ? renderSkeletons()
+                  : renderProjectCards(
+                      projects.filter((project) => project.status === 1)
+                    )}
               </TabsContent>
-              <TabsContent value="drafts" className="mt-4">
-                {viewMode === "grid" ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {projects
-                      .filter((project) => project.status === "مسودة")
-                      .map((project) => (
-                        <ProjectCard key={project.id} project={project} />
-                      ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {projects
-                      .filter((project) => project.status === "مسودة")
-                      .map((project) => (
-                        <ProjectListItem key={project.id} project={project} />
-                      ))}
-                  </div>
-                )}
+              <TabsContent value="0" className="mt-4">
+                {loading
+                  ? renderSkeletons()
+                  : renderProjectCards(
+                      projects.filter((project) => project.status === 0)
+                    )}
               </TabsContent>
               <TabsContent value="featured" className="mt-4">
-                {viewMode === "grid" ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {projects
-                      .filter((project) => project.featured)
-                      .map((project) => (
-                        <ProjectCard key={project.id} project={project} />
-                      ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {projects
-                      .filter((project) => project.featured)
-                      .map((project) => (
-                        <ProjectListItem key={project.id} project={project} />
-                      ))}
-                  </div>
-                )}
+                {loading
+                  ? renderSkeletons()
+                  : renderProjectCards(
+                      projects.filter((project) => project.featured === 1)
+                    )}
               </TabsContent>
             </Tabs>
+
+            {pagination && (
+              <div className="mt-6">
+                <span className="text-sm text-muted-foreground">
+                  Showing {pagination.from} to {pagination.to} of {pagination.total} projects
+                </span>
+                {/* يمكنك إضافة Pagination component هنا إذا لزم الأمر */}
+              </div>
+            )}
           </div>
         </main>
       </div>
@@ -271,38 +244,36 @@ export function ProjectsManagementPage() {
   );
 }
 
-function ProjectCard({ project }: { project: any }) {
+function ProjectCard({ project }: { project: IProject }) {
   return (
     <Card className="overflow-hidden">
       <div className="relative">
         <div className="aspect-[16/9] w-full overflow-hidden">
           <img
             src={project.thumbnail || "/placeholder.svg"}
-            alt={project.name}
+            alt={project.contents?.[0]?.title}
             className="h-full w-full object-cover transition-all hover:scale-105"
           />
         </div>
-        {project.featured && (
+        {project.featured === 1 && (
           <div className="absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
             مميز
           </div>
         )}
         <div
           className={`absolute right-2 top-2 rounded-md px-2 py-1 text-xs font-medium ${
-            project.status === "منشور"
-              ? "bg-green-500 text-white"
-              : "bg-amber-500 text-white"
+            project.status === 1 ? "bg-green-500 text-white" : "bg-amber-500 text-white"
           }`}
         >
-          {project.status}
+          {project.status === 1 ? "منشور" : "مسودة"}
         </div>
       </div>
       <CardHeader className="p-4">
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="line-clamp-1">{project.name}</CardTitle>
+            <CardTitle className="whitespace-nowrap mb-2">{project.contents?.[0]?.title}</CardTitle>
             <CardDescription className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" /> {project.location}
+              <MapPin className="h-3 w-3  " /> {project.contents?.[0]?.address}
             </CardDescription>
           </div>
           <DropdownMenu>
@@ -325,7 +296,7 @@ function ProjectCard({ project }: { project: any }) {
                 <Copy className="mr-2 h-4 w-4" />
                 نسخ
               </DropdownMenuItem>
-              {project.status === "مسودة" ? (
+              {project.status === 0 ? (
                 <DropdownMenuItem>
                   <ExternalLink className="mr-2 h-4 w-4" />
                   نشر
@@ -347,7 +318,7 @@ function ProjectCard({ project }: { project: any }) {
       <CardContent className="p-4 pt-0 space-y-2">
         <div className="text-lg font-semibold">{project.price}</div>
         <p className="text-sm text-muted-foreground line-clamp-2">
-          {project.description}
+          {project.contents?.[0]?.description}
         </p>
         <div className="grid grid-cols-3 gap-2 text-sm">
           <div className="flex flex-col">
@@ -359,14 +330,13 @@ function ProjectCard({ project }: { project: any }) {
           <div className="flex flex-col">
             <span className="text-muted-foreground">الإنجاز</span>
             <span className="font-medium flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> {project.completionDate}
+              <Calendar className="h-3 w-3" /> {project.completion_date}
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-muted-foreground">المطور</span>
             <span className="font-medium flex items-center gap-1">
-              <Building2 className="h-3 w-3" />{" "}
-              {project.developer.split(" ")[0]}
+              <Building2 className="h-3 w-3" /> {project.developer.split(" ")[0]}
             </span>
           </div>
         </div>
@@ -385,7 +355,7 @@ function ProjectCard({ project }: { project: any }) {
   );
 }
 
-function ProjectListItem({ project }: { project: any }) {
+function ProjectListItem({ project }: { project: IProject }) {
   return (
     <Card>
       <div className="flex flex-col sm:flex-row">
@@ -393,37 +363,35 @@ function ProjectListItem({ project }: { project: any }) {
           <div className="aspect-[16/9] sm:aspect-auto sm:h-full w-full overflow-hidden">
             <img
               src={project.thumbnail || "/placeholder.svg"}
-              alt={project.name}
+              alt={project.contents?.[0]?.title}
               className="h-full w-full object-cover"
             />
           </div>
-          {project.featured && (
+          {project.featured === 1 && (
             <div className="absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
               مميز
             </div>
           )}
           <div
             className={`absolute right-2 top-2 rounded-md px-2 py-1 text-xs font-medium ${
-              project.status === "منشور"
-                ? "bg-green-500 text-white"
-                : "bg-amber-500 text-white"
+              project.status === 1 ? "bg-green-500 text-white" : "bg-amber-500 text-white"
             }`}
           >
-            {project.status}
+            {project.status === 1 ? "منشور" : "مسودة"}
           </div>
         </div>
         <div className="flex flex-1 flex-col p-4">
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="font-semibold">{project.name}</h3>
+              <h3 className="font-semibold">{project.contents?.[0]?.title}</h3>
               <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <MapPin className="h-3 w-3" /> {project.location}
+                <MapPin className="h-3 w-3 mt-10" /> {project.contents?.[0]?.address}
               </p>
             </div>
             <div className="text-lg font-semibold">{project.price}</div>
           </div>
           <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-            {project.description}
+            {project.contents?.[0]?.description}
           </p>
           <div className="mt-auto pt-4 flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-1">
@@ -432,7 +400,7 @@ function ProjectListItem({ project }: { project: any }) {
             </div>
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span>الإنجاز: {project.completionDate}</span>
+              <span>الإنجاز: {project.completion_date}</span>
             </div>
             <div className="flex items-center gap-1">
               <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -458,7 +426,7 @@ function ProjectListItem({ project }: { project: any }) {
                     <Copy className="mr-2 h-4 w-4" />
                     نسخ
                   </DropdownMenuItem>
-                  {project.status === "مسودة" ? (
+                  {project.status === 0 ? (
                     <DropdownMenuItem>
                       <ExternalLink className="mr-2 h-4 w-4" />
                       نشر
@@ -482,3 +450,5 @@ function ProjectListItem({ project }: { project: any }) {
     </Card>
   );
 }
+
+export default ProjectsManagementPage;
