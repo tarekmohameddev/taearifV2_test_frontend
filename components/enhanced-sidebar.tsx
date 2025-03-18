@@ -21,6 +21,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import useAuthStore from "@/context/AuthContext";
+
 
 interface EnhancedSidebarProps {
   activeTab?: string;
@@ -203,7 +205,7 @@ export function EnhancedSidebar({
             {!isCollapsed ? "موقعي الشخصي" : "موقعي"}
           </span>
           <span className="text-xs text-muted-foreground truncate">
-            {!isCollapsed ? "myportfolio.taearif.com" : ""}
+            {!isCollapsed ? `${useAuthStore.getState().userData?.username}.taearif.com` : ""}
           </span>
         </div>
       </div>
@@ -217,7 +219,7 @@ export function EnhancedSidebar({
                 size="sm"
                 className="w-full justify-start gap-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 hover:border-primary text-foreground transition-all duration-200"
                 onClick={() =>
-                  window.open("https://myportfolio.taearif.com", "_blank")
+                  window.open(`https://${useAuthStore.getState().userData?.username}.taearif.com`, "_blank")
                 }
               >
                 <ExternalLink className="h-4 w-4 text-primary" />

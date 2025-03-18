@@ -1,7 +1,16 @@
+import https from "https";
+import axios from "axios";
 import { serialize } from "cookie";
+import axiosInstance from "@/lib/axiosInstance";
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === "POST") {
+    try {
+      await axiosInstance.post("https://taearif.com/api/logout");
+    } catch (error) {
+      console.error("حدث خطأ أثناء إرسال طلب تسجيل الخروج إلى API الخارجي:", error);
+    }
+
     const cookies = [
       serialize("authToken", "", {
         httpOnly: true,
@@ -22,10 +31,8 @@ export default function handler(req, res) {
       }),
     ];
 
-    // حذف الكوكيز عن طريق تعيينها بتاريخ منتهي الصلاحية
     res.setHeader("Set-Cookie", cookies);
     res.setHeader("Cache-Control", "no-store, max-age=0");
-    // إرجاع استجابة بنجاح العملية
     res.status(200).json({ message: "تم تسجيل الخروج بنجاح" });
   } else {
     res.setHeader("Allow", ["POST"]);

@@ -60,6 +60,34 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
 import axiosInstance from "@/lib/axiosInstance";
 
+// مكون SkeletonPropertyCard لعرض بطاقة تحميل تحاكي شكل بطاقة العقار
+function SkeletonPropertyCard() {
+  return (
+    <Card className="overflow-hidden animate-pulse">
+      <div className="relative">
+        <div className="aspect-[16/9] w-full bg-gray-300"></div>
+      </div>
+      <CardHeader className="p-4">
+        <div className="h-4 w-3/4 bg-gray-300 rounded mb-2"></div>
+        <div className="h-3 w-1/2 bg-gray-300 rounded"></div>
+      </CardHeader>
+      <CardContent className="p-4 pt-0 space-y-2">
+        <div className="h-3 w-full bg-gray-300 rounded"></div>
+        <div className="h-3 w-5/6 bg-gray-300 rounded"></div>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="h-3 bg-gray-300 rounded"></div>
+          <div className="h-3 bg-gray-300 rounded"></div>
+          <div className="h-3 bg-gray-300 rounded"></div>
+        </div>
+      </CardContent>
+      <CardFooter className="flex gap-2 p-4 pt-0">
+        <div className="h-8 w-full bg-gray-300 rounded"></div>
+        <div className="h-8 w-full bg-gray-300 rounded"></div>
+      </CardFooter>
+    </Card>
+  );
+}
+
 export function PropertiesManagementPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState([200000, 1000000]);
@@ -100,6 +128,14 @@ export function PropertiesManagementPage() {
       setFavorites([...favorites, id]);
     }
   };
+
+  const renderSkeletons = () => (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, idx) => (
+        <SkeletonPropertyCard key={idx} />
+      ))}
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
@@ -274,7 +310,7 @@ export function PropertiesManagementPage() {
             </div>
 
             {loading ? (
-              <div className="text-center py-10">جاري التحميل...</div>
+              renderSkeletons()
             ) : error ? (
               <div className="text-center text-red-500 py-10">{error}</div>
             ) : (
@@ -516,7 +552,7 @@ function PropertyCard({
       <CardHeader className="p-4">
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="line-clamp-1">{property.title}</CardTitle>
+            <CardTitle className="whitespace-nowrap">{property.title}</CardTitle>
             <CardDescription className="flex items-center gap-1">
               <MapPin className="h-3 w-3" /> {property.address}
             </CardDescription>

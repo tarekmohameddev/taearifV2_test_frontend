@@ -18,7 +18,43 @@ function VisitorChart() {
   // حالة الفترة الزمنية المختارة
   const [timeRange, setTimeRange] = useState("30");
   // حالة بيانات الزوار المسترجعة من API
-  const [visitorData, setVisitorData] = useState([]);
+  const [visitorData, setVisitorData] = useState([
+    {
+       "date" : "1 يناير",
+       "uniqueVisitors" : 0,
+       "visits" : 0
+    },
+    {
+       "date" : "5 يناير",
+       "uniqueVisitors" : 0,
+       "visits" : 0
+    },
+    {
+       "date" : "10 يناير",
+       "uniqueVisitors" : 0,
+       "visits" : 0
+    },
+    {
+       "date" : "15 يناير",
+       "uniqueVisitors" : 0,
+       "visits" : 0
+    },
+    {
+       "date" : "20 يناير",
+       "uniqueVisitors" : 0,
+       "visits" : 0
+    },
+    {
+       "date" : "25 يناير",
+       "uniqueVisitors" : 0,
+       "visits" : 0
+    },
+    {
+       "date" : "30 يناير",
+       "uniqueVisitors" : 0,
+       "visits" : 0
+    }
+ ]);
   // حالة التحميل وخطأ الاستدعاء
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -73,11 +109,6 @@ function VisitorChart() {
       </div>
 
       {/* عرض حالة التحميل أو الخطأ أو الرسم البياني */}
-      {loading ? (
-        <div className="flex justify-center items-center h-64"><LoadingComp /></div>
-      ) : error ? (
-        <div className="text-red-500 text-center">{error}</div>
-      ) : (
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
@@ -162,7 +193,6 @@ function VisitorChart() {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      )}
     </div>
   );
 }

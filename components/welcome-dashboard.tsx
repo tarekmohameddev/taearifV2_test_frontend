@@ -51,8 +51,60 @@ import SetupProgressCard from "@/components/SetupProgressCard";
 export function WelcomeDashboard() {
   const [setupProgress, setSetupProgress] = useState(60);
   const [dashboardSummary, setDashboardSummary] = useState(null);
-  const [dashboardDevice, setDashboardDevice] = useState([]);
-  const [trafficSources, setTrafficSources] = useState([]);
+  const [dashboardDevice, setDashboardDevice] = useState([
+    {
+       "color" : "#4285F4",
+       "name" : "جاري التحميل",
+       "value" : 35
+    },
+    {
+       "color" : "#34A853",
+       "name" : "جاري التحميل",
+       "value" : 25
+    },
+    {
+       "color" : "#A142F4",
+       "name" : "جاري التحميل",
+       "value" : 20
+    },
+    {
+       "color" : "#F4B400",
+       "name" : "جاري التحميل",
+       "value" : 15
+    },
+    {
+       "color" : "#6B7280",
+       "name" : "جاري التحميل",
+       "value" : 5
+    }
+ ]);
+  const [trafficSources, setTrafficSources] = useState([
+    {
+       "color" : "#4285F4",
+       "name" : "جاري التحميل",
+       "value" : 35
+    },
+    {
+       "color" : "#34A853",
+       "name" : "جاري التحميل",
+       "value" : 25
+    },
+    {
+       "color" : "#A142F4",
+       "name" : "جاري التحميل",
+       "value" : 20
+    },
+    {
+       "color" : "#F4B400",
+       "name" : "جاري التحميل",
+       "value" : 15
+    },
+    {
+       "color" : "#6B7280",
+       "name" : "جاري التحميل",
+       "value" : 5
+    }
+ ]);
   const [error, setError] = useState(null);
   const [selectedTimeRange, setSelectedTimeRange] = useState("30");
 
@@ -118,10 +170,9 @@ export function WelcomeDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">الزيارات</CardTitle>
           </CardHeader>
-          {dashboardSummary ? (
-            <CardContent>
+          <CardContent>
               <div className="text-2xl font-bold">
-                {dashboardSummary?.visits.toLocaleString()}
+                {dashboardSummary?.visits.toLocaleString() || 0}
               </div>
 
               <p className="text-xs text-muted-foreground">
@@ -133,14 +184,11 @@ export function WelcomeDashboard() {
                   }
                 >
                   {dashboardSummary?.visits_change > 0 ? "↑" : "↓"}{" "}
-                  {Math.abs(dashboardSummary?.visits_change)}%
+                  {Math.abs(dashboardSummary?.visits_change)  || 0}%
                 </span>{" "}
                 من الشهر الماضي
               </p>
             </CardContent>
-          ) : (
-            <LoadingComp className={`text-sm`}/>
-          )}
         </Card>
         <Card>
           <CardHeader className="pb-2">
@@ -149,10 +197,8 @@ export function WelcomeDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {dashboardSummary ? (
-              <>
-                <div className="text-2xl font-bold">
-                  {dashboardSummary?.page_views.toLocaleString()}
+          <div className="text-2xl font-bold">
+                  {dashboardSummary?.page_views.toLocaleString()  || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   <span
@@ -163,14 +209,10 @@ export function WelcomeDashboard() {
                     }
                   >
                     {dashboardSummary?.page_views_change > 0 ? "↑" : "↓"}{" "}
-                    {Math.abs(dashboardSummary?.page_views_change)}%
+                    {Math.abs(dashboardSummary?.page_views_change)  || 0}%
                   </span>{" "}
                   من الشهر الماضي
                 </p>
-              </>
-            ) : (
-              <LoadingComp />
-            )}
           </CardContent>
         </Card>
         <Card>
@@ -178,10 +220,8 @@ export function WelcomeDashboard() {
             <CardTitle className="text-sm font-medium">متوسط الوقت</CardTitle>
           </CardHeader>
           <CardContent>
-            {dashboardSummary ? (
-              <>
                 <div className="text-2xl font-bold">
-                  {dashboardSummary?.average_time}
+                  {dashboardSummary?.average_time  || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   <span
@@ -192,24 +232,19 @@ export function WelcomeDashboard() {
                     }
                   >
                     {dashboardSummary?.average_time_change > 0 ? "↑" : "↓"}{" "}
-                    {Math.abs(dashboardSummary?.average_time_change)}%
+                    {Math.abs(dashboardSummary?.average_time_change)  || 0}%
                   </span>{" "}
                   من الشهر الماضي
                 </p>
-              </>
-            ) : (
-              <LoadingComp />
-            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">معدل الارتداد</CardTitle>
           </CardHeader>
-          {dashboardSummary ? (
-            <CardContent>
+          <CardContent>
               <div className="text-2xl font-bold">
-                {dashboardSummary?.bounce_rate.toFixed(2)}%
+                {dashboardSummary?.bounce_rate.toFixed(2)  || 0} %
               </div>
               <p className="text-xs text-muted-foreground">
                 <span
@@ -220,14 +255,11 @@ export function WelcomeDashboard() {
                   }
                 >
                   {dashboardSummary?.bounce_rate_change > 0 ? "↑" : "↓"}{" "}
-                  {Math.abs(dashboardSummary?.bounce_rate_change)}%
+                  {Math.abs(dashboardSummary?.bounce_rate_change)  || 0}%
                 </span>{" "}
                 من الشهر الماضي
               </p>
             </CardContent>
-          ) : (
-            <LoadingComp />
-          )}
         </Card>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
