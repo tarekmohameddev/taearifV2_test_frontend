@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#006c35"/>
+  <g transform="translate(600,300) scale(118)">
+    <g id="sword">
+      <path d="M 0,-3 L 0,3 L 5,3 A 0.5,0.5 0 0,0 5,2 L 1,2 L 1,-2 L 5,-2 A 0.5,0.5 0 0,0 5,-3 z" fill="white"/>
+    </g>
+    <use href="#sword" transform="rotate(90)"/>
+    <use href="#sword" transform="rotate(180)"/>
+    <use href="#sword" transform="rotate(270)"/>
+    <g transform="translate(0,0.5)">
+      <text x="0" y="0" font-size="2" text-anchor="middle" fill="white" font-family="Traditional Arabic">لا إله إلا الله محمد رسول الله</text>
+    </g>
+  </g>
+</svg>
+

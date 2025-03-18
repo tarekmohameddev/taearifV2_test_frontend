@@ -1,0 +1,21 @@
+<svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background elements -->
+  <rect x="40" y="30" width="220" height="140" rx="10" fill="#F0F4FF" />
+  <rect x="60" y="50" width="180" height="100" rx="8" fill="white" stroke="#E2E8F0" stroke-width="1.5" />
+  
+  <!-- Form elements -->
+  <rect x="80" y="70" width="140" height="12" rx="2" fill="#EDF2F7" />
+  <rect x="80" y="90" width="140" height="12" rx="2" fill="#EDF2F7" />
+  <rect x="80" y="120" width="80" height="20" rx="4" fill="#4F46E5" />
+  
+  <!-- Decorative elements -->
+  <circle cx="240" cy="40" r="15" fill="#4F46E5" opacity="0.2" />
+  <circle cx="60" cy="150" r="20" fill="#4F46E5" opacity="0.1" />
+  <circle cx="220" cy="160" r="10" fill="#4F46E5" opacity="0.15" />
+  
+  <!-- Person icon -->
+  <circle cx="150" cy="30" r="15" fill="#4F46E5" />
+  <path d="M150 25C152.2 25 154 26.8 154 29C154 31.2 152.2 33 150 33C147.8 33 146 31.2 146 29C146 26.8 147.8 25 150 25Z" fill="white" />
+  <path d="M144 40C144 36.7 146.7 34 150 34C153.3 34 156 36.7 156 40" stroke="white" stroke-width="2" stroke-linecap="round" />
+</svg>
+
