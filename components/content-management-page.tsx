@@ -143,7 +143,6 @@ export function ContentManagementPage() {
     setContentManagement({
       sections: [
         ...sections,
-        // الكائن الجديد هنا
       ],
       newSectionName: "",
       newSectionDescription: "",

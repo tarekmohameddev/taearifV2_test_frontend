@@ -354,7 +354,7 @@ function ProjectCard({ project }: { project: IProject }) {
             <span className="text-muted-foreground">المطور</span>
             <span className="font-medium flex items-center gap-1">
               <Building2 className="h-3 w-3" />{" "}
-              {project.developer.split(" ")[0]}
+              {project.developer?.split(" ")[0]}
             </span>
           </div>
         </div>

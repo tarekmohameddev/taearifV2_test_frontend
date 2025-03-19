@@ -35,6 +35,7 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
 import dynamic from "next/dynamic";
 import axiosInstance from "@/lib/axiosInstance";
+import useStore from "@/context/Store"; // أضف هذا الاستيراد
 
 // Dynamically import the Map component to avoid SSR issues
 const MapComponent = dynamic(() => import("@/components/map-component"), {
@@ -76,23 +77,24 @@ export default function AddProjectPage(): JSX.Element {
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const plansInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
-
-  // حالة المشروع الجديدة مع إضافة amenities
-  const [newProject, setNewProject] = useState<INewProject>({
-    id: "",
-    name: "",
-    location: "",
-    price: "",
-    status: "",
-    completionDate: "",
-    units: 0,
-    developer: "",
-    description: "",
-    featured: false,
-    latitude: 25.276987, // افتراضي (دبي)
-    longitude: 55.296249, // افتراضي (دبي)
-    amenities: "",
+  const [newProject, setNewProject] = useState({
+    "id": "",
+    "name": "",
+    "location": "",
+    "price": "",  // سيتم استخدام min_price و max_price بدلاً منه لاحقًا
+    "status": "",
+    "completionDate": "",  // سيتم تحويله إلى completion_date في الصيغة النهائية
+    "units": 0,
+    "developer": "",
+    "description": "",
+    "featured": false,
+    "latitude": 0, // افتراضي (دبي)
+    "longitude": 0, // افتراضي (دبي)
+    "amenities": "", // سيتم تحويله إلى مصفوفة
+    "minPrice": "", // إضافة الحد الأدنى للسعر
+    "maxPrice": "", // إضافة الحد الأقصى للسعر
   });
+  
 
   const [thumbnailImage, setThumbnailImage] = useState<ProjectImage | null>(
     null,
@@ -101,6 +103,8 @@ export default function AddProjectPage(): JSX.Element {
   const [galleryImages, setGalleryImages] = useState<ProjectImage[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+  const { homepage: {setProjectsManagement} }  = useStore();
+
 
   useEffect(() => {
     setMapLoaded(true);
@@ -282,42 +286,120 @@ export default function AddProjectPage(): JSX.Element {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSaveProject = async (
-    status: "منشور" | "مسودة" | "Pre-construction",
-  ) => {
+  const handleSaveProject = async (status: "منشور" | "مسودة" | "Pre-construction") => {
     if (!validateForm()) {
       return;
     }
     setIsLoading(true);
     try {
-      // إعداد بيانات المشروع المطلوب إرسالها
+      // تحويل حقل السعر إلى قيم min و max
+      // مثال: إذا كان المستخدم يُدخل "50000-200000" أو قيمة واحدة
+      let minPrice = 0;
+      let maxPrice = 0;
+      if (newProject.price.includes("-")) {
+        const [min, max] = newProject.price.split("-").map(val => parseFloat(val.trim()));
+        minPrice = min;
+        maxPrice = max;
+      } else {
+        minPrice = parseFloat(newProject.price) || 0;
+        maxPrice = minPrice;
+      }
+      const formattedDate = new Date(newProject.completionDate).toISOString().split('T')[0];
+      console.log("Number(newProject.units)",Number(newProject.units))
+      console.log("Number(newProject.units)",Number(newProject.units))
       const projectData = {
-        name: newProject.name,
-        location: newProject.location,
-        price: newProject.price,
-        status: newProject.status, // يمكنك تعديلها إذا أردت استخدام status المُرسل كوسيلة
-        completion_date: newProject.completionDate,
-        units: newProject.units,
-        developer: newProject.developer,
-        description: newProject.description,
-        thumbnail: thumbnailImage ? thumbnailImage.url : "",
-        featured: newProject.featured,
-        gallery: galleryImages.map((img) => img.url),
-        amenities: newProject.amenities
+        "featured_image": thumbnailImage ? "thumbnailImage.url" : "",
+        "min_price": minPrice,
+        "max_price": maxPrice,
+        "latitude": newProject.latitude,
+        "longitude": newProject.longitude,
+        "featured": newProject.featured,
+        "complete_status": status === "منشور" ? "In Progress" : status, 
+        "units": Number(newProject.units),
+        "completion_date": formattedDate, 
+        "developer": newProject.developer,
+        "published": status === "منشور",
+        "contents": [
+          {
+            "language_id": 1,
+            "title": newProject.name,
+            "address": newProject.location,
+            "description": newProject.description,
+            "meta_keyword": "luxury, apartments, Dubai",
+            "meta_description": "Luxury apartments in Dubai with sea view and top facilities."
+          },
+          {
+            "language_id": 2,
+            "title": newProject.name,
+            "address": newProject.location,
+            "description": newProject.description,
+            "meta_keyword": "فخامة، شقق، دبي",
+            "meta_description": "شقق فاخرة في دبي بإطلالة على البحر ومرافق متميزة."
+          }
+        ],
+        "gallery_images": [
+          "https://taearifdev.com/storage/properties/67c826264b928.jpg",
+          "https://taearifdev.com/storage/properties/67c826264b928.jpg",
+          "https://taearifdev.com/storage/properties/67c826264b928.jpg"
+        ],
+        "floorplan_images": [
+          "https://taearifdev.com/storage/properties/67c826264b928.jpg",
+          "https://taearifdev.com/storage/properties/67c826264b928.jpg",
+          "https://taearifdev.com/storage/properties/67c826264b928.jpg"
+        ],
+        "specifications": [
+          { "key": "Bedrooms", "label": "Number of Bedrooms", "value": "3" },
+          { "key": "Bathrooms", "label": "Number of Bathrooms", "value": "2" },
+          { "key": "Parking", "label": "Parking Spaces", "value": "2" }
+        ],
+        "types": [
+          {
+            "language_id": 1,
+            "title": "3 BHK Apartment",
+            "min_area": 1200,
+            "max_area": 1500,
+            "min_price": 50000,
+            "max_price": 100000,
+            "unit": "sqft"
+          },
+          {
+            "language_id": 2,
+            "title": "شقة 3 غرف",
+            "min_area": 1200,
+            "max_area": 1500,
+            "min_price": 50000,
+            "max_price": 100000,
+            "unit": "قدم مربع"
+          }
+        ],
+        "amenities": newProject.amenities
           ? newProject.amenities.split(",").map((amenity) => amenity.trim())
-          : [],
+          : []
       };
+      
+      
+
 
       console.log("Saving project:", projectData);
+  
+      const response = await axiosInstance.post("https://taearif.com/api/projects", projectData);
+  
+      const currentState = useStore.getState();
+      const createdProject = response.data.data.user_project;
+      const updatedProjects = [createdProject, ...currentState.homepage.projectsManagement.projects];
+      console.log(`createdProject`,createdProject)
+      console.log(`updatedProjects`,updatedProjects)
+      setProjectsManagement({
+        projects: updatedProjects,
+        pagination: {
+          ...currentState.homepage.projectsManagement.pagination,
+          total: currentState.homepage.projectsManagement.pagination.total + 1
+        }
+      });
 
-      // إرسال الطلب عبر POST إلى API
-      await axiosInstance.post("https://taearif.com/api/projects", projectData);
-
-      // إعادة التوجيه بعد النجاح
       router.push("/projects");
     } catch (error: any) {
       console.error("Error saving project:", error);
-      // يمكنك إضافة إشعار (toast) هنا لإظهار الخطأ للمستخدم
     } finally {
       setIsLoading(false);
     }
