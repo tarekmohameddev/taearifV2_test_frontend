@@ -229,7 +229,7 @@ export function WelcomeDashboard() {
                           `${(percent * 100).toFixed(0)}%`
                         }
                       >
-                        {dashboardDevice.map((entry, index) => (
+                        {dashboardDevice?.map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={entry.color}
@@ -288,7 +288,7 @@ export function WelcomeDashboard() {
                           `${(percent * 100).toFixed(0)}%`
                         }
                       >
-                        {trafficSources.map((entry, index) => (
+                        {trafficSources?.map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={entry.color}

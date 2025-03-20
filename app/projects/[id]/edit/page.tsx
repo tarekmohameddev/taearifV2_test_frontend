@@ -107,7 +107,7 @@ export default function AddProjectPage(): JSX.Element {
   const [galleryImages, setGalleryImages] = useState<ProjectImage[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
-  const { homepage: {setProjectsManagement} }  = useStore();
+  const { setProjectsManagement }  = useStore();
 
 
   useEffect(() => {

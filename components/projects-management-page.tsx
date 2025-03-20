@@ -102,7 +102,6 @@ function SkeletonProjectCard() {
 export function ProjectsManagementPage() {
   const router = useRouter();
   const {
-    homepage: {
       projectsManagement: {
         viewMode,
         projects,
@@ -113,7 +112,6 @@ export function ProjectsManagementPage() {
       },
       setProjectsManagement,
       fetchProjects,
-    },
   } = useStore();
 
   // تحديث وضع العرض

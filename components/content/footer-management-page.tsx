@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState, useEffect } from "react";
+import axiosInstance from "@/lib/axiosInstance"; 
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -35,6 +36,7 @@ import {
   Trash2,
   GripVertical,
   ChevronLeft,
+  Loader2,
   Save,
   AlertCircle,
 } from "lucide-react";
@@ -43,108 +45,36 @@ import { Badge } from "@/components/ui/badge";
 
 export function FooterManagementPage() {
   const [activeTab, setActiveTab] = useState("general");
-  const [footerData, setFooterData] = useState({
-    general: {
-      companyName: "اسم الشركة",
-      address: "عنوان الشركة، المدينة، البلد",
-      phone: "+966 5XXXXXXXX",
-      email: "info@example.com",
-      workingHours: "الأحد - الخميس: 9:00 ص - 5:00 م",
-      showContactInfo: true,
-      showWorkingHours: true,
-      copyrightText: "© 2024 جميع الحقوق محفوظة",
-      showCopyright: true,
-    },
-    social: [
-      {
-        id: "1",
-        platform: "facebook",
-        url: "https://facebook.com/",
-        enabled: true,
-      },
-      {
-        id: "2",
-        platform: "twitter",
-        url: "https://twitter.com/",
-        enabled: true,
-      },
-      {
-        id: "3",
-        platform: "instagram",
-        url: "https://instagram.com/",
-        enabled: true,
-      },
-      {
-        id: "4",
-        platform: "linkedin",
-        url: "https://linkedin.com/",
-        enabled: false,
-      },
-      {
-        id: "5",
-        platform: "youtube",
-        url: "https://youtube.com/",
-        enabled: false,
-      },
-    ],
-    columns: [
-      {
-        id: "1",
-        title: "روابط سريعة",
-        links: [
-          { id: "1-1", text: "الرئيسية", url: "/" },
-          { id: "1-2", text: "من نحن", url: "/about" },
-          { id: "1-3", text: "خدماتنا", url: "/services" },
-          { id: "1-4", text: "اتصل بنا", url: "/contact" },
-        ],
-        enabled: true,
-      },
-      {
-        id: "2",
-        title: "خدماتنا",
-        links: [
-          { id: "2-1", text: "تصميم المواقع", url: "/services/web-design" },
-          {
-            id: "2-2",
-            text: "تطوير التطبيقات",
-            url: "/services/app-development",
-          },
-          {
-            id: "2-3",
-            text: "التسويق الرقمي",
-            url: "/services/digital-marketing",
-          },
-        ],
-        enabled: true,
-      },
-      {
-        id: "3",
-        title: "الدعم",
-        links: [
-          { id: "3-1", text: "الأسئلة الشائعة", url: "/faq" },
-          { id: "3-2", text: "سياسة الخصوصية", url: "/privacy" },
-          { id: "3-3", text: "الشروط والأحكام", url: "/terms" },
-        ],
-        enabled: true,
-      },
-    ],
-    newsletter: {
-      enabled: true,
-      title: "اشترك في نشرتنا البريدية",
-      description: "اشترك للحصول على آخر الأخبار والعروض",
-      buttonText: "اشتراك",
-      placeholderText: "أدخل بريدك الإلكتروني",
-    },
-    style: {
-      layout: "full-width",
-      backgroundColor: "#1f2937",
-      textColor: "#ffffff",
-      accentColor: "#3b82f6",
-      columns: 4,
-      showSocialIcons: true,
-      socialIconsPosition: "top",
-    },
-  });
+  const [footerData, setFooterData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchFooterData = async () => {
+      try {
+        const response = await axiosInstance.get(
+          "https://taearif.com/api/content/footer"
+        );
+        console.log("get response",response)
+        if (response.data.status === "success") {
+          setFooterData(response.data.data.settings);
+        } else {
+          throw new Error("فشل في جلب البيانات");
+        }
+      } catch (err) {
+        setError(err.message);
+        toast({
+          variant: "destructive",
+          title: "خطأ",
+          description: "فشل في تحميل بيانات التذييل",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFooterData();
+  }, []);
 
   const socialIcons = {
     facebook: <Facebook className="h-5 w-5" />,
@@ -166,7 +96,7 @@ export function FooterManagementPage() {
     setFooterData({
       ...footerData,
       general: {
-        ...footerData.general,
+        ...footerData?.general,
         [field]: value,
       },
     });
@@ -310,13 +240,66 @@ export function FooterManagementPage() {
     });
   };
 
-  const saveChanges = () => {
-    toast({
-      title: "تم الحفظ بنجاح",
-      description: "تم حفظ التغييرات بنجاح",
-    });
+  const saveChanges = async () => {
+    try {
+      const response = await axiosInstance.put(
+        "https://taearif.com/api/content/footer",
+        footerData
+      );
+  
+      if (response.data.status === "success") {
+        toast({
+          title: "تم الحفظ بنجاح",
+          description: "تم حفظ التغييرات بنجاح",
+        });
+      }
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        description: "فشل في حفظ التغييرات",
+      });
+    }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <DashboardHeader />
+        <div className="flex flex-1">
+          <EnhancedSidebar activeTab="content" setActiveTab={() => {}} />
+          <main className="flex-1 p-6">
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  // عرض حالة الخطأ
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <DashboardHeader />
+        <div className="flex flex-1">
+          <EnhancedSidebar activeTab="content" setActiveTab={() => {}} />
+          <main className="flex-1 p-6">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>خطأ</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </main>
+        </div>
+      </div>
+    );
+  }
+  if (!footerData) {
+    return null;
+  }
+  
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />
@@ -376,7 +359,7 @@ export function FooterManagementPage() {
                       <Label htmlFor="companyName">اسم الشركة</Label>
                       <Input
                         id="companyName"
-                        value={footerData.general.companyName}
+                        value={footerData?.general?.companyName}
                         onChange={(e) =>
                           handleGeneralChange("companyName", e.target.value)
                         }
@@ -387,7 +370,7 @@ export function FooterManagementPage() {
                       <Input
                         id="email"
                         type="email"
-                        value={footerData.general.email}
+                        value={footerData?.general?.email}
                         onChange={(e) =>
                           handleGeneralChange("email", e.target.value)
                         }
@@ -397,7 +380,7 @@ export function FooterManagementPage() {
                       <Label htmlFor="phone">رقم الهاتف</Label>
                       <Input
                         id="phone"
-                        value={footerData.general.phone}
+                        value={footerData?.general?.phone}
                         onChange={(e) =>
                           handleGeneralChange("phone", e.target.value)
                         }
@@ -407,7 +390,7 @@ export function FooterManagementPage() {
                       <Label htmlFor="workingHours">ساعات العمل</Label>
                       <Input
                         id="workingHours"
-                        value={footerData.general.workingHours}
+                        value={footerData?.general?.workingHours}
                         onChange={(e) =>
                           handleGeneralChange("workingHours", e.target.value)
                         }
@@ -418,7 +401,7 @@ export function FooterManagementPage() {
                     <Label htmlFor="address">العنوان</Label>
                     <Textarea
                       id="address"
-                      value={footerData.general.address}
+                      value={footerData?.general?.address}
                       onChange={(e) =>
                         handleGeneralChange("address", e.target.value)
                       }
@@ -427,7 +410,7 @@ export function FooterManagementPage() {
                   <div className="flex items-center space-x-2 space-x-reverse">
                     <Switch
                       id="showContactInfo"
-                      checked={footerData.general.showContactInfo}
+                      checked={footerData?.general?.showContactInfo}
                       onCheckedChange={(checked) =>
                         handleGeneralChange("showContactInfo", checked)
                       }
@@ -437,7 +420,7 @@ export function FooterManagementPage() {
                   <div className="flex items-center space-x-2 space-x-reverse">
                     <Switch
                       id="showWorkingHours"
-                      checked={footerData.general.showWorkingHours}
+                      checked={footerData?.general?.showWorkingHours}
                       onCheckedChange={(checked) =>
                         handleGeneralChange("showWorkingHours", checked)
                       }
@@ -459,7 +442,7 @@ export function FooterManagementPage() {
                     <Label htmlFor="copyrightText">نص حقوق النشر</Label>
                     <Input
                       id="copyrightText"
-                      value={footerData.general.copyrightText}
+                      value={footerData?.general?.copyrightText}
                       onChange={(e) =>
                         handleGeneralChange("copyrightText", e.target.value)
                       }
@@ -468,7 +451,7 @@ export function FooterManagementPage() {
                   <div className="flex items-center space-x-2 space-x-reverse">
                     <Switch
                       id="showCopyright"
-                      checked={footerData.general.showCopyright}
+                      checked={footerData?.general?.showCopyright}
                       onCheckedChange={(checked) =>
                         handleGeneralChange("showCopyright", checked)
                       }

@@ -91,7 +91,6 @@ function SkeletonPropertyCard() {
 
 export function PropertiesManagementPage() {
   const {
-    homepage: {
       propertiesManagement: {
         viewMode,
         priceRange,
@@ -102,7 +101,6 @@ export function PropertiesManagementPage() {
       },
       setPropertiesManagement,
       fetchProperties,
-    },
   } = useStore();
 
   // تحديث وضع العرض

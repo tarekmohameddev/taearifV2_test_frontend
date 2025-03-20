@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import axiosInstance from "@/lib/axiosInstance"; // تأكد من المسار الصحيح
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Button } from "@/components/ui/button";
@@ -11,65 +12,199 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, ImagePlus, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { uploadSingleFile } from '@/utils/uploadSingle';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 export function AboutCompanyPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [features, setFeatures] = useState([
-    {
-      id: 1,
-      title: "الجودة",
-      description: "نلتزم بتقديم أعلى معايير الجودة في جميع منتجاتنا وخدماتنا.",
-    },
-    {
-      id: 2,
-      title: "الابتكار",
-      description:
-        "نسعى دائمًا لتطوير حلول مبتكرة تلبي احتياجات عملائنا المتغيرة.",
-    },
-    {
-      id: 3,
-      title: "الموثوقية",
-      description:
-        "يمكنك الاعتماد علينا لتقديم النتائج في الوقت المحدد وبالميزانية المتفق عليها.",
-    },
-  ]);
-
-  const handleSave = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "تم الحفظ بنجاح",
-        description: "تم حفظ معلومات الشركة بنجاح",
-      });
-    }, 1000);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+const [selectedImage, setSelectedImage] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [aboutData, setAboutData] = useState({
+    title: "",
+    subtitle: "",
+    history: "",
+    mission: "",
+    vision: "",
+    image_path: "",
+    features: [],
+  });
+  const handleImageUploadClick = () => {
+    fileInputRef.current.click();
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+  
+    // التحقق من نوع الملف
+    if (!file.type.startsWith('image/')) {
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        description: "الملف المحدد ليس صورة",
+      });
+      return;
+    }
+  
+    // عرض المعاينة وتخزين الملف في الحالة
+    setSelectedImage(URL.createObjectURL(file));
+    setSelectedFile(file); // إضافة selectedFile إلى الحالة
+  };
+  // جلب البيانات الأولية
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axiosInstance.get(
+          "https://taearif.com/api/content/about"
+        );
+
+        if (response.data.status === "success") {
+          setAboutData(response.data.data.about);
+        } else {
+          throw new Error("فشل في جلب البيانات");
+        }
+      } catch (err) {
+        setError(err.message);
+        toast({
+          variant: "destructive",
+          title: "خطأ",
+          description: "فشل في تحميل بيانات من نحن",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // إدارة الميزات
   const addNewFeature = () => {
     const newId =
-      features.length > 0 ? Math.max(...features.map((f) => f.id)) + 1 : 1;
-    setFeatures([
-      ...features,
-      {
-        id: newId,
-        title: "ميزة جديدة",
-        description: "وصف الميزة الجديدة",
-      },
-    ]);
+      aboutData.features.length > 0
+        ? Math.max(...aboutData.features.map((f) => f.id)) + 1
+        : 1;
+    setAboutData({
+      ...aboutData,
+      features: [
+        ...aboutData.features,
+        {
+          id: newId,
+          title: "ميزة جديدة",
+          description: "وصف الميزة الجديدة",
+        },
+      ],
+    });
   };
 
   const removeFeature = (id) => {
-    setFeatures(features.filter((feature) => feature.id !== id));
+    setAboutData({
+      ...aboutData,
+      features: aboutData.features.filter((feature) => feature.id !== id),
+    });
   };
 
   const updateFeature = (id, field, value) => {
-    setFeatures(
-      features.map((feature) =>
-        feature.id === id ? { ...feature, [field]: value } : feature,
+    setAboutData({
+      ...aboutData,
+      features: aboutData.features.map((feature) =>
+        feature.id === id ? { ...feature, [field]: value } : feature
       ),
-    );
+    });
   };
+
+  // تحديث الحقول الرئيسية
+  const handleFieldChange = (field, value) => {
+    setAboutData({
+      ...aboutData,
+      [field]: value,
+    });
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      let newAboutData = { ...aboutData };
+  
+      // إذا كان هناك ملف مختار، قم برفعه باستخدام الدالة الموحدة
+      if (selectedFile) {
+        // استخدام دالة الرفع الموحدة مع تمرير السياق المناسب
+        const uploadedData = await uploadSingleFile(
+          selectedFile,     // الملف المراد رفعه
+          'content',  // السياق (مثل: الصفحة/القسم)
+        );
+  
+        // تحديث مسار الصورة في البيانات
+        newAboutData.image_path = uploadedData.url; // تأكد من تطابق اسم الخاصية مع استجابة الـAPI
+      }
+      setTimeout(()=> {
+
+        console.log("newAboutData",newAboutData)
+      }, 300)
+      // إرسال البيانات المحدثة إلى الـAPI
+      const response = await axiosInstance.post(
+        "https://taearif.com/api/content/about",
+        newAboutData
+      );
+  console.log("response.data",response.data)
+      if (response.data.status === "success") {
+        toast({
+          title: "تم الحفظ بنجاح",
+          description: "تم تحديث معلومات الشركة",
+        });
+        setSelectedFile(null); // مسح الملف المؤقت
+      }
+  
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        description: error.message || "فشل في الحفظ",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // حالات التحميل والخطأ
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <DashboardHeader />
+        <div className="flex flex-1">
+          <EnhancedSidebar activeTab="content" />
+          <main className="flex-1 p-6">
+            <div className="flex h-96 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <DashboardHeader />
+        <div className="flex flex-1">
+          <EnhancedSidebar activeTab="content" />
+          <main className="flex-1 p-6">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>خطأ</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -91,8 +226,8 @@ export function AboutCompanyPage() {
                 </p>
               </div>
             </div>
-            <Button onClick={handleSave} disabled={isLoading}>
-              {isLoading ? (
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
                 <span className="flex items-center gap-1">جاري الحفظ...</span>
               ) : (
                 <span className="flex items-center gap-1">
@@ -111,11 +246,21 @@ export function AboutCompanyPage() {
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="about-title">عنوان القسم</Label>
-                  <Input id="about-title" defaultValue="عن شركتنا" />
+                  <Input
+                    id="about-title"
+                    value={aboutData.title}
+                    onChange={(e) => handleFieldChange("title", e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="about-subtitle">العنوان الفرعي للقسم</Label>
-                  <Input id="about-subtitle" defaultValue="قصتنا ورسالتنا" />
+                  <Input
+                    id="about-subtitle"
+                    value={aboutData.subtitle}
+                    onChange={(e) =>
+                      handleFieldChange("subtitle", e.target.value)
+                    }
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -130,7 +275,8 @@ export function AboutCompanyPage() {
                   <Textarea
                     id="company-history"
                     className="min-h-[150px]"
-                    defaultValue="تأسست شركتنا في عام 2010، ونمت من شركة ناشئة صغيرة إلى مزود رائد في مجالنا. لقد التزمنا دائمًا بالجودة والابتكار."
+                    value={aboutData.history}
+                    onChange={(e) => handleFieldChange("history", e.target.value)}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
                     اشرح كيف بدأت شركتك وكيف تطورت على مر السنين
@@ -141,7 +287,8 @@ export function AboutCompanyPage() {
                   <Textarea
                     id="company-mission"
                     className="min-h-[100px]"
-                    defaultValue="مهمتنا هي تقديم منتجات وخدمات استثنائية تحسن حياة عملائنا مع الحفاظ على أعلى معايير الجودة ورضا العملاء."
+                    value={aboutData.mission}
+                    onChange={(e) => handleFieldChange("mission", e.target.value)}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
                     اشرح رسالة شركتك وما تسعى لتحقيقه
@@ -152,7 +299,8 @@ export function AboutCompanyPage() {
                   <Textarea
                     id="company-vision"
                     className="min-h-[100px]"
-                    defaultValue="نتطلع إلى أن نصبح الشركة الرائدة في مجالنا، معروفين بالابتكار والجودة والخدمة الاستثنائية للعملاء."
+                    value={aboutData.vision}
+                    onChange={(e) => handleFieldChange("vision", e.target.value)}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
                     اشرح رؤيتك المستقبلية للشركة
@@ -162,13 +310,37 @@ export function AboutCompanyPage() {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>صورة الشركة</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <Label>صورة الشركة</Label>
-                  <div className="mt-2 flex h-40 cursor-pointer items-center justify-center rounded-md border border-dashed">
+        <CardHeader>
+          <CardTitle>صورة الشركة</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div>
+            <Label>صورة الشركة</Label>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
+            />
+            <div
+              className="mt-2 flex h-40 cursor-pointer items-center justify-center rounded-md border border-dashed"
+              onClick={handleImageUploadClick}
+            >
+              {isUploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                  <span className="text-sm">جاري رفع الصورة...</span>
+                </div>
+              ) : (
+                <>
+                  {aboutData.image_path || selectedImage ? (
+                    <img
+                      src={selectedImage || aboutData.image_path}
+                      alt="صورة الشركة"
+                      className="h-full w-full object-cover rounded-md"
+                    />
+                  ) : (
                     <div className="flex flex-col items-center gap-1 text-muted-foreground">
                       <ImagePlus className="h-8 w-8" />
                       <span>انقر لرفع صورة</span>
@@ -176,14 +348,16 @@ export function AboutCompanyPage() {
                         الحجم الموصى به: 800×600 بكسل
                       </span>
                     </div>
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    اختر صورة تعبر عن شركتك، مثل صورة للفريق أو المكتب أو شعار
-                    الشركة
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                  )}
+                </>
+              )}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              اختر صورة تعبر عن شركتك، مثل صورة للفريق أو المكتب أو شعار الشركة
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">مميزات الشركة</h3>
@@ -197,7 +371,7 @@ export function AboutCompanyPage() {
             </div>
 
             <div className="space-y-4">
-              {features.map((feature) => (
+              {aboutData.features.map((feature) => (
                 <Card key={feature.id}>
                   <CardContent className="p-6">
                     <div className="flex items-start gap-3">
@@ -225,13 +399,13 @@ export function AboutCompanyPage() {
                               updateFeature(
                                 feature.id,
                                 "description",
-                                e.target.value,
+                                e.target.value
                               )
                             }
                           />
                         </div>
                       </div>
-                      {features.length > 1 && (
+                      {aboutData.features.length > 1 && (
                         <Button
                           size="icon"
                           variant="destructive"
