@@ -1,6 +1,5 @@
 import axiosInstance from "@/lib/axiosInstance";
 
-
 module.exports = (set) => ({
   contentManagement: {
     newSectionDialogOpen: false,
@@ -24,9 +23,11 @@ module.exports = (set) => ({
         error: null,
       },
     }));
-    
+
     try {
-      const response = await axiosInstance.get("https://taearif.com/api/content/sections");
+      const response = await axiosInstance.get(
+        "https://taearif.com/api/content/sections",
+      );
       set((state) => ({
         contentManagement: {
           ...state.contentManagement,

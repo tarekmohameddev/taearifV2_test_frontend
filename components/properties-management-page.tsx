@@ -91,16 +91,16 @@ function SkeletonPropertyCard() {
 
 export function PropertiesManagementPage() {
   const {
-      propertiesManagement: {
-        viewMode,
-        priceRange,
-        favorites,
-        properties,
-        loading,
-        error,
-      },
-      setPropertiesManagement,
-      fetchProperties,
+    propertiesManagement: {
+      viewMode,
+      priceRange,
+      favorites,
+      properties,
+      loading,
+      error,
+    },
+    setPropertiesManagement,
+    fetchProperties,
   } = useStore();
 
   // تحديث وضع العرض
@@ -127,7 +127,6 @@ export function PropertiesManagementPage() {
       fetchProperties();
     }
   }, [fetchProperties, properties.length, loading]);
-
 
   const renderSkeletons = () => (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

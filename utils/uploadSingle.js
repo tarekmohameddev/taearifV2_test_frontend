@@ -1,21 +1,25 @@
 // utils/uploadSingle.js
-import axiosInstance from '@/lib/axiosInstance';
+import axiosInstance from "@/lib/axiosInstance";
 
 export async function uploadSingleFile(file, context, subFolder = null) {
   const formData = new FormData();
-  formData.append('file', file);
-  formData.append('context', context);
+  formData.append("file", file);
+  formData.append("context", context);
   if (subFolder) {
-    formData.append('sub_folder', subFolder);
+    formData.append("sub_folder", subFolder);
   }
 
   try {
-    const response = await axiosInstance.post('https://taearif.com/api/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await axiosInstance.post(
+      "https://taearif.com/api/upload",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
     return response.data.data;
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error("Upload error:", error);
     throw error;
   }
 }

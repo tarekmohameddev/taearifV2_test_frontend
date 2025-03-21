@@ -51,6 +51,7 @@ interface FormData {
 // تعريف واجهة الأخطاء الخاصة بالنموذج
 interface Errors {
   email: string;
+  api: string;
   phone: string;
   subdomain: string;
   password: string;
@@ -68,6 +69,7 @@ export function RegisterPage() {
   // حالة الأخطاء
   const [errors, setErrors] = useState<Errors>({
     email: "",
+    api: "",
     phone: "",
     subdomain: "",
     password: "",
@@ -203,7 +205,7 @@ export function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+  
     // التحقق من صحة الحقول
     const newErrors: Errors = {
       email: validateEmail(formData.email),
@@ -212,12 +214,11 @@ export function RegisterPage() {
       password: validatePassword(formData.password),
     };
     setErrors(newErrors);
-
+  
     const hasErrors = Object.values(newErrors).some((error) => error !== "");
-
+  
     if (!hasErrors) {
       try {
-        // await axios.get("https://taearif.com/sanctum/csrf-cookie", { withCredentials: true });
         const link = "https://taearif.com/api/register";
         const payload = {
           email: formData.email,
@@ -225,35 +226,47 @@ export function RegisterPage() {
           phone: formData.phone,
           username: formData.subdomain,
         };
-
+  
+        console.log("🚀 Sending registration request...");
+  
         const response = await axios.post(link, payload, {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         });
-
+  
         if (response.status < 200 || response.status >= 300) {
           throw new Error(response.data.message || "فشل تسجيل الدخول");
         }
-        console.log("response", response);
-        console.log("Registration response:", response.data);
-
+  
+        console.log("✅ Registration response:", response.data);
+  
         setFormSubmitted(true);
         setTimeout(() => {
           router.push("/");
         }, 2000);
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          console.error(
-            "Axios error:",
-            error.response ? error.response.data : error.message,
-          );
+          const errorMessage = error.response?.data?.message || error.message;
+          console.error("❌ Axios error:", errorMessage);
+  
+          // تحقق مما إذا كانت الرسالة تتعلق بالبريد الإلكتروني
+          if (errorMessage.includes("The email has already been taken")) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              api: "هذا البريد الإلكتروني مسجل بالفعل",
+            }));
+          }else{
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              api: `${errorMessage}`,
+            }))
+          }
         } else {
-          console.error("Unexpected error:", error);
+          console.error("❌ Unexpected error:", error);
         }
       }
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4">
@@ -664,6 +677,12 @@ export function RegisterPage() {
                   </Button>
                 )}
               </div>
+              {errors.api && (
+                      <p className="text-red-500 text-sm flex items-center mt-1">
+                        <AlertCircle className="h-3 w-3 ml-1" />
+                        {errors.api}
+                      </p>
+                    )}
             </form>
           )}
         </CardContent>

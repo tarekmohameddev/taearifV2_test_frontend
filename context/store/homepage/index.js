@@ -13,7 +13,7 @@ module.exports.homepage = (set) => ({
     ...trafficSources(set),
     ...dashboardSummary(set),
     ...dashboardDevice(set),
-    
+
     // Funciones compartidas
     setSelectedTimeRange: (range) =>
       set((state) => ({

@@ -82,23 +82,22 @@ export default function AddProjectPage(): JSX.Element {
   const plansInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [newProject, setNewProject] = useState({
-    "id": "",
-    "name": "",
-    "location": "",
-    "price": "",  // سيتم استخدام min_price و max_price بدلاً منه لاحقًا
-    "status": "",
-    "completionDate": "",  // سيتم تحويله إلى completion_date في الصيغة النهائية
-    "units": 0,
-    "developer": "",
-    "description": "",
-    "featured": false,
-    "latitude": 0, // افتراضي (دبي)
-    "longitude": 0, // افتراضي (دبي)
-    "amenities": [], // سيتم تحويله إلى مصفوفة
-    "minPrice": "", // إضافة الحد الأدنى للسعر
-    "maxPrice": "", // إضافة الحد الأقصى للسعر
+    id: "",
+    name: "",
+    location: "",
+    price: "", // سيتم استخدام min_price و max_price بدلاً منه لاحقًا
+    status: "",
+    completionDate: "", // سيتم تحويله إلى completion_date في الصيغة النهائية
+    units: 0,
+    developer: "",
+    description: "",
+    featured: false,
+    latitude: 0, // افتراضي (دبي)
+    longitude: 0, // افتراضي (دبي)
+    amenities: [], // سيتم تحويله إلى مصفوفة
+    minPrice: "", // إضافة الحد الأدنى للسعر
+    maxPrice: "", // إضافة الحد الأقصى للسعر
   });
-  
 
   const [thumbnailImage, setThumbnailImage] = useState<ProjectImage | null>(
     null,
@@ -107,81 +106,81 @@ export default function AddProjectPage(): JSX.Element {
   const [galleryImages, setGalleryImages] = useState<ProjectImage[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
-  const { setProjectsManagement }  = useStore();
-
+  const { setProjectsManagement } = useStore();
 
   useEffect(() => {
     const fetchProjectData = async () => {
       try {
-      const response = await axiosInstance.get(`https://taearif.com/api/projects/${id}`);
+        const response = await axiosInstance.get(
+          `https://taearif.com/api/projects/${id}`,
+        );
         const projectData = response.data.data.project;
-        
-      
-      if (projectData && Array.isArray(projectData.contents) && projectData.contents.length > 0) {
 
-        
-        
-        console.log("projectData.amenities",projectData.amenities)
-        setNewProject({
-          id: projectData.id,
-          name: projectData.contents[0].title,
-          location: projectData.contents[0].address,
-          price: `${projectData.price_range}`,
-          status: projectData.complete_status,
-          completionDate: projectData.completion_date.split('T')[0],
-          units: projectData.units,
-          developer: projectData.developer,
-          description: projectData.contents[0].description,
-          featured: projectData.featured,
-          latitude: projectData.latitude,
-          longitude: projectData.longitude,
-          amenities: projectData.amenities,
-          minPrice: projectData.min_price,
-          maxPrice: projectData.max_price,
-        });
-        
-        let amenitiesArray;
-        if (typeof newProject.amenities === "string") {
-          try {
-            amenitiesArray = JSON.parse(newProject.amenities);
-          } catch (error) {
-            console.error("خطأ في تحويل JSON:", error);
+        if (
+          projectData &&
+          Array.isArray(projectData.contents) &&
+          projectData.contents.length > 0
+        ) {
+          console.log("projectData.amenities", projectData.amenities);
+          setNewProject({
+            id: projectData.id,
+            name: projectData.contents[0].title,
+            location: projectData.contents[0].address,
+            price: `${projectData.price_range}`,
+            status: projectData.complete_status,
+            completionDate: projectData.completion_date.split("T")[0],
+            units: projectData.units,
+            developer: projectData.developer,
+            description: projectData.contents[0].description,
+            featured: projectData.featured,
+            latitude: projectData.latitude,
+            longitude: projectData.longitude,
+            amenities: projectData.amenities,
+            minPrice: projectData.min_price,
+            maxPrice: projectData.max_price,
+          });
+
+          let amenitiesArray;
+          if (typeof newProject.amenities === "string") {
+            try {
+              amenitiesArray = JSON.parse(newProject.amenities);
+            } catch (error) {
+              console.error("خطأ في تحويل JSON:", error);
+              amenitiesArray = [];
+            }
+          } else if (Array.isArray(newProject.amenities)) {
+            amenitiesArray = newProject.amenities;
+          } else {
             amenitiesArray = [];
           }
-        } 
-        else if (Array.isArray(newProject.amenities)) {
-          amenitiesArray = newProject.amenities;
-        } 
-        else {
-          amenitiesArray = [];
-        }
-        const amenitiesNames = amenitiesArray.map(amenity => amenity.name.trim());
-        setAmenitiesNAMES(amenitiesNames)
-        setTimeout(()=> {
-  
-          console.log("amenitiesNAMES",amenitiesNAMES)
-        }, 300)
-      } else {
+          const amenitiesNames = amenitiesArray.map((amenity) =>
+            amenity.name.trim(),
+          );
+          setAmenitiesNAMES(amenitiesNames);
+          setTimeout(() => {
+            console.log("amenitiesNAMES", amenitiesNAMES);
+          }, 300);
+        } else {
           console.error("البيانات غير مكتملة: خاصية contents مفقودة أو فارغة");
         }
-        
-        
 
         setThumbnailImage({
-            id: 'existing-thumbnail',
-            url: projectData.featured_image,
-            file: new File([], 'thumbnail.jpg') // ملف وهمي للتمثيل
-          });
-          
-          setGalleryImages(projectData.gallery_images.map(img => ({
+          id: "existing-thumbnail",
+          url: projectData.featured_image,
+          file: new File([], "thumbnail.jpg"), // ملف وهمي للتمثيل
+        });
+
+        setGalleryImages(
+          projectData.gallery_images.map((img) => ({
             id: `existing-${img}`,
             url: img,
-            file: new File([], img.split('/').pop() || 'image.jpg')
-          })));
+            file: new File([], img.split("/").pop() || "image.jpg"),
+          })),
+        );
 
         setOriginalData(projectData);
       } catch (error) {
-        console.error('Failed to fetch project data:', error);
+        console.error("Failed to fetch project data:", error);
         // router.push('/projects');
       } finally {
         setIsLoading(false);
@@ -199,7 +198,7 @@ export default function AddProjectPage(): JSX.Element {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { id, value } = e.target;
-  
+
     if (id === "amenities") {
       setAmenitiesNAMES(value);
     } else {
@@ -216,7 +215,6 @@ export default function AddProjectPage(): JSX.Element {
       });
     }
   };
-  
 
   const handleCoordinateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -374,131 +372,139 @@ export default function AddProjectPage(): JSX.Element {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  const handleUpdateProject = async (status: "منشور" | "مسودة" | "Pre-construction") => {
+  const handleUpdateProject = async (
+    status: "منشور" | "مسودة" | "Pre-construction",
+  ) => {
     if (!validateForm()) return;
     setIsLoading(true);
 
     try {
-  // تحويل حقل السعر إلى قيم min و max
+      // تحويل حقل السعر إلى قيم min و max
       // مثال: إذا كان المستخدم يُدخل "50000-200000" أو قيمة واحدة
       let minPrice = 0;
       let maxPrice = 0;
       if (newProject.price.includes("-")) {
-        const [min, max] = newProject.price.split("-").map(val => parseFloat(val.trim()));
+        const [min, max] = newProject.price
+          .split("-")
+          .map((val) => parseFloat(val.trim()));
         minPrice = min;
         maxPrice = max;
       } else {
         minPrice = parseFloat(newProject.price) || 0;
         maxPrice = minPrice;
       }
-      const formattedDate = new Date(newProject.completionDate).toISOString().split('T')[0];
-
+      const formattedDate = new Date(newProject.completionDate)
+        .toISOString()
+        .split("T")[0];
 
       console.log("newProject.amenities", newProject.amenities);
-      
-
 
       const projectData = {
-        "featured_image": thumbnailImage ? "thumbnailImage.url" : "",
-        "min_price": minPrice,
-        "max_price": maxPrice,
-        "latitude": newProject.latitude,
-        "longitude": newProject.longitude,
-        "featured": newProject.featured,
-        "complete_status": status === "منشور" ? "In Progress" : status, 
-        "units": Number(newProject.units),
-        "completion_date": formattedDate, 
-        "developer": newProject.developer,
-        "published": status === "منشور",
-        "contents": [
+        featured_image: thumbnailImage ? "thumbnailImage.url" : "",
+        min_price: minPrice,
+        max_price: maxPrice,
+        latitude: newProject.latitude,
+        longitude: newProject.longitude,
+        featured: newProject.featured,
+        complete_status: status === "منشور" ? "In Progress" : status,
+        units: Number(newProject.units),
+        completion_date: formattedDate,
+        developer: newProject.developer,
+        published: status === "منشور",
+        contents: [
           {
-            "language_id": 1,
-            "title": newProject.name,
-            "address": newProject.location,
-            "description": newProject.description,
-            "meta_keyword": "luxury, apartments, Dubai",
-            "meta_description": "Luxury apartments in Dubai with sea view and top facilities."
+            language_id: 1,
+            title: newProject.name,
+            address: newProject.location,
+            description: newProject.description,
+            meta_keyword: "luxury, apartments, Dubai",
+            meta_description:
+              "Luxury apartments in Dubai with sea view and top facilities.",
           },
           {
-            "language_id": 2,
-            "title": newProject.name,
-            "address": newProject.location,
-            "description": newProject.description,
-            "meta_keyword": "فخامة، شقق، دبي",
-            "meta_description": "شقق فاخرة في دبي بإطلالة على البحر ومرافق متميزة."
-          }
+            language_id: 2,
+            title: newProject.name,
+            address: newProject.location,
+            description: newProject.description,
+            meta_keyword: "فخامة، شقق، دبي",
+            meta_description:
+              "شقق فاخرة في دبي بإطلالة على البحر ومرافق متميزة.",
+          },
         ],
-        "gallery_images": [
+        gallery_images: [
           "https://taearifdev.com/storage/properties/67c826264b928.jpg",
           "https://taearifdev.com/storage/properties/67c826264b928.jpg",
-          "https://taearifdev.com/storage/properties/67c826264b928.jpg"
+          "https://taearifdev.com/storage/properties/67c826264b928.jpg",
         ],
-        "floorplan_images": [
+        floorplan_images: [
           "https://taearifdev.com/storage/properties/67c826264b928.jpg",
           "https://taearifdev.com/storage/properties/67c826264b928.jpg",
-          "https://taearifdev.com/storage/properties/67c826264b928.jpg"
+          "https://taearifdev.com/storage/properties/67c826264b928.jpg",
         ],
-        "specifications": [
-          { "key": "Bedrooms", "label": "Number of Bedrooms", "value": "3" },
-          { "key": "Bathrooms", "label": "Number of Bathrooms", "value": "2" },
-          { "key": "Parking", "label": "Parking Spaces", "value": "2" }
+        specifications: [
+          { key: "Bedrooms", label: "Number of Bedrooms", value: "3" },
+          { key: "Bathrooms", label: "Number of Bathrooms", value: "2" },
+          { key: "Parking", label: "Parking Spaces", value: "2" },
         ],
-        "types": [
+        types: [
           {
-            "language_id": 1,
-            "title": "3 BHK Apartment",
-            "min_area": 1200,
-            "max_area": 1500,
-            "min_price": 50000,
-            "max_price": 100000,
-            "unit": "sqft"
+            language_id: 1,
+            title: "3 BHK Apartment",
+            min_area: 1200,
+            max_area: 1500,
+            min_price: 50000,
+            max_price: 100000,
+            unit: "sqft",
           },
           {
-            "language_id": 2,
-            "title": "شقة 3 غرف",
-            "min_area": 1200,
-            "max_area": 1500,
-            "min_price": 50000,
-            "max_price": 100000,
-            "unit": "قدم مربع"
-          }
+            language_id: 2,
+            title: "شقة 3 غرف",
+            min_area: 1200,
+            max_area: 1500,
+            min_price: 50000,
+            max_price: 100000,
+            unit: "قدم مربع",
+          },
         ],
-        "amenities": amenitiesNAMES.split(',')
+        amenities: amenitiesNAMES.split(","),
       };
-      
 
-      const response = await axiosInstance.post(`https://taearif.com/api/projects/${id}`, projectData);
-      
-      const currentState = useStore.getState();
-      const updatedProjects = currentState.homepage.projectsManagement.projects.map(proj => 
-        proj.id === id ? { ...proj, ...response.data.data } : proj
+      const response = await axiosInstance.post(
+        `https://taearif.com/api/projects/${id}`,
+        projectData,
       );
+
+      const currentState = useStore.getState();
+      const updatedProjects =
+        currentState.homepage.projectsManagement.projects.map((proj) =>
+          proj.id === id ? { ...proj, ...response.data.data } : proj,
+        );
 
       setProjectsManagement({
         projects: updatedProjects,
-        pagination: currentState.homepage.projectsManagement.pagination
+        pagination: currentState.homepage.projectsManagement.pagination,
       });
 
       router.push("/projects");
     } catch (error) {
-      console.error('Update failed:', error);
+      console.error("Update failed:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-if (isLoading) {
-  return (
-    <div className="flex min-h-screen flex-col" dir="rtl">
-      <DashboardHeader />
-      <div className="flex flex-1 justify-center items-center">
-        <p>جاري تحميل بيانات المشروع...</p>
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col" dir="rtl">
+        <DashboardHeader />
+        <div className="flex flex-1 justify-center items-center">
+          <p>جاري تحميل بيانات المشروع...</p>
+        </div>
       </div>
-    </div>
-  );
-}
-if (!id) {
-    router.push('/projects');
+    );
+  }
+  if (!id) {
+    router.push("/projects");
     return null;
   }
   return (
@@ -664,12 +670,11 @@ if (!id) {
                   <div className="grid gap-2">
                     <Label htmlFor="amenities">المرافق (افصلها بفواصل)</Label>
                     <Input
-  id="amenities"
-  placeholder="حمام سباحة, نادي رياضي, حديقة على السطح"
-  value={amenitiesNAMES}
-  onChange={handleInputChange}
-/>
-
+                      id="amenities"
+                      placeholder="حمام سباحة, نادي رياضي, حديقة على السطح"
+                      value={amenitiesNAMES}
+                      onChange={handleInputChange}
+                    />
                   </div>
                   <div className="flex items-center space-x-2 h-10">
                     <Switch

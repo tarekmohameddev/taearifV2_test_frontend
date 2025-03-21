@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, ImagePlus, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { uploadSingleFile } from '@/utils/uploadSingle';
+import { uploadSingleFile } from "@/utils/uploadSingle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
 
@@ -22,7 +22,7 @@ export function AboutCompanyPage() {
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
-const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [aboutData, setAboutData] = useState({
     title: "",
@@ -40,9 +40,9 @@ const [selectedImage, setSelectedImage] = useState(null);
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-  
+
     // التحقق من نوع الملف
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       toast({
         variant: "destructive",
         title: "خطأ",
@@ -50,7 +50,7 @@ const [selectedImage, setSelectedImage] = useState(null);
       });
       return;
     }
-  
+
     // عرض المعاينة وتخزين الملف في الحالة
     setSelectedImage(URL.createObjectURL(file));
     setSelectedFile(file); // إضافة selectedFile إلى الحالة
@@ -60,7 +60,7 @@ const [selectedImage, setSelectedImage] = useState(null);
     const fetchData = async () => {
       try {
         const response = await axiosInstance.get(
-          "https://taearif.com/api/content/about"
+          "https://taearif.com/api/content/about",
         );
 
         if (response.data.status === "success") {
@@ -113,7 +113,7 @@ const [selectedImage, setSelectedImage] = useState(null);
     setAboutData({
       ...aboutData,
       features: aboutData.features.map((feature) =>
-        feature.id === id ? { ...feature, [field]: value } : feature
+        feature.id === id ? { ...feature, [field]: value } : feature,
       ),
     });
   };
@@ -130,28 +130,27 @@ const [selectedImage, setSelectedImage] = useState(null);
     setIsSaving(true);
     try {
       let newAboutData = { ...aboutData };
-  
+
       // إذا كان هناك ملف مختار، قم برفعه باستخدام الدالة الموحدة
       if (selectedFile) {
         // استخدام دالة الرفع الموحدة مع تمرير السياق المناسب
         const uploadedData = await uploadSingleFile(
-          selectedFile,     // الملف المراد رفعه
-          'content',  // السياق (مثل: الصفحة/القسم)
+          selectedFile, // الملف المراد رفعه
+          "content", // السياق (مثل: الصفحة/القسم)
         );
-  
+
         // تحديث مسار الصورة في البيانات
         newAboutData.image_path = uploadedData.url; // تأكد من تطابق اسم الخاصية مع استجابة الـAPI
       }
-      setTimeout(()=> {
-
-        console.log("newAboutData",newAboutData)
-      }, 300)
+      setTimeout(() => {
+        console.log("newAboutData", newAboutData);
+      }, 300);
       // إرسال البيانات المحدثة إلى الـAPI
       const response = await axiosInstance.post(
         "https://taearif.com/api/content/about",
-        newAboutData
+        newAboutData,
       );
-  console.log("response.data",response.data)
+      console.log("response.data", response.data);
       if (response.data.status === "success") {
         toast({
           title: "تم الحفظ بنجاح",
@@ -159,7 +158,6 @@ const [selectedImage, setSelectedImage] = useState(null);
         });
         setSelectedFile(null); // مسح الملف المؤقت
       }
-  
     } catch (error) {
       toast({
         variant: "destructive",
@@ -276,7 +274,9 @@ const [selectedImage, setSelectedImage] = useState(null);
                     id="company-history"
                     className="min-h-[150px]"
                     value={aboutData.history}
-                    onChange={(e) => handleFieldChange("history", e.target.value)}
+                    onChange={(e) =>
+                      handleFieldChange("history", e.target.value)
+                    }
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
                     اشرح كيف بدأت شركتك وكيف تطورت على مر السنين
@@ -288,7 +288,9 @@ const [selectedImage, setSelectedImage] = useState(null);
                     id="company-mission"
                     className="min-h-[100px]"
                     value={aboutData.mission}
-                    onChange={(e) => handleFieldChange("mission", e.target.value)}
+                    onChange={(e) =>
+                      handleFieldChange("mission", e.target.value)
+                    }
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
                     اشرح رسالة شركتك وما تسعى لتحقيقه
@@ -300,7 +302,9 @@ const [selectedImage, setSelectedImage] = useState(null);
                     id="company-vision"
                     className="min-h-[100px]"
                     value={aboutData.vision}
-                    onChange={(e) => handleFieldChange("vision", e.target.value)}
+                    onChange={(e) =>
+                      handleFieldChange("vision", e.target.value)
+                    }
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
                     اشرح رؤيتك المستقبلية للشركة
@@ -310,54 +314,55 @@ const [selectedImage, setSelectedImage] = useState(null);
             </Card>
 
             <Card>
-        <CardHeader>
-          <CardTitle>صورة الشركة</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <Label>صورة الشركة</Label>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              accept="image/*"
-              className="hidden"
-            />
-            <div
-              className="mt-2 flex h-40 cursor-pointer items-center justify-center rounded-md border border-dashed"
-              onClick={handleImageUploadClick}
-            >
-              {isUploading ? (
-                <div className="flex flex-col items-center gap-2">
-                  <Loader2 className="h-8 w-8 animate-spin" />
-                  <span className="text-sm">جاري رفع الصورة...</span>
+              <CardHeader>
+                <CardTitle>صورة الشركة</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <Label>صورة الشركة</Label>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <div
+                    className="mt-2 flex h-40 cursor-pointer items-center justify-center rounded-md border border-dashed"
+                    onClick={handleImageUploadClick}
+                  >
+                    {isUploading ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <span className="text-sm">جاري رفع الصورة...</span>
+                      </div>
+                    ) : (
+                      <>
+                        {aboutData.image_path || selectedImage ? (
+                          <img
+                            src={selectedImage || aboutData.image_path}
+                            alt="صورة الشركة"
+                            className="h-full w-full object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                            <ImagePlus className="h-8 w-8" />
+                            <span>انقر لرفع صورة</span>
+                            <span className="text-xs">
+                              الحجم الموصى به: 800×600 بكسل
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    اختر صورة تعبر عن شركتك، مثل صورة للفريق أو المكتب أو شعار
+                    الشركة
+                  </p>
                 </div>
-              ) : (
-                <>
-                  {aboutData.image_path || selectedImage ? (
-                    <img
-                      src={selectedImage || aboutData.image_path}
-                      alt="صورة الشركة"
-                      className="h-full w-full object-cover rounded-md"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center gap-1 text-muted-foreground">
-                      <ImagePlus className="h-8 w-8" />
-                      <span>انقر لرفع صورة</span>
-                      <span className="text-xs">
-                        الحجم الموصى به: 800×600 بكسل
-                      </span>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              اختر صورة تعبر عن شركتك، مثل صورة للفريق أو المكتب أو شعار الشركة
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
 
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">مميزات الشركة</h3>
@@ -399,7 +404,7 @@ const [selectedImage, setSelectedImage] = useState(null);
                               updateFeature(
                                 feature.id,
                                 "description",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                           />

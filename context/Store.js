@@ -11,15 +11,16 @@ const useStore = create((set) => {
       ...require("./store/homepage/visitorData")(set),
       ...require("./store/homepage/setupProgress")(set),
       ...require("./store/homepage/trafficSources")(set),
-      
-      setSelectedTimeRange: (range) => set(state => ({
-        homepage: { ...state.homepage, selectedTimeRange: range }
-      }))
+
+      setSelectedTimeRange: (range) =>
+        set((state) => ({
+          homepage: { ...state.homepage, selectedTimeRange: range },
+        })),
     },
     ...require("./store/contentManagement")(set),
     ...require("./store/recentActivity")(set),
     ...require("./store/projectsManagement")(set),
-    ...require("./store/propertiesManagement")(set)
+    ...require("./store/propertiesManagement")(set),
   };
 });
 

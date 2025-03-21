@@ -102,16 +102,16 @@ function SkeletonProjectCard() {
 export function ProjectsManagementPage() {
   const router = useRouter();
   const {
-      projectsManagement: {
-        viewMode,
-        projects,
-        pagination,
-        loading,
-        error,
-        isInitialized
-      },
-      setProjectsManagement,
-      fetchProjects,
+    projectsManagement: {
+      viewMode,
+      projects,
+      pagination,
+      loading,
+      error,
+      isInitialized,
+    },
+    setProjectsManagement,
+    fetchProjects,
   } = useStore();
 
   // تحديث وضع العرض
@@ -126,7 +126,6 @@ export function ProjectsManagementPage() {
     }
   }, [fetchProjects, isInitialized]);
 
-
   const renderSkeletons = () => (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, idx) => (
@@ -135,7 +134,7 @@ export function ProjectsManagementPage() {
     </div>
   );
 
-  const renderProjectCards = (projectsToRender: IProject[]) => 
+  const renderProjectCards = (projectsToRender: IProject[]) =>
     viewMode === "grid" ? (
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {projectsToRender.map((project) => (
@@ -241,13 +240,13 @@ export function ProjectsManagementPage() {
             </Tabs>
 
             {pagination && (
-        <div className="mt-6">
-          <span className="text-sm text-muted-foreground">
-            Showing {pagination.from} to {pagination.to} of{" "}
-            {pagination.total} projects
-          </span>
-        </div>
-      )}
+              <div className="mt-6">
+                <span className="text-sm text-muted-foreground">
+                  Showing {pagination.from} to {pagination.to} of{" "}
+                  {pagination.total} projects
+                </span>
+              </div>
+            )}
           </div>
         </main>
       </div>
@@ -300,7 +299,8 @@ function ProjectCard({ project }: { project: IProject }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem  onClick={() => router.push("/projects/"+project.id+"/edit")}
+              <DropdownMenuItem
+                onClick={() => router.push("/projects/" + project.id + "/edit")}
               >
                 <Edit className="mr-2 h-4 w-4" />
                 تعديل

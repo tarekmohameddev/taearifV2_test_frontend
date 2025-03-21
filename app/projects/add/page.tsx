@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { uploadSingleFile } from '@/utils/uploadSingle';
-import { uploadMultipleFiles } from '@/utils/uploadMultiple';
+import { uploadSingleFile } from "@/utils/uploadSingle";
+import { uploadMultipleFiles } from "@/utils/uploadMultiple";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -80,23 +80,22 @@ export default function AddProjectPage(): JSX.Element {
   const plansInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [newProject, setNewProject] = useState({
-    "id": "",
-    "name": "",
-    "location": "",
-    "price": "",  // سيتم استخدام min_price و max_price بدلاً منه لاحقًا
-    "status": "",
-    "completionDate": "",  // سيتم تحويله إلى completion_date في الصيغة النهائية
-    "units": 0,
-    "developer": "",
-    "description": "",
-    "featured": false,
-    "latitude": 0, // افتراضي (دبي)
-    "longitude": 0, // افتراضي (دبي)
-    "amenities": "", // سيتم تحويله إلى مصفوفة
-    "minPrice": "", // إضافة الحد الأدنى للسعر
-    "maxPrice": "", // إضافة الحد الأقصى للسعر
+    id: "",
+    name: "",
+    location: "",
+    price: "", // سيتم استخدام min_price و max_price بدلاً منه لاحقًا
+    status: "",
+    completionDate: "", // سيتم تحويله إلى completion_date في الصيغة النهائية
+    units: 0,
+    developer: "",
+    description: "",
+    featured: false,
+    latitude: 0, // افتراضي (دبي)
+    longitude: 0, // افتراضي (دبي)
+    amenities: "", // سيتم تحويله إلى مصفوفة
+    minPrice: "", // إضافة الحد الأدنى للسعر
+    maxPrice: "", // إضافة الحد الأقصى للسعر
   });
-  
 
   const [thumbnailImage, setThumbnailImage] = useState<ProjectImage | null>(
     null,
@@ -105,8 +104,7 @@ export default function AddProjectPage(): JSX.Element {
   const [galleryImages, setGalleryImages] = useState<ProjectImage[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
-  const { setProjectsManagement }  = useStore();
-
+  const { setProjectsManagement } = useStore();
 
   useEffect(() => {
     setMapLoaded(true);
@@ -288,141 +286,161 @@ export default function AddProjectPage(): JSX.Element {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSaveProject = async (status: "منشور" | "مسودة" | "Pre-construction") => {
+  const handleSaveProject = async (
+    status: "منشور" | "مسودة" | "Pre-construction",
+  ) => {
     if (!validateForm()) {
       return;
     }
     setIsLoading(true);
     try {
-  // رفع الصورة الرئيسية (featured_image)
+      // رفع الصورة الرئيسية (featured_image)
       let featuredImageUrl = "";
       if (thumbnailImage) {
-        const uploadResult = await uploadSingleFile(thumbnailImage.file, 'project');
+        const uploadResult = await uploadSingleFile(
+          thumbnailImage.file,
+          "project",
+        );
         featuredImageUrl = uploadResult.url; // استخراج الـ url من الاستجابة
       }
-  
+
       // رفع صور المخططات (floorplan_images)
       let floorplanUrls = [];
       if (planImages.length > 0) {
-        const files = planImages.map(image => image.file);
-        const uploadResults = await uploadMultipleFiles(files, 'project');
-      
+        const files = planImages.map((image) => image.file);
+        const uploadResults = await uploadMultipleFiles(files, "project");
+
         // التحقق من صحة الاستجابة
         if (uploadResults && Array.isArray(uploadResults)) {
-          floorplanUrls = uploadResults.map(file => file.url);
+          floorplanUrls = uploadResults.map((file) => file.url);
           console.log("floorplanUrls", floorplanUrls);
         } else {
           console.error("Error: uploadResults is not an array", uploadResults);
         }
       }
-      
+
       let galleryUrls = [];
       if (galleryImages.length > 0) {
-        const files = galleryImages.map(image => image.file);
-        const uploadResults = await uploadMultipleFiles(files, 'project');
-      
+        const files = galleryImages.map((image) => image.file);
+        const uploadResults = await uploadMultipleFiles(files, "project");
+
         console.log("uploadResults2", uploadResults); // تحقق من الاستجابة
-      
+
         // التأكد من أن uploadResults ليس undefined أو null
         if (uploadResults && Array.isArray(uploadResults)) {
-          galleryUrls = uploadResults.map(file => file.url); // استخراج الروابط
+          galleryUrls = uploadResults.map((file) => file.url); // استخراج الروابط
           console.log("galleryUrls", galleryUrls);
         } else {
-          console.error("Error: uploadResults does not contain files array", uploadResults);
+          console.error(
+            "Error: uploadResults does not contain files array",
+            uploadResults,
+          );
         }
       }
-      
+
       let minPrice = 0;
       let maxPrice = 0;
       if (newProject.price.includes("-")) {
-        const [min, max] = newProject.price.split("-").map(val => parseFloat(val.trim()));
+        const [min, max] = newProject.price
+          .split("-")
+          .map((val) => parseFloat(val.trim()));
         minPrice = min;
         maxPrice = max;
       } else {
         minPrice = parseFloat(newProject.price) || 0;
         maxPrice = minPrice;
       }
-  
-      const formattedDate = new Date(newProject.completionDate).toISOString().split('T')[0];
-  
+
+      const formattedDate = new Date(newProject.completionDate)
+        .toISOString()
+        .split("T")[0];
 
       // إعداد بيانات المشروع مع الروابط المستخرجة
       const projectData = {
-        "featured_image": featuredImageUrl,
-        "min_price": minPrice,
-        "max_price": maxPrice,
-        "latitude": newProject.latitude,
-        "longitude": newProject.longitude,
-        "featured": newProject.featured,
-        "complete_status": status === "منشور" ? "In Progress" : status,
-        "units": Number(newProject.units),
-        "completion_date": formattedDate,
-        "developer": newProject.developer,
-        "published": status === "منشور",
-        "contents": [
+        featured_image: featuredImageUrl,
+        min_price: minPrice,
+        max_price: maxPrice,
+        latitude: newProject.latitude,
+        longitude: newProject.longitude,
+        featured: newProject.featured,
+        complete_status: status === "منشور" ? "In Progress" : status,
+        units: Number(newProject.units),
+        completion_date: formattedDate,
+        developer: newProject.developer,
+        published: status === "منشور",
+        contents: [
           {
-            "language_id": 1,
-            "title": newProject.name,
-            "address": newProject.location,
-            "description": newProject.description,
-            "meta_keyword": "luxury, apartments, Dubai",
-            "meta_description": "Luxury apartments in Dubai with sea view and top facilities."
+            language_id: 1,
+            title: newProject.name,
+            address: newProject.location,
+            description: newProject.description,
+            meta_keyword: "luxury, apartments, Dubai",
+            meta_description:
+              "Luxury apartments in Dubai with sea view and top facilities.",
           },
           {
-            "language_id": 2,
-            "title": newProject.name,
-            "address": newProject.location,
-            "description": newProject.description,
-            "meta_keyword": "فخامة، شقق، دبي",
-            "meta_description": "شقق فاخرة في دبي بإطلالة على البحر ومرافق متميزة."
-          }
+            language_id: 2,
+            title: newProject.name,
+            address: newProject.location,
+            description: newProject.description,
+            meta_keyword: "فخامة، شقق، دبي",
+            meta_description:
+              "شقق فاخرة في دبي بإطلالة على البحر ومرافق متميزة.",
+          },
         ],
-        "gallery_images": galleryUrls,
-        "floorplan_images": floorplanUrls,
-        "specifications": [
-          { "key": "Bedrooms", "label": "Number of Bedrooms", "value": "3" },
-          { "key": "Bathrooms", "label": "Number of Bathrooms", "value": "2" },
-          { "key": "Parking", "label": "Parking Spaces", "value": "2" }
+        gallery_images: galleryUrls,
+        floorplan_images: floorplanUrls,
+        specifications: [
+          { key: "Bedrooms", label: "Number of Bedrooms", value: "3" },
+          { key: "Bathrooms", label: "Number of Bathrooms", value: "2" },
+          { key: "Parking", label: "Parking Spaces", value: "2" },
         ],
-        "types": [
+        types: [
           {
-            "language_id": 1,
-            "title": "3 BHK Apartment",
-            "min_area": 1200,
-            "max_area": 1500,
-            "min_price": 50000,
-            "max_price": 100000,
-            "unit": "sqft"
+            language_id: 1,
+            title: "3 BHK Apartment",
+            min_area: 1200,
+            max_area: 1500,
+            min_price: 50000,
+            max_price: 100000,
+            unit: "sqft",
           },
           {
-            "language_id": 2,
-            "title": "شقة 3 غرف",
-            "min_area": 1200,
-            "max_area": 1500,
-            "min_price": 50000,
-            "max_price": 100000,
-            "unit": "قدم مربع"
-          }
+            language_id: 2,
+            title: "شقة 3 غرف",
+            min_area: 1200,
+            max_area: 1500,
+            min_price: 50000,
+            max_price: 100000,
+            unit: "قدم مربع",
+          },
         ],
-        "amenities": newProject.amenities
+        amenities: newProject.amenities
           ? newProject.amenities.split(",").map((amenity) => amenity.trim())
-          : []
+          : [],
       };
-  
-      const response = await axiosInstance.post("https://taearif.com/api/projects", projectData);
-  
+
+      const response = await axiosInstance.post(
+        "https://taearif.com/api/projects",
+        projectData,
+      );
+
       const currentState = useStore.getState();
       const createdProject = response.data.data.user_project;
-      const updatedProjects = [createdProject, ...currentState.homepage.projectsManagement.projects];
+      const updatedProjects = [
+        createdProject,
+        ...currentState.homepage.projectsManagement.projects,
+      ];
       setProjectsManagement({
         projects: updatedProjects,
         pagination: {
           ...currentState.homepage.projectsManagement.pagination,
-          total: (currentState.homepage.projectsManagement.pagination?.total || 0) + 1
-
-        }
+          total:
+            (currentState.homepage.projectsManagement.pagination?.total || 0) +
+            1,
+        },
       });
-  
+
       router.push("/projects");
     } catch (error: any) {
       console.error("Error saving project:", error);

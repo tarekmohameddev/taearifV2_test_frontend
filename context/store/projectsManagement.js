@@ -26,12 +26,12 @@ module.exports = (set) => ({
         error: null,
       },
     }));
-    
+
     try {
       const response = await axiosInstance.get(
-        "https://taearif.com/api/projects"
+        "https://taearif.com/api/projects",
       );
-      
+
       set((state) => ({
         projectsManagement: {
           ...state.projectsManagement,
@@ -52,4 +52,4 @@ module.exports = (set) => ({
       }));
     }
   },
-}); 
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
@@ -12,20 +12,128 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Save, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import axiosInstance from "@/lib/axiosInstance";
+import { uploadSingleFile } from "@/utils/uploadSingle";
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
+
+
+interface AdditionalSettings {
+  theme_color: string;
+  timezone: string;
+  social_links: {
+    facebook: string;
+    twitter: string;
+  };
+}
 
 export function GeneralSettingsPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    site_name: "",
+    tagline: "",
+    description: "",
+    logo: "",
+    favicon: "",
+    maintenance_mode: false,
+    show_breadcrumb: true,
+    additional_settings: {
+      theme_color: "#FF5733",
+      timezone: "Asia/Riyadh",
+      social_links: {
+        facebook: "",
+        twitter: "",
+      },
+    } as AdditionalSettings,
+  });
+  const [tempFiles, setTempFiles] = useState<{
+    logo?: File;
+    favicon?: File;
+  }>({});
+  const getPreviewUrl = useCallback((file: File | undefined) => {
+    return file ? URL.createObjectURL(file) : "";
+  }, []);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = () => {
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await axiosInstance.get(
+          "https://taearif.com/api/content/general"
+        );
+        const settings = response.data.data.settings;
+        setFormData({
+          ...settings,
+          additional_settings: settings.additional_settings || {
+            theme_color: "#FF5733",
+            timezone: "Asia/Riyadh",
+            social_links: {
+              facebook: "",
+              twitter: "",
+            },
+          },
+        });
+      } catch (error) {
+        toast({
+          title: "خطأ في جلب البيانات",
+          description: "تعذر تحميل الإعدادات العامة",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleFileSelect = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "logo" | "favicon"
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setTempFiles((prev) => ({ ...prev, [type]: file }));
+    setFormData((prev) => ({
+      ...prev,
+      [type]: getPreviewUrl(file),
+    }));
+  };
+
+  const handleSave = async () => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const finalData = { ...formData };
+
+      if (tempFiles.logo) {
+        const result = await uploadSingleFile(tempFiles.logo, "content");
+        finalData.logo = result.url;
+      }
+
+      if (tempFiles.favicon) {
+        const result = await uploadSingleFile(tempFiles.favicon, "content");
+        finalData.favicon = result.url;
+      }
+
+      await axiosInstance.put("/content/general", finalData);
+
+      setFormData(finalData);
+      setTempFiles({});
+
       toast({
         title: "تم الحفظ بنجاح",
-        description: "تم حفظ الإعدادات العامة بنجاح",
+        description: "تم تحديث الإعدادات العامة بنجاح",
       });
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: "خطأ في الحفظ",
+        description: "تعذر حفظ التغييرات",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      router.push("/content");
+    }
   };
 
   return (
@@ -68,17 +176,32 @@ export function GeneralSettingsPage() {
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="site-name">اسم الموقع</Label>
-                  <Input id="site-name" defaultValue="موقعي الرائع" />
+                  <Input
+                    id="site-name"
+                    value={formData.site_name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, site_name: e.target.value })
+                    }
+                  />
                 </div>
                 <div>
                   <Label htmlFor="tagline">شعار الموقع</Label>
-                  <Input id="tagline" defaultValue="أفضل موقع على الإطلاق" />
+                  <Input
+                    id="tagline"
+                    value={formData.tagline}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tagline: e.target.value })
+                    }
+                  />
                 </div>
                 <div>
                   <Label htmlFor="description">وصف الموقع</Label>
                   <Textarea
                     id="description"
-                    defaultValue="هذا وصف لموقعي الرائع. سيظهر في نتائج البحث ومشاركات وسائل التواصل الاجتماعي."
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
                     هذا الوصف سيظهر في نتائج البحث ومشاركات وسائل التواصل
@@ -96,17 +219,34 @@ export function GeneralSettingsPage() {
                 <div>
                   <Label>شعار الموقع</Label>
                   <div className="mt-2 flex items-center gap-4">
-                    <div className="h-20 w-20 rounded-md border flex items-center justify-center bg-muted">
-                      <span className="text-sm text-muted-foreground">
-                        الشعار
-                      </span>
-                    </div>
+                    {formData.logo ? (
+                      <img
+                        src={formData.logo}
+                        alt="Site Logo"
+                        className="h-20 w-20 rounded-md object-contain border bg-muted"
+                      />
+                    ) : (
+                      <div className="h-20 w-20 rounded-md border flex items-center justify-center bg-muted">
+                        <span className="text-sm text-muted-foreground">
+                          الشعار
+                        </span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      ref={logoInputRef}
+                      onChange={(e) => handleFileSelect(e, "logo")}
+                    />
                     <Button
                       variant="outline"
                       className="flex items-center gap-1"
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={isLoading}
                     >
                       <Upload className="h-4 w-4 ml-1" />
-                      رفع شعار جديد
+                      {isLoading ? "جاري الرفع..." : "رفع شعار جديد"}
                     </Button>
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground">
@@ -118,17 +258,34 @@ export function GeneralSettingsPage() {
                 <div>
                   <Label>أيقونة الموقع (Favicon)</Label>
                   <div className="mt-2 flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-md border flex items-center justify-center bg-muted">
-                      <span className="text-xs text-muted-foreground">
-                        أيقونة
-                      </span>
-                    </div>
+                    {formData.favicon ? (
+                      <img
+                        src={formData.favicon}
+                        alt="Favicon"
+                        className="h-10 w-10 rounded-md object-contain border bg-muted"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-md border flex items-center justify-center bg-muted">
+                        <span className="text-xs text-muted-foreground">
+                          أيقونة
+                        </span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      ref={faviconInputRef}
+                      onChange={(e) => handleFileSelect(e, "favicon")}
+                    />
                     <Button
                       variant="outline"
                       className="flex items-center gap-1"
+                      onClick={() => faviconInputRef.current?.click()}
+                      disabled={isLoading}
                     >
                       <Upload className="h-4 w-4 ml-1" />
-                      رفع أيقونة جديدة
+                      {isLoading ? "جاري الرفع..." : "رفع أيقونة جديدة"}
                     </Button>
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground">
@@ -152,7 +309,13 @@ export function GeneralSettingsPage() {
                       موقعك
                     </p>
                   </div>
-                  <Switch id="maintenance-mode" />
+                  <Switch
+                    id="maintenance-mode"
+                    checked={formData.maintenance_mode}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, maintenance_mode: checked })
+                    }
+                  />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -165,7 +328,13 @@ export function GeneralSettingsPage() {
                       التنقل
                     </p>
                   </div>
-                  <Switch id="show-breadcrumb" defaultChecked />
+                  <Switch
+                    id="show-breadcrumb"
+                    checked={formData.show_breadcrumb}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, show_breadcrumb: checked })
+                    }
+                  />
                 </div>
               </CardContent>
             </Card>

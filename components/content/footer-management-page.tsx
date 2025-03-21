@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
-import axiosInstance from "@/lib/axiosInstance"; 
+import axiosInstance from "@/lib/axiosInstance";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -53,9 +53,9 @@ export function FooterManagementPage() {
     const fetchFooterData = async () => {
       try {
         const response = await axiosInstance.get(
-          "https://taearif.com/api/content/footer"
+          "https://taearif.com/api/content/footer",
         );
-        console.log("get response",response)
+        console.log("get response", response);
         if (response.data.status === "success") {
           setFooterData(response.data.data.settings);
         } else {
@@ -244,9 +244,9 @@ export function FooterManagementPage() {
     try {
       const response = await axiosInstance.put(
         "https://taearif.com/api/content/footer",
-        footerData
+        footerData,
       );
-  
+
       if (response.data.status === "success") {
         toast({
           title: "تم الحفظ بنجاح",
@@ -299,7 +299,7 @@ export function FooterManagementPage() {
   if (!footerData) {
     return null;
   }
-  
+
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />

@@ -100,7 +100,7 @@ export default function AddPropertyPage() {
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -139,11 +139,11 @@ export default function AddPropertyPage() {
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: "thumbnail" | "gallery" | "floorPlans"
+    type: "thumbnail" | "gallery" | "floorPlans",
   ) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-  
+
     if (type === "thumbnail") {
       const file = files[0];
       if (!file.type.startsWith("image/")) {
@@ -199,13 +199,13 @@ export default function AddPropertyPage() {
         ],
       }));
     }
-  
+
     e.target.value = ""; // إعادة تعيين حقل الإدخال
   };
 
   const removeImage = (
     type: "thumbnail" | "gallery" | "floorPlans",
-    index?: number
+    index?: number,
   ) => {
     if (type === "thumbnail") {
       setImages((prev) => ({ ...prev, thumbnail: null }));
@@ -247,30 +247,39 @@ export default function AddPropertyPage() {
         title: "جاري حفظ العقار",
         description: "يرجى الانتظار...",
       });
-  
+
       try {
         let thumbnailUrl: string | null = null;
         let galleryUrls: string[] = [];
         let floorPlansUrls: string[] = [];
-  
+
         // رفع الصورة الرئيسية
         if (images.thumbnail) {
-          const uploadedFile = await uploadSingleFile(images.thumbnail, "property");
+          const uploadedFile = await uploadSingleFile(
+            images.thumbnail,
+            "property",
+          );
           thumbnailUrl = uploadedFile.url;
         }
-  
+
         // رفع صور المعرض
         if (images.gallery.length > 0) {
-          const uploadedFiles = await uploadMultipleFiles(images.gallery, "property");
+          const uploadedFiles = await uploadMultipleFiles(
+            images.gallery,
+            "property",
+          );
           galleryUrls = uploadedFiles.map((f) => f.url);
         }
-  
+
         // رفع مخططات الطوابق
         if (images.floorPlans.length > 0) {
-          const uploadedFiles = await uploadMultipleFiles(images.floorPlans, "property");
+          const uploadedFiles = await uploadMultipleFiles(
+            images.floorPlans,
+            "property",
+          );
           floorPlansUrls = uploadedFiles.map((f) => f.url);
         }
-  
+
         // إعداد بيانات العقار
         const propertyData = {
           title: formData.title,
@@ -293,15 +302,18 @@ export default function AddPropertyPage() {
           city_id: 1, // يمكن تعديلها حسب الحاجة
           category_id: 1, // يمكن تعديلها حسب الحاجة
         };
-  
+
         // إرسال بيانات العقار إلى الـ API
-        await axiosInstance.post("https://taearif.com/api/properties", propertyData);
-  
+        await axiosInstance.post(
+          "https://taearif.com/api/properties",
+          propertyData,
+        );
+
         toast({
           title: publish ? "تم نشر العقار بنجاح" : "تم حفظ العقار كمسودة",
           description: "تمت معالجة العقار بنجاح.",
         });
-  
+
         router.push("/properties");
       } catch (error) {
         console.error("Error submitting property:", error);
@@ -666,27 +678,27 @@ export default function AddPropertyPage() {
                 <CardContent>
                   <div className="flex flex-col md:flex-row items-center gap-6">
                     <div className="border rounded-md p-2 flex-1 w-full">
-                    <div className="flex items-center justify-center h-48 bg-muted rounded-md relative">
-  {previews.thumbnail ? (
-    <>
-      <img
-        src={previews.thumbnail}
-        alt="Property thumbnail"
-        className="h-full w-full object-cover rounded-md"
-      />
-      <Button
-        variant="destructive"
-        size="icon"
-        className="absolute top-2 right-2 h-8 w-8"
-        onClick={() => removeImage("thumbnail")}
-      >
-        <X className="h-4 w-4" />
-      </Button>
-    </>
-  ) : (
-    <ImageIcon className="h-12 w-12 text-muted-foreground" />
-  )}
-</div>
+                      <div className="flex items-center justify-center h-48 bg-muted rounded-md relative">
+                        {previews.thumbnail ? (
+                          <>
+                            <img
+                              src={previews.thumbnail}
+                              alt="Property thumbnail"
+                              className="h-full w-full object-cover rounded-md"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 h-8 w-8"
+                              onClick={() => removeImage("thumbnail")}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                        )}
+                      </div>
                     </div>
                     <div className="flex flex-col gap-4 w-full md:w-1/3">
                       <input
@@ -727,137 +739,139 @@ export default function AddPropertyPage() {
 
               {/* Property Gallery Upload */}
               <Card className="md:col-span-2">
-  <CardHeader>
-    <CardTitle>معرض صور العقار</CardTitle>
-    <CardDescription>
-      قم بتحميل صور متعددة لعرض تفاصيل العقار
-    </CardDescription>
-  </CardHeader>
-  <CardContent>
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {previews.gallery.map((preview, index) => (
-          <div
-            key={index}
-            className="border rounded-md p-2 relative"
-          >
-            <div className="h-40 bg-muted rounded-md overflow-hidden">
-              <img
-                src={preview}
-                alt={`Gallery image ${index + 1}`}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute top-4 right-4 h-6 w-6"
-              onClick={() => removeImage("gallery", index)}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-            <p className="text-xs text-center mt-2 truncate">
-              صورة {index + 1}
-            </p>
-          </div>
-        ))}
-        <div
-          className="border rounded-md p-2 h-[11rem] flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
-          onClick={() => triggerFileInput("gallery")}
-        >
-          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-            {uploading.gallery ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <ImageIcon className="h-5 w-5 text-muted-foreground" />
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground">
-            إضافة صورة
-          </p>
-        </div>
-      </div>
-      <input
-        ref={galleryInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={(e) => handleFileChange(e, "gallery")}
-      />
-      <p className="text-sm text-muted-foreground">
-        يمكنك رفع صور بصيغة JPG أو PNG. الحد الأقصى لعدد الصور هو 10.
-      </p>
-    </div>
-  </CardContent>
-</Card>
+                <CardHeader>
+                  <CardTitle>معرض صور العقار</CardTitle>
+                  <CardDescription>
+                    قم بتحميل صور متعددة لعرض تفاصيل العقار
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {previews.gallery.map((preview, index) => (
+                        <div
+                          key={index}
+                          className="border rounded-md p-2 relative"
+                        >
+                          <div className="h-40 bg-muted rounded-md overflow-hidden">
+                            <img
+                              src={preview}
+                              alt={`Gallery image ${index + 1}`}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-4 right-4 h-6 w-6"
+                            onClick={() => removeImage("gallery", index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                          <p className="text-xs text-center mt-2 truncate">
+                            صورة {index + 1}
+                          </p>
+                        </div>
+                      ))}
+                      <div
+                        className="border rounded-md p-2 h-[11rem] flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => triggerFileInput("gallery")}
+                      >
+                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                          {uploading.gallery ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          إضافة صورة
+                        </p>
+                      </div>
+                    </div>
+                    <input
+                      ref={galleryInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e, "gallery")}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      يمكنك رفع صور بصيغة JPG أو PNG. الحد الأقصى لعدد الصور هو
+                      10.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Floor Plans Upload */}
               <Card className="md:col-span-2">
-  <CardHeader>
-    <CardTitle>مخططات الطوابق</CardTitle>
-    <CardDescription>
-      قم بتحميل مخططات الطوابق والتصاميم الهندسية للعقار
-    </CardDescription>
-  </CardHeader>
-  <CardContent>
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {previews.floorPlans.map((preview, index) => (
-          <div
-            key={index}
-            className="border rounded-md p-2 relative"
-          >
-            <div className="h-40 bg-muted rounded-md overflow-hidden">
-              <img
-                src={preview}
-                alt={`Floor plan ${index + 1}`}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute top-4 right-4 h-6 w-6"
-              onClick={() => removeImage("floorPlans", index)}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-            <p className="text-xs text-center mt-2 truncate">
-              مخطط {index + 1}
-            </p>
-          </div>
-        ))}
-        <div
-          className="border rounded-md p-2 h-[11rem] flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
-          onClick={() => triggerFileInput("floorPlans")}
-        >
-          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-            {uploading.floorPlans ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Plus className="h-5 w-5 text-muted-foreground" />
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground">
-            إضافة مخطط
-          </p>
-        </div>
-      </div>
-      <input
-        ref={floorPlansInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={(e) => handleFileChange(e, "floorPlans")}
-      />
-      <p className="text-sm text-muted-foreground">
-        يمكنك رفع مخططات بصيغة JPG أو PNG. الحد الأقصى لعدد المخططات هو 5.
-      </p>
-    </div>
-  </CardContent>
-</Card>
+                <CardHeader>
+                  <CardTitle>مخططات الطوابق</CardTitle>
+                  <CardDescription>
+                    قم بتحميل مخططات الطوابق والتصاميم الهندسية للعقار
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {previews.floorPlans.map((preview, index) => (
+                        <div
+                          key={index}
+                          className="border rounded-md p-2 relative"
+                        >
+                          <div className="h-40 bg-muted rounded-md overflow-hidden">
+                            <img
+                              src={preview}
+                              alt={`Floor plan ${index + 1}`}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-4 right-4 h-6 w-6"
+                            onClick={() => removeImage("floorPlans", index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                          <p className="text-xs text-center mt-2 truncate">
+                            مخطط {index + 1}
+                          </p>
+                        </div>
+                      ))}
+                      <div
+                        className="border rounded-md p-2 h-[11rem] flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => triggerFileInput("floorPlans")}
+                      >
+                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                          {uploading.floorPlans ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            <Plus className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          إضافة مخطط
+                        </p>
+                      </div>
+                    </div>
+                    <input
+                      ref={floorPlansInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e, "floorPlans")}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      يمكنك رفع مخططات بصيغة JPG أو PNG. الحد الأقصى لعدد
+                      المخططات هو 5.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Final Card with Submit Buttons */}
               <Card className="md:col-span-2">

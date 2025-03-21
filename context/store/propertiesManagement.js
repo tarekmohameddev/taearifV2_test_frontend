@@ -39,7 +39,9 @@ module.exports = (set) => ({
           thumbnail: property.featured_image,
           listingType: property.type === "residential" ? "للبيع" : "للإيجار",
           status: property.status === 1 ? "منشور" : "مسودة",
-          lastUpdated: new Date(property.updated_at).toLocaleDateString("ar-AE"),
+          lastUpdated: new Date(property.updated_at).toLocaleDateString(
+            "ar-AE",
+          ),
         }),
       );
 

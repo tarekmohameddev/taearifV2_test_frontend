@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { uploadSingleFile } from '@/utils/uploadSingle';
-import { uploadMultipleFiles } from '@/utils/uploadMultiple';
+import { uploadSingleFile } from "@/utils/uploadSingle";
+import { uploadMultipleFiles } from "@/utils/uploadMultiple";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,9 @@ export default function AddPropertyPage() {
     longitude: 55.2708,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [thumbnailImage, setThumbnailImage] = useState<PropertyImage | null>(null);
+  const [thumbnailImage, setThumbnailImage] = useState<PropertyImage | null>(
+    null,
+  );
   const [galleryImages, setGalleryImages] = useState<PropertyImage[]>([]);
   const [floorPlanImages, setFloorPlanImages] = useState<PropertyImage[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false); // إضافة حالة التحميل
@@ -77,7 +79,9 @@ export default function AddPropertyPage() {
   const floorPlanInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -136,7 +140,9 @@ export default function AddPropertyPage() {
           setGalleryImages((prev) => [
             ...prev,
             {
-              id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+              id:
+                Date.now().toString() +
+                Math.random().toString(36).substring(2, 9),
               file,
               url: event.target.result.toString(),
             },
@@ -157,7 +163,9 @@ export default function AddPropertyPage() {
           setFloorPlanImages((prev) => [
             ...prev,
             {
-              id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+              id:
+                Date.now().toString() +
+                Math.random().toString(36).substring(2, 9),
               file,
               url: event.target.result.toString(),
             },
@@ -193,7 +201,8 @@ export default function AddPropertyPage() {
     if (!formData.bedrooms) newErrors.bedrooms = "عدد غرف النوم مطلوب";
     if (!formData.bathrooms) newErrors.bathrooms = "عدد الحمامات مطلوب";
     if (!formData.size) newErrors.size = "مساحة العقار مطلوبة";
-    if (!thumbnailImage) newErrors.thumbnail = "صورة رئيسية واحدة على الأقل مطلوبة";
+    if (!thumbnailImage)
+      newErrors.thumbnail = "صورة رئيسية واحدة على الأقل مطلوبة";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -207,17 +216,20 @@ export default function AddPropertyPage() {
       // رفع الصورة الرئيسية
       let featuredImageUrl = "";
       if (thumbnailImage) {
-        const uploadResult = await uploadSingleFile(thumbnailImage.file, 'properties');
+        const uploadResult = await uploadSingleFile(
+          thumbnailImage.file,
+          "properties",
+        );
         featuredImageUrl = uploadResult.url; // استخراج الرابط من الاستجابة
       }
 
       // رفع صور المعرض
       let galleryUrls: string[] = [];
       if (galleryImages.length > 0) {
-        const files = galleryImages.map(image => image.file);
-        const uploadResults = await uploadMultipleFiles(files, 'properties');
+        const files = galleryImages.map((image) => image.file);
+        const uploadResults = await uploadMultipleFiles(files, "properties");
         if (uploadResults && Array.isArray(uploadResults)) {
-          galleryUrls = uploadResults.map(file => file.url); // استخراج الروابط
+          galleryUrls = uploadResults.map((file) => file.url); // استخراج الروابط
         } else {
           console.error("Error: uploadResults is not an array", uploadResults);
           throw new Error("فشل في رفع صور المعرض");
@@ -227,10 +239,10 @@ export default function AddPropertyPage() {
       // رفع مخططات الطوابق
       let floorPlanningUrls: string[] = [];
       if (floorPlanImages.length > 0) {
-        const files = floorPlanImages.map(image => image.file);
-        const uploadResults = await uploadMultipleFiles(files, 'properties');
+        const files = floorPlanImages.map((image) => image.file);
+        const uploadResults = await uploadMultipleFiles(files, "properties");
         if (uploadResults && Array.isArray(uploadResults)) {
-          floorPlanningUrls = uploadResults.map(file => file.url); // استخراج الروابط
+          floorPlanningUrls = uploadResults.map((file) => file.url); // استخراج الروابط
         } else {
           console.error("Error: uploadResults is not an array", uploadResults);
           throw new Error("فشل في رفع مخططات الطوابق");
@@ -261,7 +273,10 @@ export default function AddPropertyPage() {
       };
 
       // إرسال الطلب إلى API
-      const response = await axiosInstance.post("https://taearif.com/api/properties", requestData);
+      const response = await axiosInstance.post(
+        "https://taearif.com/api/properties",
+        requestData,
+      );
 
       console.log("Property created:", response.data);
       router.push("/properties");
@@ -305,10 +320,7 @@ export default function AddPropertyPage() {
                 >
                   {isLoading ? "جاري الحفظ..." : "حفظ كمسودة"}
                 </Button>
-                <Button
-                  onClick={() => handleSubmit(true)}
-                  disabled={isLoading}
-                >
+                <Button onClick={() => handleSubmit(true)} disabled={isLoading}>
                   {isLoading ? "جاري النشر..." : "نشر العقار"}
                 </Button>
               </div>

@@ -3,14 +3,15 @@ import axiosInstance from "@/lib/axiosInstance";
 module.exports = (set) => ({
   setupProgressData: null,
   isSetupProgressDataUpdated: false,
-  
-  setSetupProgressData: (data) => set((state) => ({
-    homepage: {
-      ...state.homepage,
-      setupProgressData: data,
-      isSetupProgressDataUpdated: true,
-    },
-  })),
+
+  setSetupProgressData: (data) =>
+    set((state) => ({
+      homepage: {
+        ...state.homepage,
+        setupProgressData: data,
+        isSetupProgressDataUpdated: true,
+      },
+    })),
 
   fetchSetupProgressData: async () => {
     set({ loading: true });
