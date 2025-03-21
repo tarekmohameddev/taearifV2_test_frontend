@@ -1,8 +1,8 @@
+// context/Store.js
 const { create } = require("zustand");
 const axiosInstance = require("@/lib/axiosInstance");
 
-const useStore = create((set) => {
-  // تعريف المودويلات داخل دالة create لكي يتم تمرير set إليها
+const useStore = create((set, get) => {
   return {
     loading: false,
     homepage: {
@@ -21,6 +21,7 @@ const useStore = create((set) => {
     ...require("./store/recentActivity")(set),
     ...require("./store/projectsManagement")(set),
     ...require("./store/propertiesManagement")(set),
+    ...require("./store/blogManagement")(set, get),
   };
 });
 

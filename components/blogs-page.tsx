@@ -1,3 +1,4 @@
+// components/blogs-page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/pagination";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import axiosInstance from "@/lib/axiosInstance";
+import useStore from "@/context/Store"; // استيراد الـ store
 
 // تعريف الواجهات (Interfaces) للمدونة
 interface Author {
@@ -65,14 +66,6 @@ export interface IPagination {
   to: number;
 }
 
-interface BlogApiResponse {
-  status: string;
-  data: {
-    posts: IBlogPost[];
-    pagination: IPagination;
-  };
-}
-
 // دالة لتحويل التاريخ إلى تنسيق عربي مبسط
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -95,32 +88,24 @@ const getImageUrl = (url: string): string => {
 export default function BlogsPage(): JSX.Element {
   const [activeTab, setActiveTab] = useState<string>("blog");
   const router = useRouter();
-  const [posts, setPosts] = useState<IBlogPost[]>([]);
-  const [pagination, setPagination] = useState<IPagination | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+  blogsData: {
+    posts,
+    pagination,
+    isBlogsFetched, 
+    loading,
+    error,
+  },
+  fetchBlogs,
+  setBlogsData,
+} = useStore();
 
-  // جلب بيانات المدونة من الـ API
+  // جلب البيانات مرة واحدة فقط إذا لم تكن قد جُلبت
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setLoading(true);
-        const response = await axiosInstance.get<BlogApiResponse>(
-          "https://taearif.com/api/blogs",
-        );
-        console.log("Fetched posts:", response.data);
-        setPosts(response.data.data.posts);
-        setPagination(response.data.data.pagination);
-      } catch (err: any) {
-        console.error("Error fetching blogs:", err);
-        setError(err.message || "حدث خطأ أثناء جلب بيانات المدونة");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPosts();
-  }, []);
+    if (!isBlogsFetched) {
+      fetchBlogs(); // استدعاء جلب البيانات إذا لم تكن قد جُلبت
+    }
+  }, [fetchBlogs, isBlogsFetched]);
 
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
