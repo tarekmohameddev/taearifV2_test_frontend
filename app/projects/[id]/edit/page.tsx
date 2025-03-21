@@ -71,7 +71,9 @@ interface INewProject {
   longitude: number;
   amenities: string; // مدخل نصي للمرافق، مفصول بفواصل
 }
-
+export const metadata = {
+  title: "Project Edit",
+};
 export default function AddProjectPage(): JSX.Element {
   const router = useRouter();
   const { id } = useParams();

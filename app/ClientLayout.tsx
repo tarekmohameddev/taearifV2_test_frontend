@@ -31,7 +31,7 @@ export default function ClientLayout({
 
   if (pathname !== "/login" && pathname !== "/register") {
     if (!UserIslogged) {
-      return <> </>;
+      return <></>;
     }
   }
 

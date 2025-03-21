@@ -1,5 +1,6 @@
 "use client";
 import CustomTitle from '@/components/CustomTitle';
+import Head from 'next/head';
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Button } from "@/components/ui/button";
@@ -306,7 +307,6 @@ const saveChanges = async () => {
 
   return (
     <div className="flex min-h-screen flex-col">
-          <CustomTitle title="تذييل الصفحة" />
       <DashboardHeader />
       <div className="flex flex-1">
         <EnhancedSidebar activeTab="content" setActiveTab={() => {}} />

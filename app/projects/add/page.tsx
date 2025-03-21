@@ -38,7 +38,9 @@ import { EnhancedSidebar } from "@/components/enhanced-sidebar";
 import dynamic from "next/dynamic";
 import axiosInstance from "@/lib/axiosInstance";
 import useStore from "@/context/Store"; // أضف هذا الاستيراد
-
+export const metadata = {
+  title: "Project Add",
+};
 // Dynamically import the Map component to avoid SSR issues
 const MapComponent = dynamic(() => import("@/components/map-component"), {
   ssr: false,
