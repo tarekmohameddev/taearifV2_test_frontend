@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
@@ -14,47 +14,164 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, ImagePlus, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import axiosInstance from "@/lib/axiosInstance";
+
+interface BannerSettings {
+  banner_type: string;
+  static: {
+    image: string;
+    title: string;
+    subtitle: string;
+    caption: string;
+    showButton: boolean;
+    buttonText: string;
+    buttonUrl: string;
+  };
+  slider: {
+    slides: Array<{
+      id: string;
+      image: string;
+      title: string;
+      subtitle: string;
+      caption: string;
+      showButton: boolean;
+      buttonText: string;
+      buttonUrl: string;
+    }>;
+    autoplay: boolean;
+    autoplaySpeed: number;
+    showArrows: boolean;
+    showDots: boolean;
+    animation?: string;
+    overlayColor?: string;
+    textColor?: string;
+  };
+}
 
 export function BannerSectionPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [bannerType, setBannerType] = useState("static");
-  const [staticBannerImage, setStaticBannerImage] = useState(null);
+  const [bannerData, setBannerData] = useState<BannerSettings | null>(null);
   const staticFileInputRef = useRef(null);
+  const [staticBannerImage, setStaticBannerImage] = useState<string | null>(
+    bannerData?.static?.image || null,
+  );
+  const [sliders, setSliders] = useState<
+    Array<{
+      id: string;
+      title: string;
+      subtitle: string;
+      caption: string;
+      hasButton: boolean;
+      buttonText: string;
+      buttonLink: string;
+      image: string | null;
+    }>
+  >([]);
 
-  const [sliders, setSliders] = useState([
-    {
-      id: 1,
-      title: "مرحبًا بك في موقعي",
-      subtitle: "أفضل مكان للعثور على ما تحتاجه",
-      description: "هذا وصف تفصيلي سيظهر في قسم البانر من موقعك. اجعله جذابًا!",
-      hasButton: true,
-      buttonText: "ابدأ الآن",
-      buttonLink: "/contact",
-      image: null,
-    },
-    {
-      id: 2,
-      title: "خدماتنا المميزة",
-      subtitle: "نقدم أفضل الخدمات لعملائنا",
-      description:
-        "استكشف مجموعة الخدمات المتميزة التي نقدمها لتلبية احتياجاتك.",
-      hasButton: true,
-      buttonText: "استكشف خدماتنا",
-      buttonLink: "/services",
-      image: null,
-    },
-  ]);
+  useEffect(() => {
+    const fetchBannerData = async () => {
+      try {
+        const response = await axiosInstance.get("/content/banner");
+        const data = response.data.data.settings;
+        setBannerData(data);
 
-  const handleSave = () => {
+        // تعيين نوع البانر
+        setBannerType(data.banner_type);
+
+        // تعيين بيانات السلايدر
+        if (data.slider?.slides) {
+          const formattedSlides = data.slider.slides.map((slide) => ({
+            id: slide.id,
+            title: slide.title,
+            subtitle: slide.subtitle,
+            caption: slide.caption || "",
+            hasButton: slide.showButton,
+            buttonText: slide.buttonText,
+            buttonLink: slide.buttonUrl,
+            image: slide.image,
+          }));
+          setSliders(formattedSlides);
+        }
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "خطأ",
+          caption: "فشل في جلب بيانات البانر",
+        });
+      }
+    };
+
+    fetchBannerData();
+  }, []);
+
+  const handleSave = async () => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const formData = {
+        banner_type: bannerType,
+        static: {
+          enabled: bannerType === "static",
+          image: bannerData?.static?.image || "",
+          title: bannerData?.static?.title || "",
+          subtitle: bannerData?.static?.subtitle || "",
+          caption: bannerData?.static?.caption || "",
+          showButton: bannerData?.static?.showButton || false,
+          buttonText: bannerData?.static?.buttonText || "",
+          buttonUrl: bannerData?.static?.buttonUrl || "",
+          buttonStyle: bannerData?.static?.buttonStyle || "primary",
+          textAlignment: bannerData?.static?.textAlignment || "center",
+          overlayColor:
+            bannerData?.static?.overlayColor || "rgba(0, 0, 0, 0.5)",
+          textColor: bannerData?.static?.textColor || "#ffffff",
+        },
+        slider: {
+          enabled: bannerType === "slider",
+          slides: sliders.map((slide) => ({
+            id: slide.id,
+            image: slide.image || "",
+            title: slide.title,
+            subtitle: slide.subtitle,
+            caption: slide.caption || "",
+            showButton: slide.hasButton,
+            buttonText: slide.buttonText,
+            buttonUrl: slide.buttonLink,
+            buttonStyle: "primary",
+            textAlignment: "center",
+            enabled: true,
+          })),
+          autoplay: bannerData?.slider?.autoplay || false,
+          autoplaySpeed: bannerData?.slider?.autoplaySpeed || 5000,
+          showArrows: bannerData?.slider?.showArrows || false,
+          showDots: bannerData?.slider?.showDots || false,
+          animation: bannerData?.slider?.animation || "fade",
+          overlayColor:
+            bannerData?.slider?.overlayColor || "rgba(0, 0, 0, 0.6)",
+          textColor: bannerData?.slider?.textColor || "#ffffff",
+        },
+        common: {
+          height: "large",
+          showSearchBox: true,
+          searchBoxPosition: "center",
+          responsive: true,
+          fullWidth: true,
+        },
+      };
+
+      await axiosInstance.post("/content/banner", formData);
       toast({
         title: "تم الحفظ بنجاح",
-        description: "تم حفظ إعدادات البانر بنجاح",
+        caption: "تم تحديث إعدادات البانر بنجاح",
       });
-    }, 1000);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        caption: "فشل في حفظ الإعدادات",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const addNewSlide = () => {
@@ -66,7 +183,7 @@ export function BannerSectionPage() {
         id: newId,
         title: "عنوان جديد",
         subtitle: "عنوان فرعي جديد",
-        description: "وصف الشريحة الجديدة",
+        caption: "وصف الشريحة الجديدة",
         hasButton: true,
         buttonText: "اضغط هنا",
         buttonLink: "/",
@@ -210,7 +327,16 @@ export function BannerSectionPage() {
                     <Label htmlFor="banner-title">عنوان البانر</Label>
                     <Input
                       id="banner-title"
-                      defaultValue="مرحبًا بك في موقعي"
+                      value={bannerData?.static?.title || ""}
+                      onChange={(e) =>
+                        setBannerData((prev) => ({
+                          ...prev!,
+                          static: {
+                            ...prev!.static,
+                            title: e.target.value,
+                          },
+                        }))
+                      }
                     />
                   </div>
                   <div>
@@ -219,16 +345,35 @@ export function BannerSectionPage() {
                     </Label>
                     <Input
                       id="banner-subtitle"
-                      defaultValue="أفضل مكان للعثور على ما تحتاجه"
+                      value={bannerData?.static?.subtitle || ""}
+                      onChange={(e) =>
+                        setBannerData((prev) => ({
+                          ...prev!,
+                          static: {
+                            ...prev!.static,
+                            subtitle: e.target.value,
+                          },
+                        }))
+                      }
                     />
                   </div>
                   <div>
-                    <Label htmlFor="banner-description">وصف البانر</Label>
+                    <Label htmlFor="banner-caption">وصف البانر</Label>
                     <Textarea
-                      id="banner-description"
-                      defaultValue="هذا وصف تفصيلي سيظهر في قسم البانر من موقعك. اجعله جذابًا!"
+                      id="banner-caption"
+                      value={bannerData?.static?.caption || ""}
+                      onChange={(e) =>
+                        setBannerData((prev) => ({
+                          ...prev!,
+                          static: {
+                            ...prev!.static,
+                            caption: e.target.value,
+                          },
+                        }))
+                      } // تم إصلاح الأقواس هنا
                     />
                   </div>
+
                   <div>
                     <Label>صورة البانر</Label>
                     <input
@@ -282,15 +427,53 @@ export function BannerSectionPage() {
                         عرض زر دعوة للعمل في البانر
                       </p>
                     </div>
-                    <Switch id="show-cta" defaultChecked />
+                    <Switch
+                      id="show-cta"
+                      checked={bannerData?.static?.showButton || false}
+                      onCheckedChange={(checked) =>{
+                        console.log(checked)
+                        setBannerData((prev) => ({
+                          ...prev!,
+                          static: {
+                            ...prev!.static,
+                            showButton: checked,
+                          }
+                          }))
+                      }}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="cta-text">نص الزر</Label>
-                    <Input id="cta-text" defaultValue="ابدأ الآن" />
+                    <Input
+                      id="cta-text"
+                      value={bannerData?.static?.buttonText || ""}
+                      onChange={(e) =>
+                        setBannerData((prev) => ({
+                          ...prev!,
+                          static: {
+                            ...prev!.static,
+                            buttonText: e.target.value,
+                          },
+                        }))
+                      }
+                    />
                   </div>
+
                   <div>
                     <Label htmlFor="cta-link">رابط الزر</Label>
-                    <Input id="cta-link" defaultValue="/contact" />
+                    <Input
+                      id="cta-link"
+                      value={bannerData?.static?.buttonUrl || ""}
+                      onChange={(e) =>
+                        setBannerData((prev) => ({
+                          ...prev!,
+                          static: {
+                            ...prev!.static,
+                            buttonUrl: e.target.value,
+                          },
+                        }))
+                      }
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -370,18 +553,14 @@ export function BannerSectionPage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor={`slide-description-${slide.id}`}>
+                            <Label htmlFor={`slide-caption-${slide.id}`}>
                               وصف الشريحة
                             </Label>
                             <Textarea
-                              id={`slide-description-${slide.id}`}
-                              value={slide.description}
+                              id={`slide-caption-${slide.id}`}
+                              value={slide.caption}
                               onChange={(e) =>
-                                updateSlide(
-                                  slide.id,
-                                  "description",
-                                  e.target.value,
-                                )
+                                updateSlide(slide.id, "caption", e.target.value)
                               }
                             />
                           </div>
@@ -448,8 +627,9 @@ export function BannerSectionPage() {
                             <Switch
                               id={`slide-show-button-${slide.id}`}
                               checked={slide.hasButton}
-                              onCheckedChange={(checked) =>
-                                updateSlide(slide.id, "hasButton", checked)
+                              onCheckedChange={(checked) =>{
+
+                                updateSlide(slide.id, "hasButton", checked)}
                               }
                             />
                           </div>
@@ -511,7 +691,19 @@ export function BannerSectionPage() {
                           تغيير الشرائح تلقائيًا
                         </p>
                       </div>
-                      <Switch id="auto-play" defaultChecked />
+                      <Switch
+                        id="auto-play"
+                        checked={bannerData?.slider?.autoplay || false}
+                        onCheckedChange={(checked) =>{
+                          setBannerData((prev) => ({
+                            ...prev!,
+                            slider: {
+                              ...prev!.slider,
+                              autoplay: checked,
+                            },
+                          }))}
+                        }
+                      />
                     </div>
                     <div>
                       <Label htmlFor="slide-interval">
@@ -520,7 +712,20 @@ export function BannerSectionPage() {
                       <Input
                         id="slide-interval"
                         type="number"
-                        defaultValue="5"
+                        value={
+                          bannerData?.slider?.autoplaySpeed
+                            ? bannerData.slider.autoplaySpeed / 1000
+                            : 5
+                        }
+                        onChange={(e) =>
+                          setBannerData((prev) => ({
+                            ...prev!,
+                            slider: {
+                              ...prev!.slider,
+                              autoplaySpeed: Number(e.target.value) * 1000,
+                            },
+                          }))
+                        }
                         min="1"
                         max="20"
                       />
@@ -535,7 +740,19 @@ export function BannerSectionPage() {
                           عرض أسهم للتنقل بين الشرائح
                         </p>
                       </div>
-                      <Switch id="show-arrows" defaultChecked />
+                      <Switch
+                        id="show-arrows"
+                        checked={bannerData?.slider?.showArrows || false}
+                        onCheckedChange={(checked) =>
+                          setBannerData((prev) => ({
+                            ...prev!,
+                            slider: {
+                              ...prev!.slider,
+                              showArrows: checked,
+                            },
+                          }))
+                        }
+                      />
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
@@ -544,7 +761,19 @@ export function BannerSectionPage() {
                           عرض نقاط للتنقل بين الشرائح
                         </p>
                       </div>
-                      <Switch id="show-dots" defaultChecked />
+                      <Switch
+                        id="show-dots"
+                        checked={bannerData?.slider?.showDots || false}
+                        onCheckedChange={(checked) =>
+                          setBannerData((prev) => ({
+                            ...prev!,
+                            slider: {
+                              ...prev!.slider,
+                              showDots: checked,
+                            },
+                          }))
+                        }
+                      />
                     </div>
                   </CardContent>
                 </Card>

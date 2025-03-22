@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Bell,
@@ -55,7 +56,7 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
   const handleLogout = async () => {
     try {
       console.log("userData1 on dashboard-header", userData);
-      await useAuthStore.getState().logout(); 
+      await useAuthStore.getState().logout();
     } catch (error) {
       console.error(error);
     }
@@ -79,97 +80,97 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
                   <span className="text-lg font-semibold ">لوحة التحكم</span>
                 </div>
                 <div className="px-3">
-        <TooltipProvider delayDuration={300}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 hover:border-primary text-foreground transition-all duration-200"
-                onClick={() =>
-                  window.open(
-                    `https://${useAuthStore.getState().userData?.username}.taearif.com`,
-                    "_blank",
-                  )
-                }
-              >
-                <ExternalLink className="h-4 w-4 text-primary" />
-                {<span>معاينة الموقع</span>}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>فتح الموقع في نافذة جديدة</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full justify-start gap-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 hover:border-primary text-foreground transition-all duration-200"
+                          onClick={() =>
+                            window.open(
+                              `https://${useAuthStore.getState().userData?.username}.taearif.com`,
+                              "_blank",
+                            )
+                          }
+                        >
+                          <ExternalLink className="h-4 w-4 text-primary" />
+                          {<span>معاينة الموقع</span>}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>فتح الموقع في نافذة جديدة</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <div className="flex-1 overflow-auto py-2">
                   <nav className="grid gap-1 px-2">
-                  {[
-    {
-      id: "dashboard",
-      label: "لوحة التحكم",
-      description: "نظرة عامة على الموقع",
-      icon: Home,
-      path: "/",
-    },
-    {
-      id: "content",
-      label: "إدارة المحتوى",
-      description: "إدارة محتوى موقعك",
-      icon: FileText,
-      path: "/content",
-    },
-    {
-      id: "blog",
-      label: "المدونة",
-      description: "إدارة مدونتك",
-      icon: FileText,
-      path: "/blog",
-    },
-    {
-      id: "projects",
-      label: "المشاريع",
-      description: "إدارة مشاريعك",
-      icon: Building2,
-      path: "/projects",
-    },
-    {
-      id: "properties",
-      label: "العقارات",
-      description: "إدارة عقاراتك",
-      icon: Home,
-      path: "/properties",
-    },
-    {
-      id: "customers",
-      label: "العملاء",
-      description: "إدارة عملائك",
-      icon: Users,
-      path: "/customers",
-    },
-    {
-      id: "messages",
-      label: "الرسائل",
-      description: "عرض رسائلك",
-      icon: MessageSquare,
-      path: "/messages",
-    },
-    {
-      id: "apps",
-      label: "التطبيقات",
-      description: "إدارة تطبيقاتك",
-      icon: Package,
-      path: "/apps",
-    },
-    {
-      id: "settings",
-      label: "إعدادات الموقع",
-      description: "تكوين موقعك",
-      icon: Settings,
-      path: "/settings",
-    },
-  ].map((item) => (
+                    {[
+                      {
+                        id: "dashboard",
+                        label: "لوحة التحكم",
+                        description: "نظرة عامة على الموقع",
+                        icon: Home,
+                        path: "/",
+                      },
+                      {
+                        id: "content",
+                        label: "إدارة المحتوى",
+                        description: "إدارة محتوى موقعك",
+                        icon: FileText,
+                        path: "/content",
+                      },
+                      {
+                        id: "blog",
+                        label: "المدونة",
+                        description: "إدارة مدونتك",
+                        icon: FileText,
+                        path: "/blog",
+                      },
+                      {
+                        id: "projects",
+                        label: "المشاريع",
+                        description: "إدارة مشاريعك",
+                        icon: Building2,
+                        path: "/projects",
+                      },
+                      {
+                        id: "properties",
+                        label: "العقارات",
+                        description: "إدارة عقاراتك",
+                        icon: Home,
+                        path: "/properties",
+                      },
+                      // {
+                      //   id: "customers",
+                      //   label: "العملاء",
+                      //   description: "إدارة عملائك",
+                      //   icon: Users,
+                      //   path: "/customers",
+                      // },
+                      // {
+                      //   id: "messages",
+                      //   label: "الرسائل",
+                      //   description: "عرض رسائلك",
+                      //   icon: MessageSquare,
+                      //   path: "/messages",
+                      // },
+                      // {
+                      //   id: "apps",
+                      //   label: "التطبيقات",
+                      //   description: "إدارة تطبيقاتك",
+                      //   icon: Package,
+                      //   path: "/apps",
+                      // },
+                      // {
+                      //   id: "settings",
+                      //   label: "إعدادات الموقع",
+                      //   description: "تكوين موقعك",
+                      //   icon: Settings,
+                      //   path: "/settings",
+                      // },
+                    ].map((item) => (
                       <Button
                         key={item.id}
                         variant="ghost"
@@ -202,8 +203,13 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
         </div>
 
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Globe className="h-6 w-6 text-primary" />
-          <span className="hidden md:inline-block">تعاريف</span>
+        <Image
+  src="/logo.png" // المسار النسبي للصورة داخل مجلد public
+  alt="Logo" // نص بديل للصورة
+  width={141} // العرض المطلوب (بالبكسل)
+  height={100} // الارتفاع المطلوب (بالبكسل)
+  className="" // تطبيق نفس الأبعاد مثل الأيقونة السابقة
+/>
         </Link>
 
         <div className="hidden md:flex items-center gap-1 mr-6">

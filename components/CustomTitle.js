@@ -1,5 +1,5 @@
 // components/CustomTitle.js
-import Head from 'next/head';
+import Head from "next/head";
 
 const CustomTitle = ({ title }) => {
   return (

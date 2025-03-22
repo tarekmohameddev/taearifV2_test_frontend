@@ -245,7 +245,7 @@ export default function AddPropertyPage() {
 
   const handleSubmit = async (publish: boolean) => {
     if (validateForm()) {
-      setIsLoading(true)
+      setIsLoading(true);
       setUploading(true);
       toast({
         title: "جاري حفظ العقار",
@@ -317,26 +317,25 @@ export default function AddPropertyPage() {
           title: publish ? "تم نشر العقار بنجاح" : "تم حفظ العقار كمسودة",
           description: "تمت معالجة العقار بنجاح.",
         });
-        setIsLoading(false)
+        setIsLoading(false);
 
         const currentState = useStore.getState();
         const createdProject = response.data.data.property;
         createdProject.status = createdProject.status === 1 ? "منشور" : "مسودة";
-        console.log(`createdProject`,createdProject)
+        console.log(`createdProject`, createdProject);
         const updatedProperties = [
           createdProject,
           ...currentState.propertiesManagement.properties,
         ];
-        console.log(`updatedProperties`,updatedProperties)
+        console.log(`updatedProperties`, updatedProperties);
         setPropertiesManagement({
           properties: updatedProperties,
         });
 
-
         router.push("/properties");
       } catch (error) {
         console.error("Error submitting property:", error);
-        setIsLoading(false)
+        setIsLoading(false);
         toast({
           title: "خطأ في حفظ العقار",
           description: "حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.",
@@ -344,7 +343,7 @@ export default function AddPropertyPage() {
         });
       } finally {
         setUploading(false);
-        setIsLoading(false)
+        setIsLoading(false);
       }
     } else {
       toast({
@@ -910,10 +909,11 @@ export default function AddPropertyPage() {
                     >
                       حفظ كمسودة
                     </Button>
-                    <Button onClick={() => handleSubmit(true)}
-                  disabled={isLoading}
-                  >
-                    {isLoading ? "جاري الحفظ..." : "نشر العقار"}
+                    <Button
+                      onClick={() => handleSubmit(true)}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "جاري الحفظ..." : "نشر العقار"}
                     </Button>
                   </div>
                 </CardFooter>

@@ -13,7 +13,7 @@ const createStore = (set, get) => ({
   ...recentActivity(set),
   ...projectsManagement(set),
   ...propertiesManagement(set),
-  ...blogManagement(set, get), 
+  ...blogManagement(set, get),
 });
 
 module.exports = createStore;

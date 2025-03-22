@@ -62,7 +62,6 @@ import { EnhancedSidebar } from "@/components/enhanced-sidebar";
 import axiosInstance from "@/lib/axiosInstance";
 import useStore from "@/context/Store"; // استيراد useStore
 
-
 // مكون SkeletonPropertyCard (لن يتغير شكله)
 function SkeletonPropertyCard() {
   return (
@@ -94,15 +93,16 @@ function SkeletonPropertyCard() {
 export function PropertiesManagementPage() {
   const router = useRouter();
   const {
-    propertiesManagement: {       
+    propertiesManagement: {
       viewMode,
       priceRange,
       favorites,
       properties,
       loading,
       error,
-      isInitialized },
-      setPropertiesManagement,
+      isInitialized,
+    },
+    setPropertiesManagement,
     fetchProperties,
   } = useStore();
 
@@ -136,7 +136,7 @@ export function PropertiesManagementPage() {
         <SkeletonPropertyCard key={idx} />
       ))}
     </div>
-  ); 
+  );
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
       <DashboardHeader />
@@ -301,7 +301,7 @@ export function PropertiesManagementPage() {
                 </Dialog>
                 <Button
                   className="gap-1"
-                  onClick={() => (router.push("/properties/add"))}
+                  onClick={() => router.push("/properties/add")}
                 >
                   <Plus className="h-4 w-4" />
                   إضافة عقار
@@ -546,7 +546,11 @@ function PropertyCard({
       <div className="relative">
         <div className="aspect-[16/9] w-full overflow-hidden">
           <img
-            src={property.thumbnail || property.featured_image || "/placeholder.svg"}
+            src={
+              property.thumbnail ||
+              property.featured_image ||
+              "/placeholder.svg"
+            }
             alt={property.title}
             className="h-full w-full object-cover transition-all hover:scale-105"
           />
@@ -699,7 +703,11 @@ function PropertyListItem({
         <div className="relative sm:w-1/3 md:w-1/4">
           <div className="aspect-[16/9] sm:aspect-auto sm:h-full w-full overflow-hidden">
             <img
-              src={property.thumbnail || property.featured_image ||"/placeholder.svg"}
+              src={
+                property.thumbnail ||
+                property.featured_image ||
+                "/placeholder.svg"
+              }
               alt={property.title}
               className="h-full w-full object-cover"
             />
@@ -819,4 +827,3 @@ function PropertyListItem({
     </Card>
   );
 }
-

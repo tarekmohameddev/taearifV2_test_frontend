@@ -34,15 +34,14 @@ module.exports = (set) => ({
 
     try {
       const response = await axiosInstance.get(
-        "https://taearif.com/api/properties"
+        "https://taearif.com/api/properties",
       );
 
       const propertiesList = response.data.data.properties || [];
       const mappedProperties = propertiesList.map((property) => ({
         ...property,
         thumbnail: property.featured_image,
-        listingType:
-          property.type === "residential" ? "للبيع" : "للإيجار",
+        listingType: property.type === "residential" ? "للبيع" : "للإيجار",
         status: property.status === 1 ? "منشور" : "مسودة",
         lastUpdated: new Date(property.updated_at).toLocaleDateString("ar-AE"),
       }));

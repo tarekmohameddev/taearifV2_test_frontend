@@ -22,7 +22,7 @@ const useAuthStore = create((set, get) => ({
     if (get().IsDone === true) return;
     set({ IsDone: true, error: null });
     try {
-    const userInfoResponse = await fetch("/api/user/getUserInfo");
+      const userInfoResponse = await fetch("/api/user/getUserInfo");
 
       if (!userInfoResponse.ok) {
         throw new Error("فشل في جلب بيانات المستخدم");
@@ -30,17 +30,17 @@ const useAuthStore = create((set, get) => ({
 
       const userData = await userInfoResponse.json();
       set({ UserIslogged: true, userData });
-    set({ IsDone: false, error: null });
-  } catch (error) {
+      set({ IsDone: false, error: null });
+    } catch (error) {
       set({
         error: error.message || "خطأ في جلب بيانات المستخدم",
         UserIslogged: false,
       });
-    set({ IsDone: false, error: null });
-  } finally {
+      set({ IsDone: false, error: null });
+    } finally {
       set({ IsLoading: false });
-    set({ IsDone: false, error: null });
-  }
+      set({ IsDone: false, error: null });
+    }
   },
 
   // ! --------------login
@@ -58,9 +58,9 @@ const useAuthStore = create((set, get) => ({
       if (!externalResponse.ok) {
         const errorData = await externalResponse.json().catch(() => ({}));
         let errorMsg = errorData.message || "فشل تسجيل الدخول";
-        if(errorMsg == "Invalid credentials"){
-         errorMsg = "البريد الإلكتروني أو كلمة المرور غير صحيحة."
-      }
+        if (errorMsg == "Invalid credentials") {
+          errorMsg = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+        }
         set({ errorLogin: errorMsg });
         return { success: false, error: errorMsg };
       }

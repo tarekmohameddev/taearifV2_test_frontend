@@ -89,16 +89,10 @@ export default function BlogsPage(): JSX.Element {
   const [activeTab, setActiveTab] = useState<string>("blog");
   const router = useRouter();
   const {
-  blogsData: {
-    posts,
-    pagination,
-    isBlogsFetched, 
-    loading,
-    error,
-  },
-  fetchBlogs,
-  setBlogsData,
-} = useStore();
+    blogsData: { posts, pagination, isBlogsFetched, loading, error },
+    fetchBlogs,
+    setBlogsData,
+  } = useStore();
 
   // جلب البيانات مرة واحدة فقط إذا لم تكن قد جُلبت
   useEffect(() => {

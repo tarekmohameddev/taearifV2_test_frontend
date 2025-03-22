@@ -62,7 +62,7 @@ interface INewProject {
   location: string;
   price: string;
   status: string;
-  completionDate: string;
+  completion_date: string;
   units: number;
   developer: string;
   description: string;
@@ -89,7 +89,7 @@ export default function AddProjectPage(): JSX.Element {
     location: "",
     price: "", // سيتم استخدام min_price و max_price بدلاً منه لاحقًا
     status: "",
-    completionDate: "", // سيتم تحويله إلى completion_date في الصيغة النهائية
+    completion_date: "", // سيتم تحويله إلى completion_date في الصيغة النهائية
     units: 0,
     developer: "",
     description: "",
@@ -130,7 +130,7 @@ export default function AddProjectPage(): JSX.Element {
             location: projectData.contents[0].address,
             price: `${projectData.price_range}`,
             status: projectData.complete_status,
-            completionDate: projectData.completion_date.split("T")[0],
+            completion_date: projectData.completion_date.split("T")[0],
             units: projectData.units,
             developer: projectData.developer,
             description: projectData.contents[0].description,
@@ -356,8 +356,8 @@ export default function AddProjectPage(): JSX.Element {
     if (!newProject.status) {
       errors.status = "الحالة مطلوبة";
     }
-    if (!newProject.completionDate.trim()) {
-      errors.completionDate = "تاريخ الإنجاز مطلوب";
+    if (!newProject.completion_date.trim()) {
+      errors.completion_date = "تاريخ الإنجاز مطلوب";
     }
     if (!newProject.developer.trim()) {
       errors.developer = "المطور مطلوب";
@@ -395,7 +395,7 @@ export default function AddProjectPage(): JSX.Element {
         minPrice = parseFloat(newProject.price) || 0;
         maxPrice = minPrice;
       }
-      const formattedDate = new Date(newProject.completionDate)
+      const formattedDate = new Date(newProject.completion_date)
         .toISOString()
         .split("T")[0];
 
@@ -611,46 +611,41 @@ export default function AddProjectPage(): JSX.Element {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="status">الحالة</Label>
-                    <Select
-                      onValueChange={(value) =>
-                        handleSelectChange("status", value)
-                      }
-                    >
-                      <SelectTrigger
-                        id="status"
-                        className={formErrors.status ? "border-red-500" : ""}
-                      >
-                        <SelectValue placeholder="اختر الحالة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="منشور">منشور</SelectItem>
-                        <SelectItem value="مسودة">مسودة</SelectItem>
-                        <SelectItem value="Pre-construction">
-                          Pre-construction
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {formErrors.status && (
-                      <p className="text-xs text-red-500">
-                        {formErrors.status}
-                      </p>
-                    )}
-                  </div>
+  <Label htmlFor="status">الحالة</Label>
+  <Select
+    onValueChange={(value) => handleSelectChange("status", value)}
+  >
+    <SelectTrigger
+      id="status"
+      className={formErrors.status ? "border-red-500" : ""}
+    >
+      <SelectValue placeholder="اختر الحالة" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="قيد الإنشاء">قيد الإنشاء</SelectItem>
+      <SelectItem value="منتهي">منتهي</SelectItem>
+    </SelectContent>
+  </Select>
+  {formErrors.status && (
+    <p className="text-xs text-red-500">
+      {formErrors.status}
+    </p>
+  )}
+</div>
                   <div className="grid gap-2">
-                    <Label htmlFor="completionDate">تاريخ الإنجاز</Label>
+                    <Label htmlFor="completion_date">تاريخ الإنجاز</Label>
                     <Input
-                      id="completionDate"
+                      id="completion_date"
                       placeholder="2025"
-                      value={newProject.completionDate}
+                      value={newProject.completion_date}
                       onChange={handleInputChange}
                       className={
-                        formErrors.completionDate ? "border-red-500" : ""
+                        formErrors.completion_date ? "border-red-500" : ""
                       }
                     />
-                    {formErrors.completionDate && (
+                    {formErrors.completion_date && (
                       <p className="text-xs text-red-500">
-                        {formErrors.completionDate}
+                        {formErrors.completion_date}
                       </p>
                     )}
                   </div>

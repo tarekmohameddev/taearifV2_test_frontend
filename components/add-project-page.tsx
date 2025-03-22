@@ -79,18 +79,18 @@ export default function AddProjectPage(): JSX.Element {
     id: "",
     name: "",
     location: "",
-    price: "", 
+    price: "",
     status: "",
     completionDate: "",
     units: 0,
     developer: "",
     description: "",
     featured: false,
-    latitude: 25.2048, 
-    longitude: 55.2708, 
-    amenities: "", 
-    minPrice: "", 
-    maxPrice: "", 
+    latitude: 25.2048,
+    longitude: 55.2708,
+    amenities: "",
+    minPrice: "",
+    maxPrice: "",
   });
 
   const [thumbnailImage, setThumbnailImage] = useState<ProjectImage | null>(
@@ -431,9 +431,7 @@ export default function AddProjectPage(): JSX.Element {
         projects: updatedProjects,
         pagination: {
           ...currentState.projectsManagement.pagination,
-          total:
-            (currentState.projectsManagement.pagination?.total || 0) +
-            1,
+          total: (currentState.projectsManagement.pagination?.total || 0) + 1,
         },
       });
 
@@ -547,32 +545,27 @@ export default function AddProjectPage(): JSX.Element {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="status">الحالة</Label>
-                    <Select
-                      onValueChange={(value) =>
-                        handleSelectChange("status", value)
-                      }
-                    >
-                      <SelectTrigger
-                        id="status"
-                        className={formErrors.status ? "border-red-500" : ""}
-                      >
-                        <SelectValue placeholder="اختر الحالة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="منشور">منشور</SelectItem>
-                        <SelectItem value="مسودة">مسودة</SelectItem>
-                        <SelectItem value="Pre-construction">
-                          Pre-construction
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {formErrors.status && (
-                      <p className="text-xs text-red-500">
-                        {formErrors.status}
-                      </p>
-                    )}
-                  </div>
+  <Label htmlFor="status">الحالة</Label>
+  <Select
+    onValueChange={(value) => handleSelectChange("status", value)}
+  >
+    <SelectTrigger
+      id="status"
+      className={formErrors.status ? "border-red-500" : ""}
+    >
+      <SelectValue placeholder="اختر الحالة" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="قيد الإنشاء">قيد الإنشاء</SelectItem>
+      <SelectItem value="منتهي">منتهي</SelectItem>
+    </SelectContent>
+  </Select>
+  {formErrors.status && (
+    <p className="text-xs text-red-500">
+      {formErrors.status}
+    </p>
+  )}
+</div>
                   <div className="grid gap-2">
                     <Label htmlFor="completionDate">تاريخ الإنجاز</Label>
                     <Input

@@ -93,34 +93,34 @@ export function EnhancedSidebar({
       icon: Home,
       path: "/properties",
     },
-    {
-      id: "customers",
-      label: "العملاء",
-      description: "إدارة عملائك",
-      icon: Users,
-      path: "/customers",
-    },
-    {
-      id: "messages",
-      label: "الرسائل",
-      description: "عرض رسائلك",
-      icon: MessageSquare,
-      path: "/messages",
-    },
-    {
-      id: "apps",
-      label: "التطبيقات",
-      description: "إدارة تطبيقاتك",
-      icon: Package,
-      path: "/apps",
-    },
-    {
-      id: "settings",
-      label: "إعدادات الموقع",
-      description: "تكوين موقعك",
-      icon: Settings,
-      path: "/settings",
-    },
+    // {
+    //   id: "customers",
+    //   label: "العملاء",
+    //   description: "إدارة عملائك",
+    //   icon: Users,
+    //   path: "/customers",
+    // },
+    // {
+    //   id: "messages",
+    //   label: "الرسائل",
+    //   description: "عرض رسائلك",
+    //   icon: MessageSquare,
+    //   path: "/messages",
+    // },
+    // {
+    //   id: "apps",
+    //   label: "التطبيقات",
+    //   description: "إدارة تطبيقاتك",
+    //   icon: Package,
+    //   path: "/apps",
+    // },
+    // {
+    //   id: "settings",
+    //   label: "إعدادات الموقع",
+    //   description: "تكوين موقعك",
+    //   icon: Settings,
+    //   path: "/settings",
+    // },
   ];
 
   // Determine active tab from pathname

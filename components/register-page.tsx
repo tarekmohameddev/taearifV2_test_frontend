@@ -274,14 +274,13 @@ export function RegisterPage() {
               username: user.username,
               first_name: user.first_name,
               last_name: user.last_name,
-            }
+            },
           });
           setFormSubmitted(true);
           setTimeout(() => {
             router.push("/");
           }, 2000);
         }
-
       } catch (error) {
         if (axios.isAxiosError(error)) {
           const errorMessage = error.response?.data?.message || error.message;
@@ -309,12 +308,11 @@ export function RegisterPage() {
       setIsSubmitting(false);
     }
   };
-  
+
   // Handle previous step
   const handlePrevStep = () => {
     setCurrentStep((prev) => prev - 1);
   };
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4">
@@ -726,11 +724,11 @@ export function RegisterPage() {
                 )}
               </div>
               {errors.api && (
-                      <p className="text-red-500 text-sm flex items-center mt-1">
-                        <AlertCircle className="h-3 w-3 ml-1" />
-                        {errors.api}
-                      </p>
-                    )}
+                <p className="text-red-500 text-sm flex items-center mt-1">
+                  <AlertCircle className="h-3 w-3 ml-1" />
+                  {errors.api}
+                </p>
+              )}
             </form>
           )}
         </CardContent>

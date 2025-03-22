@@ -1,4 +1,3 @@
-
 import { WelcomeDashboard } from "@/components/welcome-dashboard";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";

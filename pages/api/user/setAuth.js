@@ -12,8 +12,8 @@ export default async function handler(req, res) {
           error: "بيانات المستخدم أو التوكن غير موجودة",
         });
       }
-      console.log(`UserToken`,UserToken)
-      console.log(`user`,user)
+      console.log(`UserToken`, UserToken);
+      console.log(`user`, user);
 
       const token1 = jwt.sign(
         {
@@ -31,14 +31,14 @@ export default async function handler(req, res) {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 30 * 24 * 60 * 60, 
+        maxAge: 30 * 24 * 60 * 60,
         path: "/",
       };
 
       const authCookie = serialize("authToken", token1, cookieOptions);
       res.setHeader("Set-Cookie", authCookie);
 
-      return res.status(200).json({ 
+      return res.status(200).json({
         success: true,
         user: {
           email: user.email,
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
           username: user.username,
           first_name: user.first_name,
           last_name: user.last_name,
-        }
+        },
       });
     } catch (error) {
       console.error("Error in setAuth:", error.message);

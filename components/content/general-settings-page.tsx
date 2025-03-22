@@ -17,7 +17,6 @@ import { uploadSingleFile } from "@/utils/uploadSingle";
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 
-
 interface AdditionalSettings {
   theme_color: string;
   timezone: string;
@@ -61,7 +60,7 @@ export function GeneralSettingsPage() {
     const fetchSettings = async () => {
       try {
         const response = await axiosInstance.get(
-          "https://taearif.com/api/content/general"
+          "https://taearif.com/api/content/general",
         );
         const settings = response.data.data.settings;
         setFormData({
@@ -88,7 +87,7 @@ export function GeneralSettingsPage() {
 
   const handleFileSelect = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: "logo" | "favicon"
+    type: "logo" | "favicon",
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
