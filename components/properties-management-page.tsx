@@ -546,7 +546,7 @@ function PropertyCard({
       <div className="relative">
         <div className="aspect-[16/9] w-full overflow-hidden">
           <img
-            src={property.thumbnail || "/placeholder.svg"}
+            src={property.thumbnail || property.featured_image || "/placeholder.svg"}
             alt={property.title}
             className="h-full w-full object-cover transition-all hover:scale-105"
           />
@@ -699,7 +699,7 @@ function PropertyListItem({
         <div className="relative sm:w-1/3 md:w-1/4">
           <div className="aspect-[16/9] sm:aspect-auto sm:h-full w-full overflow-hidden">
             <img
-              src={property.thumbnail || "/placeholder.svg"}
+              src={property.thumbnail || property.featured_image ||"/placeholder.svg"}
               alt={property.title}
               className="h-full w-full object-cover"
             />

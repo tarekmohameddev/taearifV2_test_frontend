@@ -39,6 +39,7 @@ import dynamic from "next/dynamic";
 import axiosInstance from "@/lib/axiosInstance";
 import { uploadSingleFile } from "@/utils/uploadSingle";
 import { uploadMultipleFiles } from "@/utils/uploadMultiple";
+import useStore from "@/context/Store";
 
 // Dynamically import the MapComponent to avoid SSR issues with Leaflet
 const MapComponent = dynamic(() => import("@/components/map-component"), {
@@ -56,6 +57,7 @@ const MapComponent = dynamic(() => import("@/components/map-component"), {
 export default function AddPropertyPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+  const { setPropertiesManagement } = useStore();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -306,7 +308,7 @@ export default function AddPropertyPage() {
         };
 
         // إرسال بيانات العقار إلى الـ API
-        await axiosInstance.post(
+        let response = await axiosInstance.post(
           "https://taearif.com/api/properties",
           propertyData,
         );
@@ -316,6 +318,20 @@ export default function AddPropertyPage() {
           description: "تمت معالجة العقار بنجاح.",
         });
         setIsLoading(false)
+
+        const currentState = useStore.getState();
+        const createdProject = response.data.data.property;
+        createdProject.status = createdProject.status === 1 ? "منشور" : "مسودة";
+        console.log(`createdProject`,createdProject)
+        const updatedProperties = [
+          createdProject,
+          ...currentState.propertiesManagement.properties,
+        ];
+        console.log(`updatedProperties`,updatedProperties)
+        setPropertiesManagement({
+          properties: updatedProperties,
+        });
+
 
         router.push("/properties");
       } catch (error) {

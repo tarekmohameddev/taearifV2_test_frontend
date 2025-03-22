@@ -22,7 +22,7 @@ const useAuthStore = create((set, get) => ({
     if (get().IsDone === true) return;
     set({ IsDone: true, error: null });
     try {
-      const userInfoResponse = await fetch("/api/user/getUserInfo");
+    const userInfoResponse = await fetch("/api/user/getUserInfo");
 
       if (!userInfoResponse.ok) {
         throw new Error("فشل في جلب بيانات المستخدم");
@@ -55,7 +55,6 @@ const useAuthStore = create((set, get) => ({
         },
         body: JSON.stringify({ email, password }),
       });
-
       if (!externalResponse.ok) {
         const errorData = await externalResponse.json().catch(() => ({}));
         let errorMsg = errorData.message || "فشل تسجيل الدخول";
@@ -68,7 +67,6 @@ const useAuthStore = create((set, get) => ({
 
       const { user, token: UserToken } = await externalResponse.json();
 
-      // إرسال البيانات إلى المسار الجديد لإنشاء JWT وتعيين الكوكيز
       const setAuthResponse = await fetch("/api/user/setAuth", {
         method: "POST",
         headers: {
@@ -90,8 +88,6 @@ const useAuthStore = create((set, get) => ({
         set({ errorLogin: errorMsg });
         return { success: false, error: errorMsg };
       }
-
-      // تحديث حالة المستخدم بعد النجاح
       const safeUserData = {
         email: user.email,
         token: UserToken,

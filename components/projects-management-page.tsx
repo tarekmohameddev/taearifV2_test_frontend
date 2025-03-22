@@ -360,7 +360,8 @@ function ProjectCard({ project }: { project: IProject }) {
         </div>
       </CardContent>
       <CardFooter className="flex gap-2 p-4 pt-0">
-        <Button variant="outline" size="sm" className="w-full gap-1">
+        <Button variant="outline" size="sm" className="w-full gap-1"
+        onClick={() => router.push("/projects/" + project.id + "/edit")}>
           <Edit className="h-3.5 w-3.5" />
           تعديل
         </Button>

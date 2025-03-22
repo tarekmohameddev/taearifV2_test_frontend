@@ -5,6 +5,7 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import useAuthStore from "@/context/AuthContext";
 import Link from "next/link";
 import {
   Eye,
@@ -264,6 +265,17 @@ export function RegisterPage() {
 
         console.log("✅ Auth token set successfully");
         if (setAuthResponse.ok) {
+          await useAuthStore.getState().fetchUserData();
+          useAuthStore.setState({
+            UserIslogged: true,
+            userData: {
+              email: user.email,
+              token: UserToken,
+              username: user.username,
+              first_name: user.first_name,
+              last_name: user.last_name,
+            }
+          });
           setFormSubmitted(true);
           setTimeout(() => {
             router.push("/");

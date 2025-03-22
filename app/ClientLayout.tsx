@@ -1,23 +1,16 @@
 "use client";
-import React from "react";
+import { useEffect,useState } from "react";
 import useAuthStore from "@/context/AuthContext";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
-export default function ClientLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const [isMounted, setIsMounted] = useState(false);
-  const fetchUserData = useAuthStore((state) => state.fetchUserData);
+    const fetchUserData = useAuthStore((state) => state.fetchUserData);
   const UserIslogged = useAuthStore((state) => state.UserIslogged);
   const IsLoading = useAuthStore((state) => state.IsLoading);
 
-  // عند التركيب (mount)، نقوم بجلب بيانات المستخدم
   useEffect(() => {
     setIsMounted(true);
     fetchUserData();
