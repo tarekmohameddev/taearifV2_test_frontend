@@ -41,7 +41,6 @@ import { uploadSingleFile } from "@/utils/uploadSingle";
 import { uploadMultipleFiles } from "@/utils/uploadMultiple";
 import useStore from "@/context/Store";
 
-// Dynamically import the MapComponent to avoid SSR issues with Leaflet
 const MapComponent = dynamic(() => import("@/components/map-component"), {
   ssr: false,
   loading: () => (
@@ -55,6 +54,7 @@ const MapComponent = dynamic(() => import("@/components/map-component"), {
 });
 
 export default function AddPropertyPage() {
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const { setPropertiesManagement } = useStore();
@@ -71,8 +71,8 @@ export default function AddPropertyPage() {
     features: "",
     status: "draft",
     featured: false,
-    latitude: 25.2048, // Default latitude (Dubai)
-    longitude: 55.2708, // Default longitude (Dubai)
+    latitude: 24.766316905850978,
+    longitude: 46.73579692840576,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [images, setImages] = useState<{
@@ -95,7 +95,6 @@ export default function AddPropertyPage() {
   });
   const [uploading, setUploading] = useState(false);
 
-  // Refs for file inputs
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const floorPlansInputRef = useRef<HTMLInputElement>(null);
@@ -108,7 +107,6 @@ export default function AddPropertyPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear error when field is edited
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -244,6 +242,8 @@ export default function AddPropertyPage() {
   };
 
   const handleSubmit = async (publish: boolean) => {
+    setSubmitError(null); // إعادة تعيين رسالة الخطأ عند كل محاولة
+  
     if (validateForm()) {
       setIsLoading(true);
       setUploading(true);
@@ -251,39 +251,30 @@ export default function AddPropertyPage() {
         title: "جاري حفظ العقار",
         description: "يرجى الانتظار...",
       });
-
+  
       try {
         let thumbnailUrl: string | null = null;
         let galleryUrls: string[] = [];
         let floorPlansUrls: string[] = [];
-
+  
         // رفع الصورة الرئيسية
         if (images.thumbnail) {
-          const uploadedFile = await uploadSingleFile(
-            images.thumbnail,
-            "property",
-          );
+          const uploadedFile = await uploadSingleFile(images.thumbnail, "property");
           thumbnailUrl = uploadedFile.url;
         }
-
+  
         // رفع صور المعرض
         if (images.gallery.length > 0) {
-          const uploadedFiles = await uploadMultipleFiles(
-            images.gallery,
-            "property",
-          );
+          const uploadedFiles = await uploadMultipleFiles(images.gallery, "property");
           galleryUrls = uploadedFiles.map((f) => f.url);
         }
-
+  
         // رفع مخططات الطوابق
         if (images.floorPlans.length > 0) {
-          const uploadedFiles = await uploadMultipleFiles(
-            images.floorPlans,
-            "property",
-          );
+          const uploadedFiles = await uploadMultipleFiles(images.floorPlans, "property");
           floorPlansUrls = uploadedFiles.map((f) => f.url);
         }
-
+  
         // إعداد بيانات العقار
         const propertyData = {
           title: formData.title,
@@ -304,54 +295,42 @@ export default function AddPropertyPage() {
           longitude: formData.longitude,
           featured: formData.featured,
           area: parseInt(formData.size),
-          city_id: 1, // يمكن تعديلها حسب الحاجة
-          category_id: 1, // يمكن تعديلها حسب الحاجة
+          city_id: 1,
+          category_id: 1,
         };
-
+  
         // إرسال بيانات العقار إلى الـ API
         let response = await axiosInstance.post(
           "https://taearif.com/api/properties",
-          propertyData,
+          propertyData
         );
-
+  
         toast({
           title: publish ? "تم نشر العقار بنجاح" : "تم حفظ العقار كمسودة",
           description: "تمت معالجة العقار بنجاح.",
         });
-        setIsLoading(false);
-
+  
         const currentState = useStore.getState();
         const createdProject = response.data.data.property;
         createdProject.status = createdProject.status === 1 ? "منشور" : "مسودة";
-        console.log(`createdProject`, createdProject);
         const updatedProperties = [
           createdProject,
           ...currentState.propertiesManagement.properties,
         ];
-        console.log(`updatedProperties`, updatedProperties);
         setPropertiesManagement({
           properties: updatedProperties,
         });
-
+  
         router.push("/properties");
       } catch (error) {
         console.error("Error submitting property:", error);
-        setIsLoading(false);
-        toast({
-          title: "خطأ في حفظ العقار",
-          description: "حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.",
-          variant: "destructive",
-        });
+        setSubmitError("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");
       } finally {
         setUploading(false);
         setIsLoading(false);
       }
     } else {
-      toast({
-        title: "خطأ في النموذج",
-        description: "يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.",
-        variant: "destructive",
-      });
+      setSubmitError("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
     }
   };
 
@@ -362,26 +341,25 @@ export default function AddPropertyPage() {
         <EnhancedSidebar activeTab="properties" setActiveTab={() => {}} />
         <main className="flex-1 p-4 md:p-6">
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => router.push("/properties")}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <h1 className="text-2xl font-bold tracking-tight">
-                  إضافة عقار جديد
-                </h1>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => handleSubmit(false)}>
-                  حفظ كمسودة
-                </Button>
-                <Button onClick={() => handleSubmit(true)} disabled={isLoading} >{isLoading ? "جاري الحفظ..." : "نشر العقار"}</Button>
-              </div>
-            </div>
+          <div className="flex items-center justify-between">
+  <div className="flex items-center gap-2">
+    <Button variant="outline" size="icon" onClick={() => router.push("/properties")}>
+      <ChevronLeft className="h-4 w-4" />
+    </Button>
+    <h1 className="text-2xl font-bold tracking-tight">إضافة عقار جديد</h1>
+  </div>
+  <div className="flex flex-col items-end gap-2">
+    <div className="flex gap-2">
+      <Button variant="outline" onClick={() => handleSubmit(false)}>حفظ كمسودة</Button>
+      <Button onClick={() => handleSubmit(true)} disabled={isLoading}>
+        {isLoading ? "جاري الحفظ..." : "نشر العقار"}
+      </Button>
+    </div>
+    {submitError && (
+      <div className="text-red-500 text-sm mt-2">{submitError}</div>
+    )}
+  </div>
+</div>
             
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -425,7 +403,7 @@ export default function AddPropertyPage() {
                     <Input
                       id="address"
                       name="address"
-                      placeholder="123 شارع الرئيسي، دبي، الإمارات العربية المتحدة"
+                      placeholder="123 شارع الرئيسي"
                       value={formData.address}
                       onChange={handleInputChange}
                       className={errors.address ? "border-red-500" : ""}
@@ -897,29 +875,41 @@ export default function AddPropertyPage() {
 
               {/* Final Card with Submit Buttons */}
               <Card className="md:col-span-2">
-                <CardFooter className="flex justify-between border-t p-6">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push("/properties")}
-                  >
-                    إلغاء
-                  </Button>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleSubmit(false)}
-                    >
-                      حفظ كمسودة
-                    </Button>
-                    <Button
-                      onClick={() => handleSubmit(true)}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "جاري الحفظ..." : "نشر العقار"}
-                    </Button>
-                  </div>
-                </CardFooter>
-              </Card>
+  <CardFooter className="flex flex-col items-end border-t p-6 space-y-4">
+    <div className="w-full">
+      <div className="flex justify-between w-full">
+        <Button
+          variant="outline"
+          onClick={() => router.push("/properties")}
+        >
+          إلغاء
+        </Button>
+  <div className="flex flex-col items-end gap-2">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => handleSubmit(false)}
+          >
+            حفظ كمسودة
+          </Button>
+          <Button
+            onClick={() => handleSubmit(true)}
+            disabled={isLoading}
+          >
+            {isLoading ? "جاري الحفظ..." : "نشر العقار"}
+          </Button>
+        </div>
+        {submitError && (
+      <div className="text-red-500 text-sm mt-2">{submitError}</div>
+    )}
+        </div>
+      </div>
+    </div>
+  </CardFooter>
+</Card>
+
+
+
             </div>
           </div>
         </main>

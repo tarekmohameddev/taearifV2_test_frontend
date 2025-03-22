@@ -71,8 +71,8 @@ export default function EditPropertyPage() {
     features: "",
     status: "draft",
     featured: false,
-    latitude: 25.2048,
-    longitude: 55.2708,
+    latitude: 24.766316905850978,
+    longitude: 46.73579692840576,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [images, setImages] = useState<{
@@ -118,8 +118,8 @@ export default function EditPropertyPage() {
           features: property.features?.join(", ") || "",
           status: property.status === 1 ? "published" : "draft",
           featured: property.featured || false,
-          latitude: property.latitude || 25.2048,
-          longitude: property.longitude || 55.2708,
+          latitude: property.latitude || 24.766316905850978,
+          longitude: property.longitude || 46.73579692840576,
         });
         setPreviews({
           thumbnail: property.featured_image || null,

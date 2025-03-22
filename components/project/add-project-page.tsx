@@ -86,8 +86,8 @@ export default function AddProjectPage(): JSX.Element {
     developer: "",
     description: "",
     featured: false,
-    latitude: 25.2048,
-    longitude: 55.2708,
+    latitude: 24.766316905850978,
+    longitude: 46.73579692840576,
     amenities: "",
     minPrice: "",
     maxPrice: "",
@@ -510,7 +510,7 @@ export default function AddProjectPage(): JSX.Element {
                     <Label htmlFor="location">الموقع</Label>
                     <Input
                       id="location"
-                      placeholder="وسط المدينة، نيويورك"
+                      placeholder="وسط المدينة"
                       value={newProject.location}
                       onChange={handleInputChange}
                       className={formErrors.location ? "border-red-500" : ""}
