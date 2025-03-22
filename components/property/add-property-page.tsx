@@ -64,7 +64,7 @@ export default function AddPropertyPage() {
     address: "",
     price: "",
     type: "",
-    listingType: "",
+    transactionType: "",
     bedrooms: "",
     bathrooms: "",
     size: "",
@@ -232,7 +232,7 @@ export default function AddPropertyPage() {
     if (!formData.address) newErrors.address = "عنوان العقار مطلوب";
     if (!formData.price) newErrors.price = "السعر مطلوب";
     if (!formData.type) newErrors.type = "نوع العقار مطلوب";
-    if (!formData.listingType) newErrors.listingType = "نوع القائمة مطلوب";
+    if (!formData.transactionType) newErrors.transactionType = "نوع القائمة مطلوب";
     if (!formData.bedrooms) newErrors.bedrooms = "عدد غرف النوم مطلوب";
     if (!formData.bathrooms) newErrors.bathrooms = "عدد الحمامات مطلوب";
     if (!formData.size) newErrors.size = "مساحة العقار مطلوبة";
@@ -294,6 +294,7 @@ export default function AddPropertyPage() {
           bath: parseInt(formData.bathrooms),
           size: parseInt(formData.size),
           features: formData.features.split(",").map((f) => f.trim()),
+          transactionType: formData.transactionType,
           status: publish ? 1 : 0,
           featured_image: thumbnailUrl,
           floor_planning_image: floorPlansUrls,
@@ -378,9 +379,10 @@ export default function AddPropertyPage() {
                 <Button variant="outline" onClick={() => handleSubmit(false)}>
                   حفظ كمسودة
                 </Button>
-                <Button onClick={() => handleSubmit(true)}>نشر العقار</Button>
+                <Button onClick={() => handleSubmit(true)} disabled={isLoading} >{isLoading ? "جاري الحفظ..." : "نشر العقار"}</Button>
               </div>
             </div>
+            
 
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
@@ -451,19 +453,19 @@ export default function AddPropertyPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="listingType">نوع القائمة</Label>
+                      <Label htmlFor="transactionType">نوع القائمة</Label>
                       <Select
-                        name="listingType"
-                        value={formData.listingType}
+                        name="transactionType"
+                        value={formData.transactionType}
                         onValueChange={(value) =>
                           handleInputChange({
-                            target: { name: "listingType", value },
+                            target: { name: "transactionType", value },
                           } as any)
                         }
                       >
                         <SelectTrigger
-                          id="listingType"
-                          className={errors.listingType ? "border-red-500" : ""}
+                          id="transactionType"
+                          className={errors.transactionType ? "border-red-500" : ""}
                         >
                           <SelectValue placeholder="اختر النوع" />
                         </SelectTrigger>
@@ -472,9 +474,9 @@ export default function AddPropertyPage() {
                           <SelectItem value="للإيجار">للإيجار</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.listingType && (
+                      {errors.transactionType && (
                         <p className="text-sm text-red-500">
-                          {errors.listingType}
+                          {errors.transactionType}
                         </p>
                       )}
                     </div>

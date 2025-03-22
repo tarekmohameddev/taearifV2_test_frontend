@@ -1,4 +1,4 @@
-import EditProjectPage from "@/components/edit-project-page";
+import EditProjectPage from "@/components/project/edit-project-page";
 export const metadata = {
   title: "Project Edit",
 };

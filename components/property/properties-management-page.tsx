@@ -541,6 +541,8 @@ function PropertyCard({
   isFavorite,
   onToggleFavorite,
 }: PropertyCardProps) {
+  const router = useRouter();
+
   return (
     <Card className="overflow-hidden">
       <div className="relative">
@@ -599,9 +601,9 @@ function PropertyCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/properties/"+ property.id + "/edit")}>
                 <Edit className="mr-2 h-4 w-4" />
-                تعديل القائمة
+                تعديل 
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <ExternalLink className="mr-2 h-4 w-4" />
@@ -679,7 +681,7 @@ function PropertyCard({
         </div>
       </CardContent>
       <CardFooter className="flex gap-2 p-4 pt-0">
-        <Button variant="outline" size="sm" className="w-full gap-1">
+        <Button variant="outline" size="sm" className="w-full gap-1" onClick={() => router.push("/properties/"+ property.id + "/edit")}>
           <Edit className="h-3.5 w-3.5" />
           تعديل
         </Button>

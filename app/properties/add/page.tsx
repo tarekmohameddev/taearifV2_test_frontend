@@ -1,4 +1,4 @@
-import AddPropertyPage from "@/components/add-property-page";
+import AddPropertyPage from "@/components/property/add-property-page";
 export const metadata = {
   title: "Add Property",
 };
