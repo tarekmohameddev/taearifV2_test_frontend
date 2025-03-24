@@ -109,39 +109,51 @@ export function BannerSectionPage() {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // تحديد URL الافتراضي للبanner الثابت
+      // تحديد URL الافتراضي للبanner الثابت (للعرض)
       let staticImageUrl = bannerData?.static?.image || "";
-
+      let staticImagePath = staticImageUrl; // للإرسال إلى API
+  
       // رفع صورة البanner الثابت إذا كانت موجودة
       if (bannerType === "static" && staticBannerFile) {
-        const uploadResult = await uploadSingleFile(
-          staticBannerFile,
-          "content",
-        );
-        staticImageUrl = uploadResult.url; // استرداد الـ URL من استجابة الرفع
+        const uploadResult = await uploadSingleFile(staticBannerFile, "content");
+        staticImageUrl = uploadResult.url; // استخدام url للعرض في الحالة
+        staticImagePath = uploadResult.path; // استخدام path للإرسال إلى API
+        setStaticBannerImage(uploadResult.url); // تحديث الحالة بـ url للعرض
       } else if (bannerType === "static" && staticBannerImage === null) {
-        staticImageUrl = ""; // إذا تم حذف الصورة
+        staticImagePath = ""; // إذا تم حذف الصورة
       }
-
+  
       // رفع صور الشرائح إذا كانت موجودة
       const updatedSlides = await Promise.all(
         sliders.map(async (slide) => {
           if (slide.file) {
             const uploadResult = await uploadSingleFile(slide.file, "content");
-            return { ...slide, image: uploadResult.url }; // تحديث الصورة بالـ URL
+            return {
+              ...slide,
+              image: uploadResult.url, // استخدام url للعرض في الحالة
+              imagePath: uploadResult.path, // إضافة path للإرسال إلى API
+            };
           } else if (slide.image === null) {
-            return { ...slide, image: "" }; // إذا تم حذف الصورة
+            return { ...slide, image: "", imagePath: "" }; // إذا تم حذف الصورة
           }
-          return slide; // الاحتفاظ بالـ URL الموجود إذا لم يكن هناك ملف جديد
+          return { ...slide, imagePath: slide.image }; // استخدام image الحالي كـ path إذا لم يتغير
         }),
       );
-
+  
+      // تحديث الحالة بـ url للعرض
+      setSliders(
+        updatedSlides.map((slide) => ({
+          ...slide,
+          file: null, // إعادة تعيين الملف بعد الرفع
+        })),
+      );
+  
       // إعداد formData بالقيم المحدثة
       const formData = {
         banner_type: bannerType,
         static: {
           enabled: bannerType === "static",
-          image: staticImageUrl, // استخدام الـ URL المحدث
+          image: staticImagePath.replace("https://taearif.com",""), // استخدام path للإرسال إلى API
           title: bannerData?.static?.title || "",
           subtitle: bannerData?.static?.subtitle || "",
           caption: bannerData?.static?.caption || "",
@@ -150,15 +162,14 @@ export function BannerSectionPage() {
           buttonUrl: bannerData?.static?.buttonUrl || "",
           buttonStyle: bannerData?.static?.buttonStyle || "primary",
           textAlignment: bannerData?.static?.textAlignment || "center",
-          overlayColor:
-            bannerData?.static?.overlayColor || "rgba(0, 0, 0, 0.5)",
+          overlayColor: bannerData?.static?.overlayColor || "rgba(0, 0, 0, 0.5)",
           textColor: bannerData?.static?.textColor || "#ffffff",
         },
         slider: {
           enabled: bannerType === "slider",
           slides: updatedSlides.map((slide) => ({
             id: slide.id,
-            image: slide.image, // استخدام الـ URL المحدث
+            image: (slide.imagePath || slide.image).replace("https://taearif.com",""), // استخدام path للصور الجديدة أو image الحالي
             title: slide.title,
             subtitle: slide.subtitle,
             caption: slide.caption || "",
@@ -174,8 +185,7 @@ export function BannerSectionPage() {
           showArrows: bannerData?.slider?.showArrows || false,
           showDots: bannerData?.slider?.showDots || false,
           animation: bannerData?.slider?.animation || "fade",
-          overlayColor:
-            bannerData?.slider?.overlayColor || "rgba(0, 0, 0, 0.6)",
+          overlayColor: bannerData?.slider?.overlayColor || "rgba(0, 0, 0, 0.6)",
           textColor: bannerData?.slider?.textColor || "#ffffff",
         },
         common: {
@@ -186,7 +196,7 @@ export function BannerSectionPage() {
           fullWidth: true,
         },
       };
-
+  
       // إرسال البيانات إلى API
       await axiosInstance.post("/content/banner", formData);
       toast({
@@ -203,7 +213,6 @@ export function BannerSectionPage() {
       setIsLoading(false);
     }
   };
-
   const addNewSlide = () => {
     const newId =
       sliders.length > 0
@@ -240,10 +249,10 @@ export function BannerSectionPage() {
   const handleStaticImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setStaticBannerFile(file); // تخزين كائن الملف
+      setStaticBannerFile(file); 
       const reader = new FileReader();
       reader.onload = (e) => {
-        setStaticBannerImage(e.target.result); // Data URL للمعاينة
+        setStaticBannerImage(e.target.result); 
       };
       reader.readAsDataURL(file);
     }

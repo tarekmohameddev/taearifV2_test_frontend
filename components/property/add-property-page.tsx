@@ -241,10 +241,9 @@ export default function AddPropertyPage() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSubmit = async (publish: boolean) => {
     setSubmitError(null); // إعادة تعيين رسالة الخطأ عند كل محاولة
-
+  
     if (validateForm()) {
       setIsLoading(true);
       setUploading(true);
@@ -252,39 +251,51 @@ export default function AddPropertyPage() {
         title: "جاري حفظ العقار",
         description: "يرجى الانتظار...",
       });
-
+  
       try {
-        let thumbnailUrl: string | null = null;
-        let galleryUrls: string[] = [];
-        let floorPlansUrls: string[] = [];
-
+        let thumbnailPath: string | null = null;
+        let galleryPaths: string[] = [];
+        let floorPlansPaths: string[] = [];
+  
         // رفع الصورة الرئيسية
         if (images.thumbnail) {
           const uploadedFile = await uploadSingleFile(
             images.thumbnail,
             "property",
           );
-          thumbnailUrl = uploadedFile.url;
+          thumbnailPath = uploadedFile.path; // استخدام path بدلاً من url
+          setPreviews((prev) => ({
+            ...prev,
+            thumbnail: uploadedFile.url, // تحديث المعاينة بـ url من الخادم إذا أردت
+          }));
         }
-
+  
         // رفع صور المعرض
         if (images.gallery.length > 0) {
           const uploadedFiles = await uploadMultipleFiles(
             images.gallery,
             "property",
           );
-          galleryUrls = uploadedFiles.map((f) => f.url);
+          galleryPaths = uploadedFiles.map((f) => f.path); // استخدام path بدلاً من url
+          setPreviews((prev) => ({
+            ...prev,
+            gallery: uploadedFiles.map((f) => f.url), // تحديث المعاينة بـ url من الخادم
+          }));
         }
-
+  
         // رفع مخططات الطوابق
         if (images.floorPlans.length > 0) {
           const uploadedFiles = await uploadMultipleFiles(
             images.floorPlans,
             "property",
           );
-          floorPlansUrls = uploadedFiles.map((f) => f.url);
+          floorPlansPaths = uploadedFiles.map((f) => f.path); // استخدام path بدلاً من url
+          setPreviews((prev) => ({
+            ...prev,
+            floorPlans: uploadedFiles.map((f) => f.url), // تحديث المعاينة بـ url من الخادم
+          }));
         }
-
+  
         // إعداد بيانات العقار
         const propertyData = {
           title: formData.title,
@@ -297,9 +308,9 @@ export default function AddPropertyPage() {
           features: formData.features.split(",").map((f) => f.trim()),
           transactionType: formData.transactionType,
           status: publish ? 1 : 0,
-          featured_image: thumbnailUrl,
-          floor_planning_image: floorPlansUrls,
-          gallery: galleryUrls,
+          featured_image: thumbnailPath, // استخدام path
+          floor_planning_image: floorPlansPaths, // استخدام paths
+          gallery: galleryPaths, // استخدام paths
           description: formData.description,
           latitude: formData.latitude,
           longitude: formData.longitude,
@@ -308,18 +319,18 @@ export default function AddPropertyPage() {
           city_id: 1,
           category_id: 1,
         };
-
+  
         // إرسال بيانات العقار إلى الـ API
         let response = await axiosInstance.post(
           "https://taearif.com/api/properties",
           propertyData,
         );
-
+  
         toast({
           title: publish ? "تم نشر العقار بنجاح" : "تم حفظ العقار كمسودة",
           description: "تمت معالجة العقار بنجاح.",
         });
-
+  
         const currentState = useStore.getState();
         const createdProject = response.data.data.property;
         createdProject.status = createdProject.status === 1 ? "منشور" : "مسودة";
@@ -330,7 +341,7 @@ export default function AddPropertyPage() {
         setPropertiesManagement({
           properties: updatedProperties,
         });
-
+  
         router.push("/properties");
       } catch (error) {
         console.error("Error submitting property:", error);

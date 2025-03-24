@@ -287,60 +287,50 @@ export default function AddProjectPage(): JSX.Element {
   };
 
   const handleSaveProject = async (
-    status: "منشور" | "مسودة" | "Pre-construction",
+    status: "منشور" | "مسودة" | "Pre-construction"
   ) => {
     if (!validateForm()) {
       setSubmitError("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
-
       return;
     }
     setSubmitError(null); // إعادة تعيين رسالة الخطأ عند كل محاولة
     setIsLoading(true);
     try {
       // رفع الصورة الرئيسية (featured_image)
-      let featuredImageUrl = "";
+      let featuredImagePath = "";
       if (thumbnailImage) {
-        const uploadResult = await uploadSingleFile(
-          thumbnailImage.file,
-          "project",
-        );
-        featuredImageUrl = uploadResult.url; // استخراج الـ url من الاستجابة
+        const uploadResult = await uploadSingleFile(thumbnailImage.file, "project");
+        featuredImagePath = uploadResult.path; // استخدام path بدلاً من url
       }
-
+  
       // رفع صور المخططات (floorplan_images)
-      let floorplanUrls = [];
+      let floorplanPaths = [];
       if (planImages.length > 0) {
         const files = planImages.map((image) => image.file);
         const uploadResults = await uploadMultipleFiles(files, "project");
-
         // التحقق من صحة الاستجابة
         if (uploadResults && Array.isArray(uploadResults)) {
-          floorplanUrls = uploadResults.map((file) => file.url);
-          console.log("floorplanUrls", floorplanUrls);
+          floorplanPaths = uploadResults.map((file) => file.path); // استخدام path
+          console.log("floorplanPaths", floorplanPaths);
         } else {
           console.error("Error: uploadResults is not an array", uploadResults);
         }
       }
-
-      let galleryUrls = [];
+  
+      // رفع صور المعرض (gallery_images)
+      let galleryPaths = [];
       if (galleryImages.length > 0) {
         const files = galleryImages.map((image) => image.file);
         const uploadResults = await uploadMultipleFiles(files, "project");
-
-        console.log("uploadResults2", uploadResults); // تحقق من الاستجابة
-
-        // التأكد من أن uploadResults ليس undefined أو null
+        // التحقق من صحة الاستجابة
         if (uploadResults && Array.isArray(uploadResults)) {
-          galleryUrls = uploadResults.map((file) => file.url); // استخراج الروابط
-          console.log("galleryUrls", galleryUrls);
+          galleryPaths = uploadResults.map((file) => file.path); // استخدام path
+          console.log("galleryPaths", galleryPaths);
         } else {
-          console.error(
-            "Error: uploadResults does not contain files array",
-            uploadResults,
-          );
+          console.error("Error: uploadResults is not an array", uploadResults);
         }
       }
-
+  
       let minPrice = 0;
       let maxPrice = 0;
       if (newProject.price.includes("-")) {
@@ -353,14 +343,14 @@ export default function AddProjectPage(): JSX.Element {
         minPrice = parseFloat(newProject.price) || 0;
         maxPrice = minPrice;
       }
-
+  
       const formattedDate = new Date(newProject.completionDate)
         .toISOString()
         .split("T")[0];
-
-      // إعداد بيانات المشروع مع الروابط المستخرجة
+  
+      // إعداد بيانات المشروع مع استخدام path بدلاً من url
       const projectData = {
-        featured_image: featuredImageUrl,
+        featured_image: featuredImagePath, // استخدام path
         min_price: minPrice,
         max_price: maxPrice,
         latitude: newProject.latitude,
@@ -378,8 +368,7 @@ export default function AddProjectPage(): JSX.Element {
             address: newProject.location,
             description: newProject.description,
             meta_keyword: "luxury, apartments, Dubai",
-            meta_description:
-              "Luxury apartments in Dubai with sea view and top facilities.",
+            meta_description: "Luxury apartments in Dubai with sea view and top facilities.",
           },
           {
             language_id: 2,
@@ -387,12 +376,11 @@ export default function AddProjectPage(): JSX.Element {
             address: newProject.location,
             description: newProject.description,
             meta_keyword: "فخامة، شقق، دبي",
-            meta_description:
-              "شقق فاخرة في دبي بإطلالة على البحر ومرافق متميزة.",
+            meta_description: "شقق فاخرة في دبي بإطلالة على البحر ومرافق متميزة.",
           },
         ],
-        gallery_images: galleryUrls,
-        floorplan_images: floorplanUrls,
+        gallery_images: galleryPaths, // استخدام paths
+        floorplan_images: floorplanPaths, // استخدام paths
         specifications: [
           { key: "Bedrooms", label: "Number of Bedrooms", value: "3" },
           { key: "Bathrooms", label: "Number of Bathrooms", value: "2" },
@@ -422,12 +410,12 @@ export default function AddProjectPage(): JSX.Element {
           ? newProject.amenities.split(",").map((amenity) => amenity.trim())
           : [],
       };
-
+  
       const response = await axiosInstance.post(
         "https://taearif.com/api/projects",
-        projectData,
+        projectData
       );
-
+  
       const currentState = useStore.getState();
       const createdProject = response.data.data.user_project;
       const updatedProjects = [
@@ -441,7 +429,7 @@ export default function AddProjectPage(): JSX.Element {
           total: (currentState.projectsManagement.pagination?.total || 0) + 1,
         },
       });
-
+  
       router.push("/projects");
     } catch (error: any) {
       setSubmitError("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");
@@ -450,7 +438,6 @@ export default function AddProjectPage(): JSX.Element {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
       <DashboardHeader />

@@ -46,13 +46,22 @@ export function GeneralSettingsPage() {
       },
     } as AdditionalSettings,
   });
+  
+  // Add dedicated state for image previews
+  const [imagePreviews, setImagePreviews] = useState({
+    logo: "",
+    favicon: ""
+  });
+  
   const [tempFiles, setTempFiles] = useState<{
     logo?: File;
     favicon?: File;
   }>({});
+  
   const getPreviewUrl = useCallback((file: File | undefined) => {
     return file ? URL.createObjectURL(file) : "";
   }, []);
+  
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
 
@@ -74,6 +83,12 @@ export function GeneralSettingsPage() {
             },
           },
         });
+        
+        // Initialize image previews with current values
+        setImagePreviews({
+          logo: settings.logo || "",
+          favicon: settings.favicon || ""
+        });
       } catch (error) {
         toast({
           title: "خطأ في جلب البيانات",
@@ -85,6 +100,18 @@ export function GeneralSettingsPage() {
     fetchSettings();
   }, []);
 
+  // Clean up object URLs when component unmounts or when previews change
+  useEffect(() => {
+    return () => {
+      if (imagePreviews.logo && imagePreviews.logo.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreviews.logo);
+      }
+      if (imagePreviews.favicon && imagePreviews.favicon.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreviews.favicon);
+      }
+    };
+  }, [imagePreviews]);
+
   const handleFileSelect = async (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "logo" | "favicon",
@@ -93,9 +120,18 @@ export function GeneralSettingsPage() {
     if (!file) return;
 
     setTempFiles((prev) => ({ ...prev, [type]: file }));
+    
+    // Create preview URL and update preview state
+    const previewUrl = getPreviewUrl(file);
+    setImagePreviews(prev => ({
+      ...prev,
+      [type]: previewUrl
+    }));
+    
+    // Also update formData to maintain existing behavior
     setFormData((prev) => ({
       ...prev,
-      [type]: getPreviewUrl(file),
+      [type]: previewUrl,
     }));
   };
 
@@ -103,22 +139,43 @@ export function GeneralSettingsPage() {
     setIsLoading(true);
     try {
       const finalData = { ...formData };
-
+  
+      let logoUrl = formData.logo.replace("https://taearif.com",""); // لتخزين url للعرض
+      let faviconUrl = formData.favicon.replace("https://taearif.com",""); // لتخزين url للعرض
       if (tempFiles.logo) {
         const result = await uploadSingleFile(tempFiles.logo, "content");
-        finalData.logo = result.url;
+        finalData.logo = result.path.replace("https://taearif.com",""); // استخدام path للإرسال إلى API
+        setFormData((prev) => ({
+          ...prev,
+          logo: result.url,
+        }));
+        
+        // Update preview with the new uploaded URL
+        setImagePreviews(prev => ({
+          ...prev,
+          logo: result.url
+        }));
       }
-
+  
       if (tempFiles.favicon) {
         const result = await uploadSingleFile(tempFiles.favicon, "content");
-        finalData.favicon = result.url;
+        finalData.favicon = result.path.replace("https://taearif.com",""); // استخدام path للإرسال إلى API
+        setFormData((prev) => ({
+          ...prev,
+          favicon: result.url,
+        }));
+        
+        // Update preview with the new uploaded URL
+        setImagePreviews(prev => ({
+          ...prev,
+          favicon: result.url
+        }));
       }
-
+  
       await axiosInstance.put("/content/general", finalData);
-
-      setFormData(finalData);
-      setTempFiles({});
-
+  
+      setTempFiles({}); // إعادة تعيين tempFiles
+  
       toast({
         title: "تم الحفظ بنجاح",
         description: "تم تحديث الإعدادات العامة بنجاح",
@@ -134,7 +191,7 @@ export function GeneralSettingsPage() {
       router.push("/content");
     }
   };
-
+  
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader />
@@ -218,9 +275,9 @@ export function GeneralSettingsPage() {
                 <div>
                   <Label>شعار الموقع</Label>
                   <div className="mt-2 flex items-center gap-4">
-                    {formData.logo ? (
+                    {imagePreviews.logo ? (
                       <img
-                        src={formData.logo}
+                        src={imagePreviews.logo}
                         alt="Site Logo"
                         className="h-20 w-20 rounded-md object-contain border bg-muted"
                       />
@@ -257,9 +314,9 @@ export function GeneralSettingsPage() {
                 <div>
                   <Label>أيقونة الموقع (Favicon)</Label>
                   <div className="mt-2 flex items-center gap-4">
-                    {formData.favicon ? (
+                    {imagePreviews.favicon ? (
                       <img
-                        src={formData.favicon}
+                        src={imagePreviews.favicon}
                         alt="Favicon"
                         className="h-10 w-10 rounded-md object-contain border bg-muted"
                       />

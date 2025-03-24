@@ -130,25 +130,31 @@ export function AboutCompanyPage() {
     setIsSaving(true);
     try {
       let newAboutData = { ...aboutData };
-
+  
       // إذا كان هناك ملف مختار، قم برفعه باستخدام الدالة الموحدة
       if (selectedFile) {
         // استخدام دالة الرفع الموحدة مع تمرير السياق المناسب
         const uploadedData = await uploadSingleFile(
           selectedFile, // الملف المراد رفعه
-          "content", // السياق (مثل: الصفحة/القسم)
+          "content"     // السياق (مثل: الصفحة/القسم)
         );
-
-        // تحديث مسار الصورة في البيانات
-        newAboutData.image_path = uploadedData.url; // تأكد من تطابق اسم الخاصية مع استجابة الـAPI
+  
+        // تحديث الحالة لعرض الصورة باستخدام الرابط (url)
+        setAboutData((prevData) => ({
+          ...prevData,
+          image_path: uploadedData.url,
+        }));
+  
+        // عند إرسال البيانات للـ API نستخدم قيمة المسار (path)
+        newAboutData.image_path = uploadedData.path;
       }
       setTimeout(() => {
         console.log("newAboutData", newAboutData);
       }, 300);
-      // إرسال البيانات المحدثة إلى الـAPI
+      // إرسال البيانات المحدثة إلى الـ API
       const response = await axiosInstance.post(
         "https://taearif.com/api/content/about",
-        newAboutData,
+        newAboutData
       );
       console.log("response.data", response.data);
       if (response.data.status === "success") {
@@ -168,6 +174,7 @@ export function AboutCompanyPage() {
       setIsSaving(false);
     }
   };
+  
 
   // حالات التحميل والخطأ
   if (isLoading) {
