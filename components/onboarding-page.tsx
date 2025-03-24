@@ -214,6 +214,10 @@ const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     }
   }
 
+  const SkipSetup = async() => {
+    await setOnboardingCompleted(true);
+    router.push("/");
+  }
   
   const completeOnboarding = async () => {
     setIsLoading(true);
@@ -854,7 +858,7 @@ const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         <div className="mt-6 text-center">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="link" className="text-muted-foreground">
+              <Button variant="link" className="text-muted-foreground" onClick={SkipSetup}>
                 تخطي الإعداد
               </Button>
             </TooltipTrigger>
