@@ -26,7 +26,7 @@ import {
   LockIcon,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { toast } from "@/hooks/use-toast"
+import toast from 'react-hot-toast';
 import ColorPicker from "./color-picker"
 
 const WEBSITE_CATEGORIES = [
@@ -100,10 +100,7 @@ const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
           logo: event.target.result as string, // للمعاينة
           logoFile: file, // الملف الأصلي
         });
-        toast({
-          title: "تم رفع الشعار بنجاح",
-          description: "يمكنك تغييره في أي وقت لاحقاً",
-        });
+        toast.success("تم رفع الشعار بنجاح");
       }
     };
 
@@ -126,10 +123,8 @@ const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
           favicon: event.target.result as string, // للمعاينة
           faviconFile: file, // الملف الأصلي
         });
-        toast({
-          title: "تم رفع أيقونة الموقع بنجاح",
-          description: "ستظهر في تبويب المتصفح",
-        });
+        toast.success("تم رفع أيقونة الموقع بنجاح");
+
       }
     };
 
@@ -147,16 +142,10 @@ const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         favicon: websiteData.logo,
         faviconFile: websiteData.logoFile,
       });
-      toast({
-        title: "تم استخدام الشعار كأيقونة للموقع",
-        description: "يمكنك تغييرها في أي وقت لاحقاً",
-      });
+      toast.success("تم استخدام الشعار كأيقونة للموقع");
     } else {
-      toast({
-        title: "لم يتم رفع شعار بعد",
-        description: "يرجى رفع شعار أولاً",
-        variant: "destructive",
-      });
+      toast.error("لم يتم رفع شعار بعد");
+
     }
   };
 
@@ -179,20 +168,12 @@ const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const nextStep = () => {
     if (currentStep === 0 && !websiteData.title.trim()) {
-      toast({
-        title: "يرجى إدخال عنوان الموقع",
-        description: "عنوان الموقع مطلوب للمتابعة",
-        variant: "destructive",
-      })
+      toast.success("يرجى إدخال عنوان الموقع");
       return
     }
     
     if (currentStep === 2 && !websiteData.category) {
-      toast({
-        title: "يرجى اختيار نوع الموقع",
-        description: "اختيار نوع الموقع مطلوب للمتابعة",
-        variant: "destructive",
-      })
+      toast.success("يرجى إدخال عنوان الموقع");
       return
     }
     
@@ -263,11 +244,8 @@ const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       };
   
       const response = await axiosInstance.post("/onboarding", onboardingData);
-  
-      toast({
-        title: "تم إكمال إعداد موقعك بنجاح!",
-        description: "سيتم توجيهك إلى لوحة التحكم",
-      });
+      toast.success("تم إكمال إعداد موقعك بنجاح!");
+
       setOnboardingCompleted(true);
       setIsLoading(false);
       setTimeout(() => {
@@ -275,11 +253,7 @@ const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       }, 2000);
     } catch (error) {
       setIsLoading(false);
-      toast({
-        title: "حدث خطأ أثناء إكمال الإعداد",
-        description: "يرجى المحاولة مرة أخرى",
-        variant: "destructive",
-      });
+      toast.error("حدث خطأ أثناء إكمال الإعداد");
     }
   };
 

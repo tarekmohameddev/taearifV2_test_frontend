@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, ImagePlus, Plus, Save, Trash2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import toast from 'react-hot-toast';
 import { uploadSingleFile } from "@/utils/uploadSingle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
@@ -43,11 +43,7 @@ export function AboutCompanyPage() {
 
     // التحقق من نوع الملف
     if (!file.type.startsWith("image/")) {
-      toast({
-        variant: "destructive",
-        title: "خطأ",
-        description: "الملف المحدد ليس صورة",
-      });
+      toast.error("الملف المحدد ليس صورة");
       return;
     }
 
@@ -70,11 +66,7 @@ export function AboutCompanyPage() {
         }
       } catch (err) {
         setError(err.message);
-        toast({
-          variant: "destructive",
-          title: "خطأ",
-          description: "فشل في تحميل بيانات من نحن",
-        });
+      toast.error("فشل في تحميل بيانات من نحن");
       } finally {
         setIsLoading(false);
       }
@@ -131,52 +123,37 @@ export function AboutCompanyPage() {
     try {
       let newAboutData = { ...aboutData };
   
-      // إذا كان هناك ملف مختار، قم برفعه باستخدام الدالة الموحدة
       if (selectedFile) {
-        // استخدام دالة الرفع الموحدة مع تمرير السياق المناسب
         const uploadedData = await uploadSingleFile(
-          selectedFile, // الملف المراد رفعه
-          "content"     // السياق (مثل: الصفحة/القسم)
+          selectedFile,
+          "content"   
         );
   
-        // تحديث الحالة لعرض الصورة باستخدام الرابط (url)
         setAboutData((prevData) => ({
           ...prevData,
           image_path: uploadedData.url,
         }));
   
-        // عند إرسال البيانات للـ API نستخدم قيمة المسار (path)
         newAboutData.image_path = uploadedData.path;
       }
-      setTimeout(() => {
-        console.log("newAboutData", newAboutData);
-      }, 300);
-      // إرسال البيانات المحدثة إلى الـ API
       const response = await axiosInstance.post(
         "https://taearif.com/api/content/about",
         newAboutData
       );
-      console.log("response.data", response.data);
       if (response.data.status === "success") {
-        toast({
-          title: "تم الحفظ بنجاح",
-          description: "تم تحديث معلومات الشركة",
-        });
-        setSelectedFile(null); // مسح الملف المؤقت
+        toast.success("تم الحفظ بنجاح");
+        setSelectedFile(null);
       }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "خطأ",
-        description: error.message || "فشل في الحفظ",
-      });
+      toast.error("فشل في الحفظ");
     } finally {
+      toast.error("فشل في الحفظ");
+
       setIsSaving(false);
     }
   };
   
 
-  // حالات التحميل والخطأ
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col">

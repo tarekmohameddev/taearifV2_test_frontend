@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
+import toast from 'react-hot-toast';
 
 export default function AchievementsManagementPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -120,8 +121,7 @@ export default function AchievementsManagementPage() {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      // Show success toast
-      alert("تم حفظ الإنجازات بنجاح!");
+      toast.error("تم حفظ الإنجازات بنجاح!");
     }, 1000);
   };
 

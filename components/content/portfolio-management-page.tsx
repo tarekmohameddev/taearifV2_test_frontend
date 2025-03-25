@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowRight, Plus, Save, Trash2, Upload } from "lucide-react";
+import toast from 'react-hot-toast';
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -86,11 +87,9 @@ export default function PortfolioManagementPage() {
 
   const handleSave = () => {
     setIsLoading(true);
-    // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      // Show success toast
-      alert("تم حفظ معرض الأعمال بنجاح!");
+      toast.success("تم حفظ معرض الأعمال بنجاح!");
     }, 1000);
   };
 

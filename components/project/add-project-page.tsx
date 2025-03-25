@@ -22,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import toast from 'react-hot-toast';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -290,44 +291,40 @@ export default function AddProjectPage(): JSX.Element {
     status: "منشور" | "مسودة" | "Pre-construction"
   ) => {
     if (!validateForm()) {
+      toast.error("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
       setSubmitError("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
       return;
     }
-    setSubmitError(null); // إعادة تعيين رسالة الخطأ عند كل محاولة
+    setSubmitError(null); 
     setIsLoading(true);
     try {
-      // رفع الصورة الرئيسية (featured_image)
       let featuredImagePath = "";
       if (thumbnailImage) {
         const uploadResult = await uploadSingleFile(thumbnailImage.file, "project");
-        featuredImagePath = uploadResult.path; // استخدام path بدلاً من url
+        featuredImagePath = uploadResult.path; 
       }
   
-      // رفع صور المخططات (floorplan_images)
       let floorplanPaths = [];
       if (planImages.length > 0) {
         const files = planImages.map((image) => image.file);
         const uploadResults = await uploadMultipleFiles(files, "project");
-        // التحقق من صحة الاستجابة
         if (uploadResults && Array.isArray(uploadResults)) {
-          floorplanPaths = uploadResults.map((file) => file.path); // استخدام path
-          console.log("floorplanPaths", floorplanPaths);
+          floorplanPaths = uploadResults.map((file) => file.path);
+          toast.success("تم رفع صور ال floor plan بنجاح");
         } else {
-          console.error("Error: uploadResults is not an array", uploadResults);
+          toast.error("حدث خطأ فالسيرفر");
         }
       }
   
-      // رفع صور المعرض (gallery_images)
       let galleryPaths = [];
       if (galleryImages.length > 0) {
         const files = galleryImages.map((image) => image.file);
         const uploadResults = await uploadMultipleFiles(files, "project");
-        // التحقق من صحة الاستجابة
         if (uploadResults && Array.isArray(uploadResults)) {
-          galleryPaths = uploadResults.map((file) => file.path); // استخدام path
-          console.log("galleryPaths", galleryPaths);
+          galleryPaths = uploadResults.map((file) => file.path);
+          toast.success("تم رفع صور ال gallary بنجاح");
         } else {
-          console.error("Error: uploadResults is not an array", uploadResults);
+          toast.error("حدث خطأ فالسيرفر");
         }
       }
   
@@ -433,7 +430,7 @@ export default function AddProjectPage(): JSX.Element {
       router.push("/projects");
     } catch (error: any) {
       setSubmitError("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");
-      console.error("Error saving project:", error);
+      toast.error("حدث خطأ فالسيرفر");
     } finally {
       setIsLoading(false);
     }

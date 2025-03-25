@@ -110,12 +110,10 @@ export function PropertiesManagementPage() {
     setPropertiesManagement({ viewMode: mode });
   };
 
-  // دالة تغيير نطاق السعر
   const handlePriceRangeChange = (newRange: number[]) => {
     setPropertiesManagement({ priceRange: newRange });
   };
 
-  // دالة تبديل المفضلة
   const toggleFavorite = (id: string) => {
     const newFavorites = favorites.includes(id)
       ? favorites.filter((item) => item !== id)
@@ -123,12 +121,16 @@ export function PropertiesManagementPage() {
     setPropertiesManagement({ favorites: newFavorites });
   };
 
-  // جلب البيانات عند التحميل الأولي
   useEffect(() => {
     if (!isInitialized && !loading) {
       fetchProperties();
     }
   }, [fetchProperties, isInitialized, loading]);
+
+
+
+
+
 
   const renderSkeletons = () => (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

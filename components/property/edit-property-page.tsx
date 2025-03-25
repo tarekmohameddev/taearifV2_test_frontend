@@ -34,7 +34,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
-import { toast } from "@/hooks/use-toast";
+import toast from 'react-hot-toast';
 import dynamic from "next/dynamic";
 import axiosInstance from "@/lib/axiosInstance";
 import { uploadSingleFile } from "@/utils/uploadSingle";
@@ -127,13 +127,7 @@ export default function EditPropertyPage() {
           floorPlans: property.floor_planning_image || [],
         });
       } catch (error) {
-        console.error("Error fetching property:", error);
-        toast({
-          title: "خطأ في جلب بيانات العقار",
-          description:
-            "حدث خطأ أثناء جلب بيانات العقار. يرجى المحاولة مرة أخرى.",
-          variant: "destructive",
-        });
+        toast.error("حدث خطأ أثناء جلب بيانات العقار. يرجى المحاولة مرة أخرى.");
       }
     };
     fetchProperty();
@@ -187,19 +181,11 @@ export default function EditPropertyPage() {
     if (type === "thumbnail") {
       const file = files[0];
       if (!file.type.startsWith("image/")) {
-        toast({
-          title: "خطأ في تحميل الملف",
-          description: "يرجى تحميل ملفات صور فقط (JPG, PNG, GIF)",
-          variant: "destructive",
-        });
+        toast.error("يرجى تحميل ملفات صور فقط (JPG, PNG, GIF)");
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "الملف كبير جدًا",
-          description: "يجب أن يكون حجم الملف أقل من 5 ميجابايت",
-          variant: "destructive",
-        });
+        toast.error("يجب أن يكون حجم الملف أقل من 5 ميجابايت");
         return;
       }
       setImages((prev) => ({ ...prev, thumbnail: file }));
@@ -210,19 +196,11 @@ export default function EditPropertyPage() {
     } else {
       const validFiles = Array.from(files).filter((file) => {
         if (!file.type.startsWith("image/")) {
-          toast({
-            title: "خطأ في تحميل الملف",
-            description: "يرجى تحميل ملفات صور فقط (JPG, PNG, GIF)",
-            variant: "destructive",
-          });
+        toast.error("يرجى تحميل ملفات صور فقط (JPG, PNG, GIF)");
           return false;
         }
         if (file.size > 5 * 1024 * 1024) {
-          toast({
-            title: "الملف كبير جدًا",
-            description: "يجب أن يكون حجم الملف أقل من 5 ميجابايت",
-            variant: "destructive",
-          });
+        toast.error("يجب أن يكون حجم الملف أقل من 5 ميجابايت");
           return false;
         }
         return true;
@@ -238,6 +216,8 @@ export default function EditPropertyPage() {
           ...validFiles.map((file) => URL.createObjectURL(file)),
         ],
       }));
+      toast.success("تم بنجاح");
+
     }
 
     e.target.value = "";
@@ -285,10 +265,8 @@ export default function EditPropertyPage() {
       setSubmitError(null); // إعادة تعيين رسالة الخطأ عند كل محاولة
       setIsLoading(true);
       setUploading(true);
-      toast({
-        title: "جاري حفظ التغييرات",
-        description: "يرجى الانتظار...",
-      });
+      toast.loading("يرجى الانتظار...");
+
 
       try {
         let thumbnailUrl: string | null = null;
@@ -346,13 +324,9 @@ export default function EditPropertyPage() {
           `/properties/${id}`,
           propertyData,
         );
-
-        toast({
-          title: publish
-            ? "تم تحديث ونشر العقار بنجاح"
-            : "تم حفظ التغييرات كمسودة",
-          description: "تمت معالجة التغييرات بنجاح.",
-        });
+        toast.success(publish
+          ? "تم تحديث ونشر العقار بنجاح"
+          : "تم حفظ التغييرات كمسودة");
         setIsLoading(false);
 
         const currentState = useStore.getState();
@@ -372,22 +346,14 @@ export default function EditPropertyPage() {
         setSubmitError("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");
         console.error("Error updating property:", error);
         setIsLoading(false);
-        toast({
-          title: "خطأ في حفظ التغييرات",
-          description: "حدث خطأ أثناء حفظ التغييرات. يرجى المحاولة مرة أخرى.",
-          variant: "destructive",
-        });
+        toast.error("حدث خطأ أثناء حفظ التغييرات. يرجى المحاولة مرة أخرى.");
       } finally {
         setUploading(false);
         setIsLoading(false);
       }
     } else {
       setSubmitError("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
-      toast({
-        title: "خطأ في النموذج",
-        description: "يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.",
-        variant: "destructive",
-      });
+        toast.error("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
     }
   };
 

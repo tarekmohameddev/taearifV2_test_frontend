@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import toast from 'react-hot-toast';
 import { Label } from "@/components/ui/label";
 import {
   ArrowRight,
@@ -100,11 +101,9 @@ export default function BrandsManagementPage() {
 
   const handleSave = () => {
     setIsLoading(true);
-    // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      // Show success toast
-      alert("تم حفظ العلامات التجارية بنجاح!");
+      toast.success("تم حفظ العلامات التجارية بنجاح!");
     }, 1000);
   };
 

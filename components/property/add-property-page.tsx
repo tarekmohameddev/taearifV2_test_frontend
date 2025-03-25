@@ -34,7 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { EnhancedSidebar } from "@/components/enhanced-sidebar";
-import { toast } from "@/hooks/use-toast";
+import toast from 'react-hot-toast';
 import dynamic from "next/dynamic";
 import axiosInstance from "@/lib/axiosInstance";
 import { uploadSingleFile } from "@/utils/uploadSingle";
@@ -148,19 +148,11 @@ export default function AddPropertyPage() {
     if (type === "thumbnail") {
       const file = files[0];
       if (!file.type.startsWith("image/")) {
-        toast({
-          title: "خطأ في تحميل الملف",
-          description: "يرجى تحميل ملفات صور فقط (JPG, PNG, GIF)",
-          variant: "destructive",
-        });
+        toast.error("يرجى تحميل ملفات صور فقط (JPG, PNG, GIF)");
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "الملف كبير جدًا",
-          description: "يجب أن يكون حجم الملف أقل من 5 ميجابايت",
-          variant: "destructive",
-        });
+        toast.error("يجب أن يكون حجم الملف أقل من 5 ميجابايت");
         return;
       }
       setImages((prev) => ({ ...prev, thumbnail: file }));
@@ -171,19 +163,11 @@ export default function AddPropertyPage() {
     } else {
       const validFiles = Array.from(files).filter((file) => {
         if (!file.type.startsWith("image/")) {
-          toast({
-            title: "خطأ في تحميل الملف",
-            description: "يرجى تحميل ملفات صور فقط (JPG, PNG, GIF)",
-            variant: "destructive",
-          });
+        toast.error("يجب أن يكون حجم الملف أقل من 5 ميجابايت");
           return false;
         }
         if (file.size > 5 * 1024 * 1024) {
-          toast({
-            title: "الملف كبير جدًا",
-            description: "يجب أن يكون حجم الملف أقل من 5 ميجابايت",
-            variant: "destructive",
-          });
+        toast.error("يجب أن يكون حجم الملف أقل من 5 ميجابايت");
           return false;
         }
         return true;
@@ -201,7 +185,7 @@ export default function AddPropertyPage() {
       }));
     }
 
-    e.target.value = ""; // إعادة تعيين حقل الإدخال
+    e.target.value = ""; 
   };
 
   const removeImage = (
@@ -241,62 +225,50 @@ export default function AddPropertyPage() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  const handleSubmit = async (publish: boolean) => {
-    setSubmitError(null); // إعادة تعيين رسالة الخطأ عند كل محاولة
+
+
+
   
+  const handleSubmit = async (publish: boolean) => {
+    setSubmitError(null);
     if (validateForm()) {
       setIsLoading(true);
       setUploading(true);
-      toast({
-        title: "جاري حفظ العقار",
-        description: "يرجى الانتظار...",
-      });
   
       try {
         let thumbnailPath: string | null = null;
         let galleryPaths: string[] = [];
         let floorPlansPaths: string[] = [];
   
-        // رفع الصورة الرئيسية
         if (images.thumbnail) {
-          const uploadedFile = await uploadSingleFile(
-            images.thumbnail,
-            "property",
-          );
-          thumbnailPath = uploadedFile.path; // استخدام path بدلاً من url
+          const uploadedFile = await uploadSingleFile(images.thumbnail, "property");
+          thumbnailPath = uploadedFile.path.replace("https://taearif.com", "");
           setPreviews((prev) => ({
             ...prev,
-            thumbnail: uploadedFile.url, // تحديث المعاينة بـ url من الخادم إذا أردت
+            thumbnail: uploadedFile.url.replace("https://taearif.com", ""),
           }));
         }
   
-        // رفع صور المعرض
         if (images.gallery.length > 0) {
-          const uploadedFiles = await uploadMultipleFiles(
-            images.gallery,
-            "property",
-          );
-          galleryPaths = uploadedFiles.map((f) => f.path); // استخدام path بدلاً من url
+          const uploadedFiles = await uploadMultipleFiles(images.gallery, "property");
+          galleryPaths = uploadedFiles.map((f) => f.path.replace("https://taearif.com", ""));
           setPreviews((prev) => ({
             ...prev,
-            gallery: uploadedFiles.map((f) => f.url), // تحديث المعاينة بـ url من الخادم
+            gallery: uploadedFiles.map((f) => f.url.replace("https://taearif.com", "")),
           }));
         }
   
-        // رفع مخططات الطوابق
+        // معالجة مخططات الطوابق (floorPlans)
         if (images.floorPlans.length > 0) {
-          const uploadedFiles = await uploadMultipleFiles(
-            images.floorPlans,
-            "property",
-          );
-          floorPlansPaths = uploadedFiles.map((f) => f.path); // استخدام path بدلاً من url
+          const uploadedFiles = await uploadMultipleFiles(images.floorPlans, "property");
+          floorPlansPaths = uploadedFiles.map((f) => f.path.replace("https://taearif.com", ""));
           setPreviews((prev) => ({
             ...prev,
-            floorPlans: uploadedFiles.map((f) => f.url), // تحديث المعاينة بـ url من الخادم
+            floorPlans: uploadedFiles.map((f) => f.url.replace("https://taearif.com", "")),
           }));
         }
   
-        // إعداد بيانات العقار
+        // إعداد بيانات العقار للإرسال إلى الـ API
         const propertyData = {
           title: formData.title,
           address: formData.address,
@@ -308,9 +280,9 @@ export default function AddPropertyPage() {
           features: formData.features.split(",").map((f) => f.trim()),
           transactionType: formData.transactionType,
           status: publish ? 1 : 0,
-          featured_image: thumbnailPath, // استخدام path
-          floor_planning_image: floorPlansPaths, // استخدام paths
-          gallery: galleryPaths, // استخدام paths
+          featured_image: thumbnailPath,
+          floor_planning_image: floorPlansPaths,
+          gallery: galleryPaths,
           description: formData.description,
           latitude: formData.latitude,
           longitude: formData.longitude,
@@ -320,40 +292,33 @@ export default function AddPropertyPage() {
           category_id: 1,
         };
   
-        // إرسال بيانات العقار إلى الـ API
-        let response = await axiosInstance.post(
-          "https://taearif.com/api/properties",
-          propertyData,
-        );
+        // إرسال البيانات إلى الـ API
+        let response = await axiosInstance.post("https://taearif.com/api/properties", propertyData);
+        toast.success("تم نشر العقار بنجاح");
   
-        toast({
-          title: publish ? "تم نشر العقار بنجاح" : "تم حفظ العقار كمسودة",
-          description: "تمت معالجة العقار بنجاح.",
-        });
-  
+        // تحديث حالة التطبيق
         const currentState = useStore.getState();
         const createdProject = response.data.data.property;
         createdProject.status = createdProject.status === 1 ? "منشور" : "مسودة";
-        const updatedProperties = [
-          createdProject,
-          ...currentState.propertiesManagement.properties,
-        ];
+        const updatedProperties = [createdProject, ...currentState.propertiesManagement.properties];
         setPropertiesManagement({
           properties: updatedProperties,
         });
-  
         router.push("/properties");
       } catch (error) {
-        console.error("Error submitting property:", error);
+        toast.error("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");
         setSubmitError("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");
       } finally {
         setUploading(false);
         setIsLoading(false);
       }
     } else {
+      toast.error("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
       setSubmitError("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
     }
   };
+
+
 
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">

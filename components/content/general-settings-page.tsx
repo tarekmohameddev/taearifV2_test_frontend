@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Save, Upload } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import toast from 'react-hot-toast';
 import axiosInstance from "@/lib/axiosInstance";
 import { uploadSingleFile } from "@/utils/uploadSingle";
 import { useCallback } from "react";
@@ -90,11 +90,7 @@ export function GeneralSettingsPage() {
           favicon: settings.favicon || ""
         });
       } catch (error) {
-        toast({
-          title: "خطأ في جلب البيانات",
-          description: "تعذر تحميل الإعدادات العامة",
-          variant: "destructive",
-        });
+        toast.error("تعذر تحميل الإعدادات العامة");
       }
     };
     fetchSettings();
@@ -140,17 +136,16 @@ export function GeneralSettingsPage() {
     try {
       const finalData = { ...formData };
   
-      let logoUrl = formData.logo.replace("https://taearif.com",""); // لتخزين url للعرض
-      let faviconUrl = formData.favicon.replace("https://taearif.com",""); // لتخزين url للعرض
+      let logoUrl = formData.logo.replace("https://taearif.com","");
+      let faviconUrl = formData.favicon.replace("https://taearif.com",""); 
       if (tempFiles.logo) {
         const result = await uploadSingleFile(tempFiles.logo, "content");
-        finalData.logo = result.path.replace("https://taearif.com",""); // استخدام path للإرسال إلى API
+        finalData.logo = result.path.replace("https://taearif.com",""); 
         setFormData((prev) => ({
           ...prev,
           logo: result.url,
         }));
         
-        // Update preview with the new uploaded URL
         setImagePreviews(prev => ({
           ...prev,
           logo: result.url
@@ -159,13 +154,12 @@ export function GeneralSettingsPage() {
   
       if (tempFiles.favicon) {
         const result = await uploadSingleFile(tempFiles.favicon, "content");
-        finalData.favicon = result.path.replace("https://taearif.com",""); // استخدام path للإرسال إلى API
+        finalData.favicon = result.path.replace("https://taearif.com",""); 
         setFormData((prev) => ({
           ...prev,
           favicon: result.url,
         }));
         
-        // Update preview with the new uploaded URL
         setImagePreviews(prev => ({
           ...prev,
           favicon: result.url
@@ -174,18 +168,11 @@ export function GeneralSettingsPage() {
   
       await axiosInstance.put("/content/general", finalData);
   
-      setTempFiles({}); // إعادة تعيين tempFiles
-  
-      toast({
-        title: "تم الحفظ بنجاح",
-        description: "تم تحديث الإعدادات العامة بنجاح",
-      });
+      setTempFiles({}); 
+      
+      toast.success("تم تحديث الإعدادات العامة بنجاح");
     } catch (error) {
-      toast({
-        title: "خطأ في الحفظ",
-        description: "تعذر حفظ التغييرات",
-        variant: "destructive",
-      });
+      toast.error("تعذر حفظ التغييرات");
     } finally {
       setIsLoading(false);
       router.push("/content");

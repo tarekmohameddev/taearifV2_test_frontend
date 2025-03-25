@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, ImagePlus, Plus, Save, Trash2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import toast from 'react-hot-toast';
 import {
   Select,
   SelectContent,
@@ -39,10 +39,7 @@ export function GalleryManagementPage() {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      toast({
-        title: "تم الحفظ بنجاح",
-        description: "تم حفظ معرض الصور بنجاح",
-      });
+      toast.success("تم حفظ معرض الصور بنجاح");
     }, 1000);
   };
 

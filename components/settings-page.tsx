@@ -47,7 +47,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from "@/hooks/use-toast";
+import toast from 'react-hot-toast';
 import {
   Accordion,
   AccordionContent,
@@ -182,11 +182,7 @@ export function SettingsPage() {
 
   const handleAddDomain = () => {
     if (!newDomain) {
-      toast({
-        title: "اسم النطاق مطلوب",
-        description: "الرجاء إدخال اسم نطاق",
-        variant: "destructive",
-      });
+      toast.error( "اسم النطاق مطلوب");
       return;
     }
 
@@ -194,11 +190,7 @@ export function SettingsPage() {
     const domainRegex =
       /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
     if (!domainRegex.test(newDomain)) {
-      toast({
-        title: "تنسيق النطاق غير صالح",
-        description: "الرجاء إدخال اسم نطاق صالح (مثال: example.com)",
-        variant: "destructive",
-      });
+      toast.error("تنسيق النطاق غير صالح");
       return;
     }
 
@@ -217,10 +209,7 @@ export function SettingsPage() {
     setIsAddDomainOpen(false);
     setSetupProgress(Math.min(setupProgress + 20, 100));
 
-    toast({
-      title: "تمت إضافة النطاق بنجاح",
-      description: "النطاق الخاص بك في انتظار التحقق",
-    });
+    toast.success("تمت إضافة النطاق بنجاح");
   };
 
   const handleVerifyDomain = (domainId: string) => {
@@ -238,10 +227,8 @@ export function SettingsPage() {
       setIsVerifyingDomain(false);
       setSetupProgress(Math.min(setupProgress + 20, 100));
 
-      toast({
-        title: "تم التحقق من النطاق بنجاح",
-        description: "النطاق الخاص بك نشط الآن مع تمكين SSL",
-      });
+    toast.success("تمت إضافة النطاق بنجاح");
+
     }, 2000);
   };
 
@@ -253,19 +240,12 @@ export function SettingsPage() {
       })),
     );
 
-    toast({
-      title: "تم تحديث النطاق الرئيسي",
-      description: "تم تحديث النطاق الرئيسي الخاص بك بنجاح",
-    });
+    toast.success("تم تحديث النطاق الرئيسي");
   };
 
   const handleDeleteDomain = (domainId: string) => {
     setDomains(domains.filter((domain) => domain.id !== domainId));
-
-    toast({
-      title: "تمت إزالة النطاق",
-      description: "تمت إزالة النطاق من حسابك",
-    });
+    toast.success("تمت إزالة النطاق");
   };
 
   const handleActivateTheme = (themeId: string) => {
@@ -276,10 +256,7 @@ export function SettingsPage() {
       })),
     );
 
-    toast({
-      title: "تم تنشيط السمة",
-      description: "تم تنشيط السمة بنجاح على موقعك",
-    });
+    toast.success("تم تنشيط السمة");
   };
 
   const handleSubscriptionChange = (planId: string) => {
@@ -290,10 +267,7 @@ export function SettingsPage() {
       })),
     );
 
-    toast({
-      title: "تم تغيير الاشتراك",
-      description: "تم تحديث خطة الاشتراك الخاصة بك بنجاح",
-    });
+    toast.success("تم تغيير الاشتراك");
   };
 
   // Contextual help for domains tab

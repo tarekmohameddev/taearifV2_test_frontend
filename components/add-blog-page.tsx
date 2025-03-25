@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import toast from 'react-hot-toast';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -113,13 +114,9 @@ export default function AddBlogPage(): JSX.Element {
   const removeImage = (index: number) => {
     setSelectedImages(selectedImages.filter((_, i) => i !== index));
   };
-
-  // دالة إرسال بيانات المقال إلى API
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    // بناء جسم الطلب (Request Body)
     const requestBody = {
       title: formData.title,
       excerpt: formData.excerpt,
@@ -136,10 +133,11 @@ export default function AddBlogPage(): JSX.Element {
 
     try {
       await axiosInstance.post("https://taearif.com/api/blogs", requestBody);
+      toast.success(`تم إضافة التدوينة بنجاح`);
       router.push("/blogs");
     } catch (error: any) {
       console.error("Error submitting blog:", error);
-      // يمكنك إضافة إشعار (toast) لعرض الخطأ للمستخدم هنا
+      toast.error(`خطا في الاضافة : "${error}"`);
     } finally {
       setIsSubmitting(false);
     }

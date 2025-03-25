@@ -26,7 +26,7 @@ import {
 import { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axiosInstance";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/hooks/use-toast";
+import toast from 'react-hot-toast';
 import {
   Facebook,
   Twitter,
@@ -65,11 +65,7 @@ export function FooterManagementPage() {
         }
       } catch (err) {
         setError(err.message);
-        toast({
-          variant: "destructive",
-          title: "خطأ",
-          description: "فشل في تحميل بيانات التذييل",
-        });
+        toast.error("فشل في تحميل بيانات التذييل");
       } finally {
         setIsLoading(false);
       }
@@ -251,17 +247,10 @@ export function FooterManagementPage() {
       );
 
       if (response.data.status === "success") {
-        toast({
-          title: "تم الحفظ بنجاح",
-          description: "تم حفظ التغييرات بنجاح",
-        });
+        toast.success("تم حفظ التغييرات بنجاح");
       }
     } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "خطأ",
-        description: "فشل في حفظ التغييرات",
-      });
+      toast.error("فشل في حفظ التغييرات");
     } finally {
       setIsSaving(false); // إعادة isSaving إلى false بعد الانتهاء
     }

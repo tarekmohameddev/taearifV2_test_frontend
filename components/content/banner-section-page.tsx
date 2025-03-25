@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, ImagePlus, Plus, Save, Trash2, X } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import toast from 'react-hot-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import axiosInstance from "@/lib/axiosInstance";
 import { uploadSingleFile } from "@/utils/uploadSingle";
@@ -56,7 +56,7 @@ export function BannerSectionPage() {
   const [staticBannerImage, setStaticBannerImage] = useState<string | null>(
     null,
   );
-  const [staticBannerFile, setStaticBannerFile] = useState<File | null>(null); // حالة جديدة للملف
+  const [staticBannerFile, setStaticBannerFile] = useState<File | null>(null); 
   const [sliders, setSliders] = useState<
     Array<{
       id: string;
@@ -67,7 +67,7 @@ export function BannerSectionPage() {
       buttonText: string;
       buttonLink: string;
       image: string | null;
-      file: File | null; // حقل جديد للملف
+      file: File | null; 
     }>
   >([]);
 
@@ -78,7 +78,7 @@ export function BannerSectionPage() {
         const data = response.data.data.settings;
         setBannerData(data);
         setBannerType(data.banner_type);
-        setStaticBannerImage(data.static?.image || null); // تعيين الصورة الثابتة
+        setStaticBannerImage(data.static?.image || null); 
 
         if (data.slider?.slides) {
           const formattedSlides = data.slider.slides.map((slide) => ({
@@ -90,16 +90,12 @@ export function BannerSectionPage() {
             buttonText: slide.buttonText,
             buttonLink: slide.buttonUrl,
             image: slide.image,
-            file: null, // لا ملف للصور الموجودة مسبقًا
+            file: null, 
           }));
           setSliders(formattedSlides);
         }
       } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "خطأ",
-          description: "فشل في جلب بيانات البانر",
-        });
+        toast.error("فشل في جلب بيانات البانر");
       }
     };
 
@@ -109,51 +105,45 @@ export function BannerSectionPage() {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // تحديد URL الافتراضي للبanner الثابت (للعرض)
       let staticImageUrl = bannerData?.static?.image || "";
-      let staticImagePath = staticImageUrl; // للإرسال إلى API
+      let staticImagePath = staticImageUrl; 
   
-      // رفع صورة البanner الثابت إذا كانت موجودة
       if (bannerType === "static" && staticBannerFile) {
         const uploadResult = await uploadSingleFile(staticBannerFile, "content");
-        staticImageUrl = uploadResult.url; // استخدام url للعرض في الحالة
-        staticImagePath = uploadResult.path; // استخدام path للإرسال إلى API
-        setStaticBannerImage(uploadResult.url); // تحديث الحالة بـ url للعرض
+        staticImageUrl = uploadResult.url; 
+        staticImagePath = uploadResult.path; 
+        setStaticBannerImage(uploadResult.url); 
       } else if (bannerType === "static" && staticBannerImage === null) {
-        staticImagePath = ""; // إذا تم حذف الصورة
+        staticImagePath = ""; 
       }
-  
-      // رفع صور الشرائح إذا كانت موجودة
       const updatedSlides = await Promise.all(
         sliders.map(async (slide) => {
           if (slide.file) {
             const uploadResult = await uploadSingleFile(slide.file, "content");
             return {
               ...slide,
-              image: uploadResult.url, // استخدام url للعرض في الحالة
-              imagePath: uploadResult.path, // إضافة path للإرسال إلى API
+              image: uploadResult.url, 
+              imagePath: uploadResult.path, 
             };
           } else if (slide.image === null) {
-            return { ...slide, image: "", imagePath: "" }; // إذا تم حذف الصورة
+            return { ...slide, image: "", imagePath: "" };
           }
-          return { ...slide, imagePath: slide.image }; // استخدام image الحالي كـ path إذا لم يتغير
+          return { ...slide, imagePath: slide.image }; 
         }),
       );
   
-      // تحديث الحالة بـ url للعرض
       setSliders(
         updatedSlides.map((slide) => ({
           ...slide,
-          file: null, // إعادة تعيين الملف بعد الرفع
+          file: null, 
         })),
       );
   
-      // إعداد formData بالقيم المحدثة
       const formData = {
         banner_type: bannerType,
         static: {
           enabled: bannerType === "static",
-          image: staticImagePath.replace("https://taearif.com",""), // استخدام path للإرسال إلى API
+          image: staticImagePath.replace("https://taearif.com",""),
           title: bannerData?.static?.title || "",
           subtitle: bannerData?.static?.subtitle || "",
           caption: bannerData?.static?.caption || "",
@@ -169,7 +159,7 @@ export function BannerSectionPage() {
           enabled: bannerType === "slider",
           slides: updatedSlides.map((slide) => ({
             id: slide.id,
-            image: (slide.imagePath || slide.image).replace("https://taearif.com",""), // استخدام path للصور الجديدة أو image الحالي
+            image: (slide.imagePath || slide.image).replace("https://taearif.com",""), 
             title: slide.title,
             subtitle: slide.subtitle,
             caption: slide.caption || "",
@@ -197,18 +187,10 @@ export function BannerSectionPage() {
         },
       };
   
-      // إرسال البيانات إلى API
       await axiosInstance.post("/content/banner", formData);
-      toast({
-        title: "تم الحفظ بنجاح",
-        description: "تم تحديث إعدادات البانر بنجاح",
-      });
+      toast.success("تم تحديث إعدادات البانر بنجاح");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "خطأ",
-        description: "فشل في حفظ الإعدادات",
-      });
+      toast.error("فشل في حفظ الإعدادات");
     } finally {
       setIsLoading(false);
     }
@@ -229,7 +211,7 @@ export function BannerSectionPage() {
         buttonText: "اضغط هنا",
         buttonLink: "/",
         image: null,
-        file: null, // إضافة حقل الملف
+        file: null, 
       },
     ]);
   };
@@ -277,7 +259,7 @@ export function BannerSectionPage() {
 
   const removeStaticImage = () => {
     setStaticBannerImage(null);
-    setStaticBannerFile(null); // حذف الملف أيضًا
+    setStaticBannerFile(null); 
     if (staticFileInputRef.current) {
       staticFileInputRef.current.value = "";
     }

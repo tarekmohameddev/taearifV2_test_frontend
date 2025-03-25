@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import "@/app/globals.css";
 import useAuthStore from "@/context/AuthContext";
 import ClientLayout from "./ClientLayout";
+import { Toaster } from 'react-hot-toast';
 
 export default function RootLayout({ children }) {
   const router = useRouter();
@@ -47,6 +48,7 @@ export default function RootLayout({ children }) {
           enableSystem={false}
           disableTransitionOnChange
         >
+          <Toaster />
           <ClientLayout>{children}</ClientLayout>
         </ThemeProvider>
       </body>

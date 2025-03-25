@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-
+import toast from 'react-hot-toast';
 import {
   ArrowRight,
   Building2,
@@ -40,7 +40,6 @@ import useStore from "@/context/Store";
 import { uploadSingleFile } from "@/utils/uploadSingle";
 import { uploadMultipleFiles } from "@/utils/uploadMultiple";
 
-// Dynamically import the Map component to avoid SSR issues
 const MapComponent = dynamic(() => import("@/components/map-component"), {
   ssr: false,
   loading: () => (
@@ -50,14 +49,11 @@ const MapComponent = dynamic(() => import("@/components/map-component"), {
   ),
 });
 
-// تعريف نوع صورة المشروع
 type ProjectImage = {
   id: string;
   file: File;
   url: string;
 };
-
-// تعريف واجهة المشروع الجديد، مع إضافة "amenities" كمجموعة نصوص مفصولة بفواصل
 interface INewProject {
   id: string;
   name: string;
@@ -79,8 +75,8 @@ export const metadata = {
 export default function AddProjectPage(): JSX.Element {
   const router = useRouter();
   const { id } = useParams();
-  const [originalData, setOriginalData] = useState(null); // لحفظ النسخة الأصلية من البيانات
-  let [amenitiesNAMES, setAmenitiesNAMES] = useState(""); // لحفظ النسخة الأصلية من البيانات
+  const [originalData, setOriginalData] = useState(null); 
+  let [amenitiesNAMES, setAmenitiesNAMES] = useState(""); 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const plansInputRef = useRef<HTMLInputElement>(null);
@@ -89,18 +85,18 @@ export default function AddProjectPage(): JSX.Element {
     id: "",
     name: "",
     location: "",
-    price: "", // سيتم استخدام min_price و max_price بدلاً منه لاحقًا
+    price: "", 
     status: "",
-    completion_date: "", // سيتم تحويله إلى completion_date في الصيغة النهائية
+    completion_date: "", 
     units: 0,
     developer: "",
     description: "",
     featured: false,
-    latitude: 25.2048, // افتراضي (دبي)
-    longitude: 55.2708, // افتراضي (دبي)
-    amenities: [], // سيتم تحويله إلى مصفوفة
-    minPrice: "", // إضافة الحد الأدنى للسعر
-    maxPrice: "", // إضافة الحد الأقصى للسعر
+    latitude: 25.2048,
+    longitude: 55.2708, 
+    amenities: [], 
+    minPrice: "", 
+    maxPrice: "", 
   });
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [thumbnailImage, setThumbnailImage] = useState<ProjectImage | null>(
@@ -125,7 +121,6 @@ export default function AddProjectPage(): JSX.Element {
           Array.isArray(projectData.contents) &&
           projectData.contents.length > 0
         ) {
-          console.log("projectData.amenities", projectData.amenities);
           setNewProject({
             id: projectData.id,
             name: projectData.contents[0].title,
@@ -161,9 +156,6 @@ export default function AddProjectPage(): JSX.Element {
             amenity.name.trim(),
           );
           setAmenitiesNAMES(amenitiesNames);
-          setTimeout(() => {
-            console.log("amenitiesNAMES", amenitiesNAMES);
-          }, 300);
         } else {
           console.error("البيانات غير مكتملة: خاصية contents مفقودة أو فارغة");
         }
@@ -380,18 +372,17 @@ export default function AddProjectPage(): JSX.Element {
   const handleUpdateProject = async (
     status: "منشور" | "مسودة" | "Pre-construction",
   ) => {
-    if (!validateForm())
-      return setSubmitError("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
+    if (!validateForm()){
+      toast.error("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
+       setSubmitError("يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.");
+      return
+    }
+
     setIsLoading(true);
-    setSubmitError(null); // إعادة تعيين رسالة الخطأ عند كل محاولة
-console.log(`1111111111111111111111111111111111111`)
+    setSubmitError(null); 
     try {
-console.log(`22222222222222222222222222222222`)
-      // تحويل حقل السعر إلى قيم min و max
-      // مثال: إذا كان المستخدم يُدخل "50000-200000" أو قيمة واحدة
       let minPrice = 0;
       let maxPrice = 0;
-console.log(`3333333333333333333333333333333`)
       if (newProject.price.includes("-")) {
         const [min, max] = newProject.price
           .split("-")
@@ -402,20 +393,13 @@ console.log(`3333333333333333333333333333333`)
         minPrice = parseFloat(newProject.price) || 0;
         maxPrice = minPrice;
       }
-console.log(`44444444444444444444444444444444444`)
       const formattedDate = new Date(newProject.completion_date)
         .toISOString()
         .split("T")[0];
 
-        console.log(`5555555555555555555555555`)
 
-
-
-// في دالة handleUpdateProject:
 let featuredImageUrl = "";
 if (thumbnailImage) {
-  console.log("thumbnailImage",thumbnailImage)
-  // تحقق من أن الرابط لا يبدأ بـ "https://taearif.com/"
   if (!thumbnailImage.url.startsWith("https://taearif.com/")) {
     const uploadResult = await uploadSingleFile(
       thumbnailImage.file, // استخدم ملف الصورة الفعلي
@@ -423,21 +407,17 @@ if (thumbnailImage) {
     );
     featuredImageUrl = uploadResult.url;
   } else {
-    // إذا كان الرابط موجودًا مسبقًا على السيرفر، استخدمه مباشرة
     featuredImageUrl = thumbnailImage.url;
   }
 }
 
-    // رفع صور المخططات (floorplan_images)
     let floorplanUrls = [];
     if (planImages.length > 0) {
       const files = planImages.map((image) => image.file);
       const uploadResults = await uploadMultipleFiles(files, "project");
 
-      // التحقق من صحة الاستجابة
       if (uploadResults && Array.isArray(uploadResults)) {
         floorplanUrls = uploadResults.map((file) => file.url);
-        console.log("floorplanUrls", floorplanUrls);
       } else {
         console.error("Error: uploadResults is not an array", uploadResults);
       }
@@ -448,11 +428,8 @@ if (thumbnailImage) {
       const files = galleryImages.map((image) => image.file);
       const uploadResults = await uploadMultipleFiles(files, "project");
 
-      console.log("uploadResults2", uploadResults); // تحقق من الاستجابة
-
       if (uploadResults && Array.isArray(uploadResults)) {
         galleryUrls = uploadResults.map((file) => file.url); // استخراج الروابط
-        console.log("galleryUrls", galleryUrls);
       } else {
         console.error(
           "Error: uploadResults does not contain files array",
@@ -460,7 +437,6 @@ if (thumbnailImage) {
         );
       }
     }
-// تحويل إلى مصفوفة سواء كان نصًا أو مصفوفة فارغة
 const amenitiesArray = typeof amenitiesNAMES === 'string' 
   ? amenitiesNAMES.split(",").map(item => item.trim()) 
   : [];
@@ -527,28 +503,24 @@ const amenitiesArray = typeof amenitiesNAMES === 'string'
         ],
         amenities: amenitiesArray,
       };
-      console.log(`77777777777777777777`)
 
       const response = await axiosInstance.post(
         `https://taearif.com/api/projects/${id}`,
         projectData,
       );
-
-console.log(`8888888888888888888888888`)
+      toast.success("تم الحفظ بنجاح");
+      
       const currentState = useStore.getState();
-console.log(`99999999999999999999`)
       const updatedProjects =
         currentState.projectsManagement.projects.map((proj) =>
           proj.id === id ? { ...proj, ...response.data.data } : proj,
         );
-
-console.log(`10 10 10 10 10 10 10`)
+        
       setProjectsManagement({
         projects: updatedProjects,
         pagination: currentState.projectsManagement.pagination,
       });
-      console.log(`11 11 11 11 11 11 11 11 11 11 11 11 11 11`)
-
+      
       router.push("/projects");
     } catch (error) {
       setSubmitError("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");
@@ -621,7 +593,7 @@ console.log(`10 10 10 10 10 10 10`)
             <Card>
               <CardHeader>
                 <CardTitle>معلومات المشروع</CardTitle>
-                <CardDescription>
+                <CardDescription>يرجى التحقق من الحقول المطلوبة وإصلاح الأخطاء.
                   أدخل التفاصيل الأساسية للمشروع العقاري الجديد
                 </CardDescription>
               </CardHeader>

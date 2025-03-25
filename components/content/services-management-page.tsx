@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Grip, Plus, Save, Trash2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import toast from 'react-hot-toast';
 import {
   Select,
   SelectContent,
@@ -71,10 +71,7 @@ export function ServicesManagementPage() {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      toast({
-        title: "تم الحفظ بنجاح",
-        description: "تم حفظ خدماتك بنجاح",
-      });
+      toast.success("تم حفظ خدماتك بنجاح");
     }, 1000);
   };
 
