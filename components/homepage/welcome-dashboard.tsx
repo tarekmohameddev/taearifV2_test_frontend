@@ -39,11 +39,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import LoadingComp from "@/components/LoadingComp";
-import VisitorChart from "@/components/VisitorChart";
-import MostVisitedPagesTable from "@/components/MostVisitedPagesTable";
-import RecentActivity from "@/components/recent-activity";
-import SetupProgressCard from "@/components/SetupProgressCard";
+import LoadingComp from "@/components/homepage/LoadingComp";
+import VisitorChart from "@/components/homepage/VisitorChart";
+import MostVisitedPagesTable from "@/components/homepage/MostVisitedPagesTable";
+import RecentActivity from "@/components/homepage/recent-activity";
+import SetupProgressCard from "@/components/homepage/SetupProgressCard";
 
 export function WelcomeDashboard() {
   const {

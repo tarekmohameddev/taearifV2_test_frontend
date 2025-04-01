@@ -32,7 +32,10 @@ module.exports = (set) => ({
           ...state.homepage,
           visitorData: {
             ...state.homepage.visitorData,
-            [timeRange]: response.data.visitor_data,
+            [timeRange]: {
+              data: response.data.visitor_data,
+              fetched: true, 
+            },
           },
         },
       }));

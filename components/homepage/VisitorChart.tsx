@@ -11,10 +11,9 @@ import {
   ResponsiveContainer,
   Area,
 } from "recharts";
-import useStore from "@/context/Store"; // استيراد useStore
+import useStore from "@/context/Store"; 
 
 function VisitorChart() {
-  // الوصول إلى الحالات والدوال من قسم homepage في Store.js
   const {
     homepage: {
       visitorData,
@@ -25,11 +24,9 @@ function VisitorChart() {
     loading,
   } = useStore();
 
-  // جلب البيانات إذا كانت فارغة للفترة الزمنية المختارة
   useEffect(() => {
     const dataForSelectedRange = visitorData[selectedTimeRange];
-    console.log("dataForSelectedRange", dataForSelectedRange);
-    if (!dataForSelectedRange) { 
+    if (!dataForSelectedRange || dataForSelectedRange.length === 0) {
       fetchVisitorData(selectedTimeRange);
     }
   }, [selectedTimeRange, visitorData, fetchVisitorData]);
@@ -38,7 +35,7 @@ function VisitorChart() {
 
   return (
     <div className="w-full">
-      {/* أزرار تحديد الفترة الزمنية */}
+      {/* أزرار تحديد الفترة الزمنية */} 
       <div className="mb-4 flex gap-2">
         {[
           { label: "7 أيام", value: "7" },
