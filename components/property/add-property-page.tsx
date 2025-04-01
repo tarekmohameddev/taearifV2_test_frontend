@@ -239,45 +239,27 @@ export default function AddPropertyPage() {
     if (validateForm()) {
       setIsLoading(true);
       setUploading(true);
-      console.log("111111111111111111111111")
   
       try {
         let thumbnailPath: string | null = null;
         let galleryPaths: string[] = [];
         let floorPlansPaths: string[] = [];
   
-  console.log("2222222222222222222222222")
         if (images.thumbnail) {
           const uploadedFile = await uploadSingleFile(images.thumbnail, "property");
           thumbnailPath = uploadedFile.path.replace("https://taearif.com", "");
-          setPreviews((prev) => ({
-            ...prev,
-            thumbnail: uploadedFile.url.replace("https://taearif.com", ""),
-          }));
         }
   
-  console.log("33333333333333333333333333333333333")
         if (images.gallery.length > 0) {
           const uploadedFiles = await uploadMultipleFiles(images.gallery, "property");
           galleryPaths = uploadedFiles.map((f) => f.path.replace("https://taearif.com", ""));
-          setPreviews((prev) => ({
-            ...prev,
-            gallery: uploadedFiles.map((f) => f.url.replace("https://taearif.com", "")),
-          }));
         }
   
-  console.log("444444444444444444444444444")
-        // معالجة مخططات الطوابق (floorPlans)
         if (images.floorPlans.length > 0) {
           const uploadedFiles = await uploadMultipleFiles(images.floorPlans, "property");
           floorPlansPaths = uploadedFiles.map((f) => f.path.replace("https://taearif.com", ""));
-          setPreviews((prev) => ({
-            ...prev,
-            floorPlans: uploadedFiles.map((f) => f.url.replace("https://taearif.com", "")),
-          }));
         }
-  console.log("5555555555555555555555555555")
-        // إعداد بيانات العقار للإرسال إلى الـ API
+
         const propertyData = {
           title: formData.title,
           address: formData.address,
@@ -300,17 +282,12 @@ export default function AddPropertyPage() {
           city_id: 1,
           category_id: 1,
         };
-        console.log("66666666666666666666666666666666666")
   
-        // إرسال البيانات إلى الـ API
-        let response = await axiosInstance.post("https://taearif.com/api/properties", propertyData);
+        let response = await axiosInstance.post("/properties", propertyData);
         toast.success("تم نشر العقار بنجاح");
-        console.log("777777777777777777777777777777")
-  
-        // تحديث حالة التطبيق
         const currentState = useStore.getState();
         const createdProject = response.data.user_property;
-        createdProject.status = createdProject.status === 1 ? "منشور" : "مسودة";
+        createdProject.status = createdProject.status === true ? "منشور" : "مسودة";
         const updatedProperties = [createdProject, ...currentState.propertiesManagement.properties];
         setPropertiesManagement({
           properties: updatedProperties,

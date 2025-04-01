@@ -1,5 +1,5 @@
 "use client";
-
+import { useMemo } from "react";
 import { useState, useEffect } from "react";
 import {
   Bath,
@@ -106,6 +106,25 @@ export function PropertiesManagementPage() {
     fetchProperties,
   } = useStore();
 
+
+    
+  const normalizeStatus = (status) => {
+    if (status === "1" || status === 1) return "منشور";
+    if (status === "0" || status === 0) return "مسودة";
+    return status; 
+  };
+
+
+  const normalizedProperties = useMemo(() => {
+    return properties.map(property => ({
+      ...property,
+      status: normalizeStatus(property.status)
+    }));
+  }, [properties]);
+  
+  
+
+  
   const setViewMode = (mode: "grid" | "list") => {
     setPropertiesManagement({ viewMode: mode });
   };
@@ -125,7 +144,8 @@ export function PropertiesManagementPage() {
     if (!isInitialized && !loading) {
       fetchProperties();
     }
-  }, [fetchProperties, isInitialized, loading]);
+    console.log("Properties",properties)
+  }, [fetchProperties, isInitialized, loading, properties]);
 
 
 
@@ -328,7 +348,7 @@ export function PropertiesManagementPage() {
                 <TabsContent value="all" className="mt-4">
                   {viewMode === "grid" ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {properties.map((property) => (
+                      {normalizedProperties.map((property) => (
                         <PropertyCard
                           key={property.id}
                           property={property}
@@ -341,7 +361,7 @@ export function PropertiesManagementPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {properties.map((property) => (
+                      {normalizedProperties.map((property) => (
                         <PropertyListItem
                           key={property.id}
                           property={property}
@@ -357,7 +377,7 @@ export function PropertiesManagementPage() {
                 <TabsContent value="for-sale" className="mt-4">
                   {viewMode === "grid" ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {properties
+                      {normalizedProperties
                         .filter((property) => property.transaction_type === "sale")
                         .map((property) => (
                           <PropertyCard
@@ -372,7 +392,7 @@ export function PropertiesManagementPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {properties
+                      {normalizedProperties
                         .filter((property) => property.transaction_type === "sale")
                         .map((property) => (
                           <PropertyListItem
@@ -390,7 +410,7 @@ export function PropertiesManagementPage() {
                 <TabsContent value="for-rent" className="mt-4">
                   {viewMode === "grid" ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {properties
+                      {normalizedProperties
                         .filter(
                           (property) => property.transaction_type === "للإيجار",
                         )
@@ -407,7 +427,7 @@ export function PropertiesManagementPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {properties
+                      {normalizedProperties
                         .filter(
                           (property) => property.transaction_type === "للإيجار",
                         )
@@ -427,7 +447,7 @@ export function PropertiesManagementPage() {
                 <TabsContent value="published" className="mt-4">
                   {viewMode === "grid" ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {properties
+                      {normalizedProperties
                         .filter((property) => property.status === "منشور")
                         .map((property) => (
                           <PropertyCard
@@ -442,7 +462,7 @@ export function PropertiesManagementPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {properties
+                      {normalizedProperties
                         .filter((property) => property.status === "منشور")
                         .map((property) => (
                           <PropertyListItem
@@ -460,7 +480,7 @@ export function PropertiesManagementPage() {
                 <TabsContent value="drafts" className="mt-4">
                   {viewMode === "grid" ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {properties
+                      {normalizedProperties
                         .filter((property) => property.status === "مسودة")
                         .map((property) => (
                           <PropertyCard
@@ -475,7 +495,7 @@ export function PropertiesManagementPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {properties
+                      {normalizedProperties
                         .filter((property) => property.status === "مسودة")
                         .map((property) => (
                           <PropertyListItem
@@ -493,7 +513,7 @@ export function PropertiesManagementPage() {
                 <TabsContent value="featured" className="mt-4">
                   {viewMode === "grid" ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {properties
+                      {normalizedProperties
                         .filter((property) => property.featured)
                         .map((property) => (
                           <PropertyCard
@@ -508,7 +528,7 @@ export function PropertiesManagementPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {properties
+                      {normalizedProperties
                         .filter((property) => property.featured)
                         .map((property) => (
                           <PropertyListItem
@@ -544,6 +564,10 @@ function PropertyCard({
   onToggleFavorite,
 }: PropertyCardProps) {
   const router = useRouter();
+   
+
+
+
 
   return (
     <Card className="overflow-hidden">
@@ -655,13 +679,13 @@ function PropertyCard({
             </>
           ) : (
             <>
-              <span>/شهر</span>
               <span>بسعر {property.price.toLocaleString()}</span>
               <img 
                 src="/Saudi_Riyal_Symbol.svg" 
                 alt="ريال سعودي"
                 className="w-5 h-5 filter brightness-0 contrast-100"
-              />
+                />
+                <span>شهر/</span>
             </>
           )}
         </div>
@@ -788,14 +812,14 @@ function PropertyListItem({
       </div>
     ) : (
       <div className="flex items-center gap-1">
+        <span>شهر/</span>
 <img 
   src="/Saudi_Riyal_Symbol.svg" 
   alt="ريال سعودي"
   className="w-5 h-5 filter brightness-0 contrast-100"
 />
         <span>بسعر {property.price.toLocaleString()}</span>
-        <span>/شهر</span>
-      </div>
+        </div>
     )}
             </div>
           </div>

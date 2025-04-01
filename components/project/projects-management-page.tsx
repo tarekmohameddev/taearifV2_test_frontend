@@ -123,13 +123,11 @@ export function ProjectsManagementPage() {
     try {
       const response = await axiosInstance.delete(`/projects/${id}`);
       console.log("تم حذف المشروع بنجاح");
-      // يمكنك تحديث الحالة (state) أو إعادة تحميل الصفحة هنا بعد الحذف
     } catch (error) {
       console.error("حدث خطأ أثناء الحذف:", error);
     }
   };
 
-  // جلب البيانات عند التحميل الأولي
   useEffect(() => {
     if (!isInitialized) {
       fetchProjects();
@@ -409,7 +407,7 @@ function ProjectListItem({ project }: { project: IProject }) {
         <div className="relative sm:w-1/3 md:w-1/4">
           <div className="aspect-[16/9] sm:aspect-auto sm:h-full w-full overflow-hidden">
             <img
-              src={project.thumbnail || "/placeholder.svg"}
+              src={project.thumbnail || project.featured_image || "/placeholder.svg"}
               alt={project.contents?.[0]?.title}
               className="h-full w-full object-cover"
             />
