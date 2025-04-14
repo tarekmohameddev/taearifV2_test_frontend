@@ -384,7 +384,7 @@ export function GeneralSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="show-breadcrumb">
-                      جعل الصفحة الرئيسية العقارات
+                    الصفحة الرئيسية هي صفحة العقارات
                     </Label>
                     <p className="text-sm text-muted-foreground">
                       
