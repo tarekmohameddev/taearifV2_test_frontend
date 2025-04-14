@@ -60,6 +60,7 @@ interface Errors {
 }
 
 export function RegisterPage() {
+  const { UserIslogged } = useAuthStore();
   const { executeRecaptcha } = useGoogleReCaptcha();
   const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
@@ -125,6 +126,13 @@ export function RegisterPage() {
     if (!password) return "كلمة المرور مطلوبة";
     return "";
   };
+  
+  useEffect(() => {
+if(UserIslogged == true){
+  router.push("/");
+
+}
+  }, [UserIslogged]);
 
   // Generate subdomain suggestions based on email
   useEffect(() => {
