@@ -44,8 +44,10 @@ import VisitorChart from "@/components/homepage/VisitorChart";
 import MostVisitedPagesTable from "@/components/homepage/MostVisitedPagesTable";
 import RecentActivity from "@/components/homepage/recent-activity";
 import SetupProgressCard from "@/components/homepage/SetupProgressCard";
+import useAuthStore from "@/context/AuthContext";
 
 export function WelcomeDashboard() {
+  const { userData } = useAuthStore();
   const {
     homepage: {
       dashboardDevice,
@@ -85,7 +87,7 @@ export function WelcomeDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
-          مرحباً بك في موقعي الشخصي!
+          مرحباً بك في {userData.username}!
         </h1>
         <p className="text-muted-foreground">هذه نظرة عامة على موقعك وأدائه.</p>
       </div>
