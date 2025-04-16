@@ -71,6 +71,8 @@ import {
 } from "@/components/ui/select";
 import axiosInstance from "@/lib/axiosInstance";
 import { Skeleton } from "@/components/ui/skeleton";
+import useAuthStore from "@/context/AuthContext";
+import PaymentPopup from "@/components/popup/Popup";
 
 const domainsHelp = {
   title: "إدارة النطاقات",
@@ -81,11 +83,9 @@ const domainsHelp = {
     { title: "استكشاف مشكلات النطاق وإصلاحها", href: "#", type: "article" },
   ],
 };
-import useAuthStore from "@/context/AuthContext";
-import PaymentPopup from "@/components/popup/Popup";
 
 export function SettingsPage() {
-  const { clickedOnSubButton } = useAuthStore();
+  const { clickedOnSubButton, userData } = useAuthStore();
   const [isAddDomainOpen, setIsAddDomainOpen] = useState(false);
   const [newDomain, setNewDomain] = useState("");
   const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
@@ -105,15 +105,39 @@ export function SettingsPage() {
   const [isLoadingThemes, setIsLoadingThemes] = useState(true);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState("");
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
+  const [isLoadingPlans, setIsLoadingPlans] = useState(true);
+  const [allFeatures, setAllFeatures] = useState([]);
 
-  const handleUpgradeClick = async () => {
+  useEffect(() => {
+    const fetchSubscriptionPlans = async () => {
+      try {
+        const response = await axiosInstance.get("/settings/payment");
+        setSubscriptionPlans(response.data.plans);
+
+        // جمع جميع الميزات الفريدة من جميع الخطط
+        const featuresSet = new Set();
+        response.data.plans.forEach(plan => {
+          plan.features.forEach(feature => featuresSet.add(feature));
+        });
+        setAllFeatures(Array.from(featuresSet));
+      } catch (error) {
+        console.error("Error fetching subscription plans:", error);
+        toast.error("فشل في تحميل خطط الاشتراك");
+      } finally {
+        setIsLoadingPlans(false);
+      }
+    };
+    fetchSubscriptionPlans();
+  }, []);
+
+  const handleUpgradeClick = async (packageId, price) => {
     try {
       setIsPopupOpen(true);
       const response = await axiosInstance.post("/make-payment", {
-        package_id: 1,
-        price: 99.99,
+        package_id: packageId,
+        price: price,
       });
-      console.log("استجابة الـ API:", response.data);
       if (response.data.status === "success") {
         setPaymentUrl(response.data.payment_url);
       } else {
@@ -124,14 +148,6 @@ export function SettingsPage() {
       toast.error("حدث خطأ أثناء الاتصال بالخادم");
     }
   };
-  
-  // في نهاية الـ return:
-  {isPopupOpen && (
-    <PaymentPopup
-      paymentUrl={paymentUrl}
-      onClose={() => setIsPopupOpen(false)}
-    />
-  )}
 
   useEffect(() => {
     const fetchData = async () => {
@@ -168,10 +184,7 @@ export function SettingsPage() {
     }
   }, [activeTab]);
 
-
-  
   const handleAddDomain = async () => {
-    // التحقق من البادئات الممنوعة أولاً
     if (
       newDomain.startsWith("www.") ||
       newDomain.startsWith("http:") ||
@@ -211,16 +224,14 @@ export function SettingsPage() {
       setSetupProgress(Math.min(setupProgress + 20, 100));
       toast.dismiss(loadingToast);
       toast.success("تمت إضافة النطاق بنجاح");
-      setErrorMessage(""); // تصفير رسالة الخطأ عند النجاح
+      setErrorMessage("");
     } catch (error) {
       console.error("Error adding domain:", error);
       toast.dismiss(loadingToast);
-
-      // التحقق من وجود رسالة خطأ من الـ API واستخدامها
       const errorMessage =
         error.response?.data?.message || "حدث خطأ أثناء إضافة النطاق";
       toast.error(errorMessage);
-      setErrorMessage(errorMessage); // تخزين رسالة الخطأ لعرضها أسفل الزر
+      setErrorMessage(errorMessage);
     }
   };
 
@@ -249,7 +260,6 @@ export function SettingsPage() {
     }
   };
 
-  // تعيين نطاق رئيسي باستخدام PATCH API
   const handleSetPrimaryDomain = async (domainId) => {
     const loadingToast = toast.loading("جاري تحديث النطاق الرئيسي...");
     try {
@@ -290,79 +300,22 @@ export function SettingsPage() {
     }
   };
 
-  const [subscriptionPlans, setSubscriptionPlans] = useState([
-    {
-      id: "free",
-      name: "الخطة المجانية",
-      price: "0",
-      current: true,
-      features: [
-        "موقع واحد",
-        "نطاق فرعي",
-        "دعم البريد الإلكتروني",
-        "تحليلات أساسية",
-      ],
-      limitations: ["بدون نطاق مخصص", "شعار منصتنا", "بدون دعم أولوي"],
-    },
-    {
-      id: "pro",
-      name: "الخطة الاحترافية",
-      price: "19.99",
-      current: false,
-      popular: true,
-      features: [
-        "3 مواقع",
-        "نطاق مخصص",
-        "بدون شعار منصتنا",
-        "دعم أولوي",
-        "تحليلات متقدمة",
-        "تكامل وسائل التواصل الاجتماعي",
-      ],
-    },
-    {
-      id: "business",
-      name: "خطة الأعمال",
-      price: "49.99",
-      current: false,
-      features: [
-        "10 مواقع",
-        "نطاقات مخصصة غير محدودة",
-        "دعم على مدار الساعة",
-        "تحليلات متقدمة",
-        "تكامل API",
-        "تخصيص كامل",
-      ],
-    },
-  ]);
-
   const handleActivateTheme = async (themeId) => {
     try {
       await axiosInstance.post("/settings/theme/set-active", {
         theme_id: themeId,
       });
-
       setThemes(
         themes.map((theme) => ({
           ...theme,
           active: theme.id === themeId,
         })),
       );
-
       toast.success("تم تنشيط السمة بنجاح");
     } catch (error) {
       console.error("Error activating theme:", error);
       toast.error("حدث خطأ أثناء تنشيط السمة");
     }
-  };
-
-  const handleSubscriptionChange = (planId) => {
-    setSubscriptionPlans(
-      subscriptionPlans.map((plan) => ({
-        ...plan,
-        current: plan.id === planId,
-      })),
-    );
-    toast.success("تم تغيير الاشتراك بنجاح");
   };
 
   const filteredDomains = domains.filter((domain) => {
@@ -374,6 +327,40 @@ export function SettingsPage() {
     if (searchQuery && !domain.custom_name.includes(searchQuery)) return false;
     return true;
   });
+
+  const renderFeatures = (plan) => {
+    const availableFeatures = allFeatures.filter(feature => plan.features.includes(feature));
+    const limitations = allFeatures.filter(feature => !plan.features.includes(feature));
+
+    const allItems = [
+      ...availableFeatures.map(feature => ({ feature, available: true })),
+      ...limitations.map(feature => ({ feature, available: false }))
+    ];
+
+    const featureElements = allItems.map(({ feature, available }) => (
+      <li key={feature} className="flex items-center gap-2">
+        {available ? (
+          <Check className="h-4 w-4 text-green-600" />
+        ) : (
+          <AlertCircle className="h-4 w-4 text-gray-400" />
+        )}
+        <span className={`text-sm ${available ? '' : 'text-gray-400'}`}>{feature}</span>
+      </li>
+    ));
+
+    if (allItems.length > 13) {
+      const firstColumn = featureElements.slice(0, 13);
+      const secondColumn = featureElements.slice(13);
+      return (
+        <div className="flex gap-4">
+          <ul className="space-y-2 flex-1">{firstColumn}</ul>
+          <ul className="space-y-2 flex-1">{secondColumn}</ul>
+        </div>
+      );
+    } else {
+      return <ul className="space-y-2">{featureElements}</ul>;
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -438,7 +425,6 @@ export function SettingsPage() {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Domains Tab */}
               <TabsContent value="domains" className="space-y-4 pt-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                   <div>
@@ -487,9 +473,6 @@ export function SettingsPage() {
                           إضافة نطاق
                         </Button>
                       </DialogTrigger>
-                      {/* {errorMessage && (
-  <p style={{ color: 'red', marginTop: '5px' }}>{errorMessage}</p>
-)} */}
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>إضافة نطاق مخصص</DialogTitle>
@@ -508,12 +491,8 @@ export function SettingsPage() {
                               onChange={(e) => {
                                 const value = e.target.value;
                                 setNewDomain(value);
-
-                                // إعادة تعيين حالة الخطأ عند التغيير
                                 setHasFormatError(false);
                                 setErrorMessage("");
-
-                                // التحقق الفوري عند الكتابة
                                 if (
                                   value.startsWith("www.") ||
                                   value.startsWith("http://") ||
@@ -524,7 +503,6 @@ export function SettingsPage() {
                                 }
                               }}
                             />
-
                             <p
                               className={`text-sm ${hasFormatError ? "text-destructive" : "text-muted-foreground"}`}
                             >
@@ -735,8 +713,8 @@ export function SettingsPage() {
                   <CardContent>
                     <Accordion
                       type="single"
-                      defaultValue="item-1" // يتم فتحه تلقائيًا عند التحميل
-                      collapsible // يسمح بالإغلاق عند النقر على العنوان
+                      defaultValue="item-1"
+                      collapsible
                       className="w-full"
                     >
                       <AccordionItem value="item-1">
@@ -778,9 +756,7 @@ export function SettingsPage() {
                               <AlertCircle className="h-5 w-5 ml-2 flex-shrink-0" />
                               <p className="text-sm">
                                 {dnsInstructions.note ||
-                                  `                                قد تستغرق تغييرات DNS ما يصل إلى 48 ساعة
-                                للانتشار عالميًا. هذا يعني أن نطاقك قد لا يعمل
-                                مباشرة بعد إجراء هذه التغييرات.`}
+                                  `قد تستغرق تغييرات DNS ما يصل إلى 48 ساعة للانتشار عالميًا. هذا يعني أن نطاقك قد لا يعمل مباشرة بعد إجراء هذه التغييرات.`}
                               </p>
                             </div>
                           </div>
@@ -791,7 +767,6 @@ export function SettingsPage() {
                 </Card>
               </TabsContent>
 
-              {/* Subscription Tab */}
               <TabsContent value="subscription" className="space-y-4 pt-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                   <div>
@@ -803,146 +778,68 @@ export function SettingsPage() {
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-3">
-                  {subscriptionPlans.map((plan) => (
-                    <Card
-                      key={plan.id}
-                      className={`relative ${plan.current ? "border-primary border-2" : ""} ${plan.popular ? "shadow-md" : ""}`}
-                    >
-                      {plan.popular && (
-                        <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/3">
-                          <Badge className="bg-amber-500 text-white border-0">
-                            الأكثر شيوعًا
-                          </Badge>
-                        </div>
-                      )}
-                      <CardHeader className="pb-4">
-                        <CardTitle>{plan.name}</CardTitle>
-                        <CardDescription className="flex items-end gap-1 mt-2">
-                          <span className="text-2xl font-bold text-foreground">
-                            ${plan.price}
-                          </span>
-                          <span className="text-muted-foreground">
-                            / شهريًا
-                          </span>
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="pb-4">
-                        <ul className="space-y-2 mb-6">
-                          {plan.features.map((feature, index) => (
-                            <li key={index} className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-green-600" />
-                              <span className="text-sm">{feature}</span>
-                            </li>
-                          ))}
-                          {plan.limitations &&
-                            plan.limitations.map((limitation, index) => (
-                              <li
-                                key={index}
-                                className="flex items-center gap-2 text-muted-foreground"
+                  {isLoadingPlans ? (
+                    [1, 2, 3, 4].map((i) => (
+                      <Card key={i}>
+                        <CardHeader>
+                          <Skeleton className="h-6 w-3/4" />
+                          <Skeleton className="h-4 w-1/2" />
+                        </CardHeader>
+                        <CardContent>
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-full mt-2" />
+                          <Skeleton className="h-4 w-full mt-2" />
+                        </CardContent>
+                        <CardFooter>
+                          <Skeleton className="h-10 w-full" />
+                        </CardFooter>
+                      </Card>
+                    ))
+                  ) : (
+                    subscriptionPlans.map((plan) => {
+                      const isCurrentPlan = userData.package_title === plan.name;
+                      return (
+                        <Card
+                          key={plan.id}
+                          className={`relative ${isCurrentPlan ? "border-primary border-2" : ""}`}
+                        >
+                          <CardHeader className="pb-4">
+                            <CardTitle>{plan.name}</CardTitle>
+                            <CardDescription className="flex items-end gap-1 mt-2">
+                              <span className="text-2xl font-bold text-foreground">
+                                ${plan.price}
+                              </span>
+                              <span className="text-muted-foreground">
+                                / {plan.billing}
+                              </span>
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent className="pb-4">
+                            {renderFeatures(plan)}
+                          </CardContent>
+                          <CardFooter>
+                            {isCurrentPlan ? (
+                              <Button variant="outline" className="w-full" disabled>
+                                <Check className="h-4 w-4 ml-1" />
+                                {plan.name}
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="default"
+                                className="w-full"
+                                onClick={() => handleUpgradeClick(plan.id, plan.price)}
                               >
-                                <AlertCircle className="h-4 w-4" />
-                                <span className="text-sm">{limitation}</span>
-                              </li>
-                            ))}
-                        </ul>
-                      </CardContent>
-                      <CardFooter>
-                        {plan.current ? (
-                          <Button variant="outline" className="w-full" disabled>
-                            <Check className="h-4 w-4 ml-1" />
-                            الخطة الحالية
-                          </Button>
-                        ) : (
-                          <Button
-                            variant={plan.popular ? "default" : "outline"}
-                            className="w-full"
-                            onClick={handleUpgradeClick}
-                          >
-                            الترقية
-                          </Button>
-                        )}
-                      </CardFooter>
-                    </Card>
-                  ))}
+                                الترقية
+                              </Button>
+                            )}
+                          </CardFooter>
+                        </Card>
+                      );
+                    })
+                  )}
                 </div>
-
-                <Card className="mt-4">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCardIcon className="h-5 w-5" />
-                      تفاصيل الفوترة
-                    </CardTitle>
-                    <CardDescription>
-                      إدارة طرق الدفع وسجل الفواتير الخاص بك
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <CreditCardIcon className="h-8 w-8 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">•••• •••• •••• 4242</p>
-                            <p className="text-sm text-muted-foreground">
-                              تنتهي في 12/2025
-                            </p>
-                          </div>
-                        </div>
-                        <Badge variant="outline">الافتراضية</Badge>
-                      </div>
-
-                      <div className="mt-6">
-                        <h3 className="text-sm font-medium mb-3">
-                          الفواتير الأخيرة
-                        </h3>
-                        <div className="rounded-lg border overflow-hidden">
-                          <div className="grid grid-cols-12 gap-4 p-3 bg-muted/50 text-sm font-medium">
-                            <div className="col-span-4">التاريخ</div>
-                            <div className="col-span-4">المبلغ</div>
-                            <div className="col-span-4">الحالة</div>
-                          </div>
-                          <div className="grid grid-cols-12 gap-4 p-3 border-t">
-                            <div className="col-span-4">15 أكتوبر 2023</div>
-                            <div className="col-span-4">$19.99</div>
-                            <div className="col-span-4">
-                              <Badge
-                                variant="outline"
-                                className="bg-green-50 text-green-700 border-green-200"
-                              >
-                                مدفوعة
-                              </Badge>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-12 gap-4 p-3 border-t">
-                            <div className="col-span-4">15 سبتمبر 2023</div>
-                            <div className="col-span-4">$19.99</div>
-                            <div className="col-span-4">
-                              <Badge
-                                variant="outline"
-                                className="bg-green-50 text-green-700 border-green-200"
-                              >
-                                مدفوعة
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button variant="outline">
-                      <Plus className="h-4 w-4 ml-1" />
-                      إضافة طريقة دفع
-                    </Button>
-                    <Button variant="outline">
-                      <Download className="h-4 w-4 ml-1" />
-                      تنزيل الفواتير
-                    </Button>
-                  </CardFooter>
-                </Card>
               </TabsContent>
 
-              {/* Themes Tab */}
               <TabsContent value="themes" className="space-y-4 pt-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                   <div>
@@ -1092,10 +989,10 @@ export function SettingsPage() {
       </Dialog>
       {isPopupOpen && (
         <PaymentPopup
-    paymentUrl={paymentUrl}
-    onClose={() => setIsPopupOpen(false)}
-  />
-    )}
+          paymentUrl={paymentUrl}
+          onClose={() => setIsPopupOpen(false)}
+        />
+      )}
     </div>
   );
 }

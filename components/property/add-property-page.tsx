@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-
 import {
   ChevronLeft,
   Upload,
@@ -58,17 +56,13 @@ const MapComponent = dynamic(() => import("@/components/map-component"), {
 
 export default function AddPropertyPage() {
   const {
-    propertiesManagement: {
-      properties,
-      loading,
-      isInitialized,
-    },
+    propertiesManagement: { properties, loading, isInitialized },
     setPropertiesManagement,
     fetchProperties,
   } = useStore();
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState(null);
   const { userData, fetchUserData } = useAuthStore();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   let hasReachedLimit;
   const [formData, setFormData] = useState({
@@ -76,7 +70,7 @@ export default function AddPropertyPage() {
     description: "",
     address: "",
     price: "",
-    type: "",
+    category: "",
     transaction_type: "",
     bedrooms: "",
     bathrooms: "",
@@ -87,51 +81,58 @@ export default function AddPropertyPage() {
     latitude: 24.766316905850978,
     longitude: 46.73579692840576,
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [images, setImages] = useState<{
-    thumbnail: File | null;
-    gallery: File[];
-    floorPlans: File[];
-  }>({
+  const [errors, setErrors] = useState({});
+  const [images, setImages] = useState({
     thumbnail: null,
     gallery: [],
     floorPlans: [],
   });
-  const [previews, setPreviews] = useState<{
-    thumbnail: string | null;
-    gallery: string[];
-    floorPlans: string[];
-  }>({
+  const [previews, setPreviews] = useState({
     thumbnail: null,
     gallery: [],
     floorPlans: [],
   });
   const [uploading, setUploading] = useState(false);
+  const [categories, setCategories] = useState([]);
 
-    useEffect(() => {
-      if (!isInitialized && !loading) {
-        fetchProperties();
+  useEffect(() => {
+    if (!isInitialized && !loading) {
+      fetchProperties();
+    }
+  }, [fetchProperties, isInitialized, loading, properties]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosInstance.get("/properties/categories");
+        setCategories(response.data.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        toast.error("حدث خطأ أثناء جلب أنواع العقارات.");
       }
-    }, [fetchProperties, isInitialized, loading, properties]);
-
+    };
+    fetchCategories();
+  }, []);
 
   React.useEffect(() => {
-    if (properties.length >= useAuthStore.getState().userData?.real_estate_limit_number) {
-      toast.error(`لا يمكنك إضافة أكثر من ${useAuthStore.getState().userData?.real_estate_limit_number} عقارات`);
-      hasReachedLimit = properties.length >= (useAuthStore.getState().userData?.real_estate_limit_number || 10);
+    if (
+      properties.length >= useAuthStore.getState().userData?.real_estate_limit_number
+    ) {
+      toast.error(
+        `لا يمكنك إضافة أكثر من ${useAuthStore.getState().userData?.real_estate_limit_number} عقارات`,
+      );
+      hasReachedLimit =
+        properties.length >=
+        (useAuthStore.getState().userData?.real_estate_limit_number || 10);
       router.push("/properties");
     }
   }, [properties, router]);
 
-  const thumbnailInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
-  const floorPlansInputRef = useRef<HTMLInputElement>(null);
+  const thumbnailInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
+  const floorPlansInputRef = useRef(null);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -144,11 +145,11 @@ export default function AddPropertyPage() {
     }
   };
 
-  const handleSwitchChange = (name: string, checked: boolean) => {
+  const handleSwitchChange = (name, checked) => {
     setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
-  const handleMapPositionChange = (lat: number, lng: number) => {
+  const handleMapPositionChange = (lat, lng) => {
     setFormData((prev) => ({
       ...prev,
       latitude: lat,
@@ -156,7 +157,7 @@ export default function AddPropertyPage() {
     }));
   };
 
-  const triggerFileInput = (type: "thumbnail" | "gallery" | "floorPlans") => {
+  const triggerFileInput = (type) => {
     if (type === "thumbnail" && thumbnailInputRef.current) {
       thumbnailInputRef.current.click();
     } else if (type === "gallery" && galleryInputRef.current) {
@@ -166,10 +167,7 @@ export default function AddPropertyPage() {
     }
   };
 
-  const handleFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: "thumbnail" | "gallery" | "floorPlans",
-  ) => {
+  const handleFileChange = (e, type) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -191,7 +189,7 @@ export default function AddPropertyPage() {
     } else {
       const validFiles = Array.from(files).filter((file) => {
         if (!file.type.startsWith("image/")) {
-          toast.error("يجب أن يكون حجم الملف أقل من 5 ميجابايت");
+          toast.error("يجب أن تكون الصور بصيغة JPG أو PNG أو GIF فقط");
           return false;
         }
         if (file.size > 5 * 1024 * 1024) {
@@ -216,10 +214,7 @@ export default function AddPropertyPage() {
     e.target.value = "";
   };
 
-  const removeImage = (
-    type: "thumbnail" | "gallery" | "floorPlans",
-    index?: number,
-  ) => {
+  const removeImage = (type, index) => {
     if (type === "thumbnail") {
       setImages((prev) => ({ ...prev, thumbnail: null }));
       setPreviews((prev) => ({ ...prev, thumbnail: null }));
@@ -236,12 +231,12 @@ export default function AddPropertyPage() {
   };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors = {};
 
     if (!formData.title) newErrors.title = "عنوان العقار مطلوب";
     if (!formData.address) newErrors.address = "عنوان العقار مطلوب";
     if (!formData.price) newErrors.price = "السعر مطلوب";
-    if (!formData.type) newErrors.type = "نوع العقار مطلوب";
+    if (!formData.category) newErrors.category = "نوع العقار مطلوب";
     if (!formData.transaction_type)
       newErrors.transaction_type = "نوع القائمة مطلوب";
     if (!formData.bedrooms) newErrors.bedrooms = "عدد غرف النوم مطلوب";
@@ -259,30 +254,24 @@ export default function AddPropertyPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (publish: boolean) => {
+  const handleSubmit = async (publish) => {
     setSubmitError(null);
     if (validateForm()) {
       setIsLoading(true);
       setUploading(true);
 
       try {
-        let thumbnailPath: string | null = null;
-        let galleryPaths: string[] = [];
-        let floorPlansPaths: string[] = [];
+        let thumbnailPath = null;
+        let galleryPaths = [];
+        let floorPlansPaths = [];
 
         if (images.thumbnail) {
-          const uploadedFile = await uploadSingleFile(
-            images.thumbnail,
-            "property",
-          );
+          const uploadedFile = await uploadSingleFile(images.thumbnail, "property");
           thumbnailPath = uploadedFile.path.replace("https://taearif.com", "");
         }
 
         if (images.gallery.length > 0) {
-          const uploadedFiles = await uploadMultipleFiles(
-            images.gallery,
-            "property",
-          );
+          const uploadedFiles = await uploadMultipleFiles(images.gallery, "property");
           galleryPaths = uploadedFiles.map((f) =>
             f.path.replace("https://taearif.com", ""),
           );
@@ -301,13 +290,12 @@ export default function AddPropertyPage() {
         const propertyData = {
           title: formData.title,
           address: formData.address,
-          price: formData.price,
-          type: formData.type,
+          price: Number(formData.price),
           beds: parseInt(formData.bedrooms),
           bath: parseInt(formData.bathrooms),
           size: parseInt(formData.size),
           features: formData.features.split(",").map((f) => f.trim()),
-          transaction_type: formData.transaction_type,
+          type: formData.transaction_type,
           status: publish ? 1 : 0,
           featured_image: thumbnailPath,
           floor_planning_image: floorPlansPaths,
@@ -318,7 +306,7 @@ export default function AddPropertyPage() {
           featured: formData.featured,
           area: parseInt(formData.size),
           city_id: 1,
-          category_id: 1,
+          category_id: parseInt(formData.category),
         };
 
         let response = await axiosInstance.post("/properties", propertyData);
@@ -485,7 +473,7 @@ export default function AddPropertyPage() {
                         onValueChange={(value) =>
                           handleInputChange({
                             target: { name: "transaction_type", value },
-                          } as any)
+                          })
                         }
                       >
                         <SelectTrigger
@@ -511,32 +499,33 @@ export default function AddPropertyPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="type">نوع العقار</Label>
+                      <Label htmlFor="category">نوع العقار</Label>
                       <Select
-                        name="type"
-                        value={formData.type}
+                        name="category"
+                        value={formData.category}
                         onValueChange={(value) =>
-                          handleInputChange({
-                            target: { name: "type", value },
-                          } as any)
+                          setFormData((prev) => ({ ...prev, category: value }))
                         }
                       >
                         <SelectTrigger
-                          id="type"
-                          className={errors.type ? "border-red-500" : ""}
+                          id="category"
+                          className={errors.category ? "border-red-500" : ""}
                         >
                           <SelectValue placeholder="اختر النوع" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="فيلا">فيلا</SelectItem>
-                          <SelectItem value="شقة">شقة</SelectItem>
-                          <SelectItem value="تاون هاوس">تاون هاوس</SelectItem>
-                          <SelectItem value="استوديو">استوديو</SelectItem>
-                          <SelectItem value="بنتهاوس">بنتهاوس</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem
+                              key={category.id}
+                              value={category.id.toString()}
+                            >
+                              {category.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
-                      {errors.type && (
-                        <p className="text-sm text-red-500">{errors.type}</p>
+                      {errors.category && (
+                        <p className="text-sm text-red-500">{errors.category}</p>
                       )}
                     </div>
 
@@ -548,7 +537,7 @@ export default function AddPropertyPage() {
                         onValueChange={(value) =>
                           handleInputChange({
                             target: { name: "status", value },
-                          } as any)
+                          })
                         }
                       >
                         <div className="flex items-center space-x-2">
@@ -659,7 +648,6 @@ export default function AddPropertyPage() {
                 </CardContent>
               </Card>
 
-              {/* Map Location Section */}
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>موقع العقار</CardTitle>
@@ -720,7 +708,6 @@ export default function AddPropertyPage() {
                 </CardContent>
               </Card>
 
-              {/* Thumbnail Image Upload */}
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>صورة العقار الرئيسية</CardTitle>
@@ -790,7 +777,6 @@ export default function AddPropertyPage() {
                 </CardContent>
               </Card>
 
-              {/* Property Gallery Upload */}
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>معرض صور العقار</CardTitle>
@@ -861,7 +847,6 @@ export default function AddPropertyPage() {
                 </CardContent>
               </Card>
 
-              {/* Floor Plans Upload */}
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>مخططات الطوابق</CardTitle>
@@ -929,7 +914,6 @@ export default function AddPropertyPage() {
                 </CardContent>
               </Card>
 
-              {/* Final Card with Submit Buttons */}
               <Card className="md:col-span-2">
                 <CardFooter className="flex flex-col items-end border-t p-6 space-y-4">
                   <div className="w-full">
