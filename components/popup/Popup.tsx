@@ -1,42 +1,35 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import { ShieldCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const PaymentPopup = ({ paymentUrl, onClose }) => {
   const [showSuccess, setShowSuccess] = useState(false);
-  const iframeRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const checkForSuccessWord = () => {
-    try {
-      // الوصول إلى محتوى الـ HTML داخل الـ iframe
-      const iframeDocument = iframeRef.current.contentWindow.document;
-      const htmlContent = iframeDocument.body.innerHTML;
-console.log("iframeDocument",iframeDocument)
-console.log("htmlContent",htmlContent)
-      // البحث عن كلمة معينة (مثل "نجاح"، يمكنك تغييرها حسب الحاجة)
-      if (htmlContent.includes("الناجح")) {
-        setShowSuccess(true);
-        setTimeout(() => {
-          window.location.reload(); // تحديث الصفحة
-          onClose(); // إغلاق النافذة
-        }, 2000);
-      }
-    } catch (error) {
-      console.log("خطأ أثناء الوصول إلى محتوى الـ iframe:", error);
-    }
-  };
-
   useEffect(() => {
-    const interval = setInterval(checkForSuccessWord, 1000); // التحقق كل ثانية
-    return () => clearInterval(interval); // تنظيف الفاصل الزمني عند إلغاء التأثير
-  }, []);
+    // الاستماع إلى الرسائل القادمة من الـ iframe
+    const handleMessage = (event) => {
+      if (event.data === "payment_success") {
+        setShowSuccess(true); // عرض رسالة النجاح
+        setTimeout(() => {
+          window.location.reload(); // تحديث الصفحة بالكامل
+          onClose(); // إغلاق الـ popup
+        }, 2000); // تأخير 2 ثانية لعرض رسالة النجاح
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    // تنظيف المستمع عند إلغاء التأثير
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [onClose]);
 
   const handleLoad = () => {
-    setIsLoading(false);
-    checkForSuccessWord(); // التحقق فور تحميل الـ iframe
+    setIsLoading(false); // إخفاء مؤشر التحميل عند اكتمال تحميل الـ iframe
   };
 
   return (
@@ -78,7 +71,6 @@ console.log("htmlContent",htmlContent)
             )}
 
             <iframe
-              ref={iframeRef}
               src={paymentUrl}
               className={`w-full h-[700px] border-0 ${isLoading ? "hidden" : "block"}`}
               title="Payment Gateway"
