@@ -10,8 +10,11 @@ const PaymentPopup = ({ paymentUrl, onClose }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setTimeout(() => {
+      setShowFailed(true); 
     
-    const handleMessage = (event) => {
+        }, 30000);
+        const handleMessage = (event) => {
       if (event.data === "payment_success") {
         setShowSuccess(true); 
         setTimeout(() => {
@@ -50,7 +53,7 @@ const PaymentPopup = ({ paymentUrl, onClose }) => {
       >
         {showFailed?(
           <div className="animate-bounce-in flex flex-col items-center justify-center h-[700px]">
-          <FaTimesCircle  className="text-6xl text-green-500 mb-4 animate-pulse" />
+          <FaTimesCircle  className="text-6xl text-red-500 mb-4 animate-pulse" />
           <h2 className="text-3xl font-bold text-red-700 mb-2">فشلت عملية الترقية!</h2>
           <p className="text-lg text-gray-600">سيتم إغلاق النافذة تلقائياً...</p>
         </div>
