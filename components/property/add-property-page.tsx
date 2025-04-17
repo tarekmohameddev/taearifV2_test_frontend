@@ -235,18 +235,18 @@ export default function AddPropertyPage() {
 
     if (!formData.title) newErrors.title = "عنوان العقار مطلوب";
     if (!formData.address) newErrors.address = "عنوان العقار مطلوب";
-    if (!formData.price) newErrors.price = "السعر مطلوب";
-    if (!formData.category) newErrors.category = "نوع العقار مطلوب";
-    if (!formData.transaction_type)
-      newErrors.transaction_type = "نوع القائمة مطلوب";
-    if (!formData.bedrooms) newErrors.bedrooms = "عدد غرف النوم مطلوب";
-    if (!formData.bathrooms) newErrors.bathrooms = "عدد الحمامات مطلوب";
-    if (!formData.size) newErrors.size = "مساحة العقار مطلوبة";
-    if (!formData.features) newErrors.features = "الميزات مطلوبة";
+    // if (!formData.price) newErrors.price = "السعر مطلوب";
+    // if (!formData.category) newErrors.category = "نوع العقار مطلوب";
+    // if (!formData.transaction_type)
+    //   newErrors.transaction_type = "نوع القائمة مطلوب";
+    // if (!formData.bedrooms) newErrors.bedrooms = "عدد غرف النوم مطلوب";
+    // if (!formData.bathrooms) newErrors.bathrooms = "عدد الحمامات مطلوب";
+    // if (!formData.size) newErrors.size = "مساحة العقار مطلوبة";
+    // if (!formData.features) newErrors.features = "الميزات مطلوبة";
     if (!images.thumbnail)
       newErrors.thumbnail = "صورة رئيسية واحدة على الأقل مطلوبة";
-    if (!images.gallery.length)
-      newErrors.gallery = "يجب تحميل صورة واحدة على الأقل في معرض الصور";
+    // if (!images.gallery.length)
+    //   newErrors.gallery = "يجب تحميل صورة واحدة على الأقل في معرض الصور";
     if (formData.description.length < 15)
       newErrors.description = "يجب أن يكون الوصف 15 حرفًا على الأقل";
 

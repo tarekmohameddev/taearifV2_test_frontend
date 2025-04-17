@@ -33,6 +33,7 @@ export function AboutCompanyPage() {
     image_path: "",
     features: [],
   });
+
   const handleImageUploadClick = () => {
     fileInputRef.current.click();
   };
@@ -41,17 +42,15 @@ export function AboutCompanyPage() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // التحقق من نوع الملف
     if (!file.type.startsWith("image/")) {
       toast.error("الملف المحدد ليس صورة");
       return;
     }
 
-    // عرض المعاينة وتخزين الملف في الحالة
     setSelectedImage(URL.createObjectURL(file));
-    setSelectedFile(file); // إضافة selectedFile إلى الحالة
+    setSelectedFile(file);
   };
-  // جلب البيانات الأولية
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -75,7 +74,6 @@ export function AboutCompanyPage() {
     fetchData();
   }, []);
 
-  // إدارة الميزات
   const addNewFeature = () => {
     const newId =
       aboutData.features.length > 0
@@ -110,7 +108,6 @@ export function AboutCompanyPage() {
     });
   };
 
-  // تحديث الحقول الرئيسية
   const handleFieldChange = (field, value) => {
     setAboutData({
       ...aboutData,
@@ -120,32 +117,33 @@ export function AboutCompanyPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
+    toast.loading("جاري حفظ التغييرات..."); // إشعار تحميل
     try {
       let newAboutData = { ...aboutData };
 
       if (selectedFile) {
         const uploadedData = await uploadSingleFile(selectedFile, "content");
-
         setAboutData((prevData) => ({
           ...prevData,
           image_path: uploadedData.url,
         }));
-
         newAboutData.image_path = uploadedData.path;
       }
+
       const response = await axiosInstance.post(
         "https://taearif.com/api/content/about",
         newAboutData,
       );
+
       if (response.data.status === "success") {
-        toast.success("تم الحفظ بنجاح");
+        toast.dismiss(); // إزالة إشعار التحميل
+        toast.success("تم الحفظ بنجاح"); // إشعار نجاح
         setSelectedFile(null);
       }
     } catch (error) {
-      toast.error("فشل في الحفظ");
+      toast.dismiss(); // إزالة إشعار التحميل
+      toast.error("فشل في الحفظ"); // إشعار خطأ
     } finally {
-      toast.error("فشل في الحفظ");
-
       setIsSaving(false);
     }
   };
@@ -390,15 +388,13 @@ export function AboutCompanyPage() {
                           />
                         </div>
                       </div>
-                      {aboutData.features.length > 1 && (
-                        <Button
-                          size="icon"
-                          variant="destructive"
-                          onClick={() => removeFeature(feature.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <Button
+                        size="icon"
+                        variant="destructive"
+                        onClick={() => removeFeature(feature.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
