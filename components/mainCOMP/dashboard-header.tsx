@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Bell,
+  Star,
   HelpCircle,
   User,
   Globe,
@@ -269,23 +270,28 @@ export function DashboardHeader({ children }: DashboardHeaderProps) {
           <>
             {/* زر الأيام المتبقية */}
             {useAuthStore.getState().userData?.days_remaining !== undefined && (
+              
               <Button
+                variant={useAuthStore.getState().userData.is_free_plan?"outline":"secondary"}
                 size="sm"
                 className={
                   useAuthStore.getState().userData.is_free_plan
-                    ? ""
-                    : "bg-gradient-to-r from-yellow-500 to-yellow-700 text-white"
+                    ? "hidden md:flex gap-1"
+                    : "bg-amber-100 text-amber-800"
                 }
                 onClick={clickedONButton}
               >
-                <Link href="/settings">
+            
+                  <Link href="/settings">
                   {useAuthStore.getState().userData.is_free_plan
                     ? `الباقة المجانية : عدد الأيام المتبقية هو ${useAuthStore.getState().userData.days_remaining}`
                     : useAuthStore.getState().userData.package_title}
                 </Link>
+                {useAuthStore.getState().userData.is_free_plan?
+                  "":                                                                  <Star className="h-3 w-3 ml-1" />
+}
               </Button>
             )}
-
             {/* الإشعارات */}
             <TooltipProvider>
               <Tooltip>
