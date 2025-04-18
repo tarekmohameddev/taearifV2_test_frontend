@@ -586,10 +586,10 @@ export default function MenuManagementPage() {
           </div>
 
           <Tabs defaultValue="menu" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            {/* <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="menu">قائمة التنقل</TabsTrigger>
               <TabsTrigger value="settings">إعدادات القائمة</TabsTrigger>
-            </TabsList>
+            </TabsList> */}
 
             <TabsContent value="menu" className="space-y-6">
               <Card>
