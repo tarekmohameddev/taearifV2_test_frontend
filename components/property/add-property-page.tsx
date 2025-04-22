@@ -248,8 +248,10 @@ export default function AddPropertyPage() {
       newErrors.thumbnail = "صورة رئيسية واحدة على الأقل مطلوبة";
     // if (!images.gallery.length)
     //   newErrors.gallery = "يجب تحميل صورة واحدة على الأقل في معرض الصور";
-    if (formData.description.length < 15)
-      newErrors.description = "يجب أن يكون الوصف 15 حرفًا على الأقل";
+    if (!formData.address) newErrors.address = "عنوان العقار مطلوب";
+    if (!formData.description)
+      newErrors.description   = "من فضلك اكتب وصف للعقار"
+
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

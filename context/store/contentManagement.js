@@ -31,11 +31,15 @@ module.exports = (set) => ({
       const response = await axiosInstance.get(
         "https://taearif.com/api/content/sections",
       );
+      console.log("response.data.data", response.data.data);
+      console.log(response.data.data.sections);
+
+      // تعيين البيانات مع التحقق من وجودها
       set((state) => ({
         contentManagement: {
           ...state.contentManagement,
-          sections: response.data.data.sections,
-          apiAvailableIcons: response.data.data.availableIcons,
+          sections: response.data.data?.sections || [],
+          apiAvailableIcons: response.data.data?.availableIcons || [],
           loading: false,
         },
       }));
