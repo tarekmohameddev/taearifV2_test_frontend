@@ -71,6 +71,7 @@ export default function AddPropertyPage() {
     address: "",
     price: "",
     category: "",
+    project: "",
     transaction_type: "",
     bedrooms: "",
     bathrooms: "",
@@ -94,6 +95,7 @@ export default function AddPropertyPage() {
   });
   const [uploading, setUploading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [projects, setProjects] = useState([]);
 
   useEffect(() => {
     if (!isInitialized && !loading) {
@@ -106,6 +108,20 @@ export default function AddPropertyPage() {
       try {
         const response = await axiosInstance.get("/properties/categories");
         setCategories(response.data.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        toast.error("حدث خطأ أثناء جلب أنواع العقارات.");
+      }
+    };
+    fetchCategories();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosInstance.get("/user/projects");
+        setProjects(response.data.data.user_projects);
       } catch (error) {
         console.error("Error fetching categories:", error);
         toast.error("حدث خطأ أثناء جلب أنواع العقارات.");
@@ -541,30 +557,38 @@ export default function AddPropertyPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="status">الحالة</Label>
-                      <RadioGroup
-                        defaultValue="draft"
-                        className="flex gap-4"
+                      <Label htmlFor="project">المشروع</Label>
+                      <Select
+                        name="project"
+                        value={formData.project}
                         onValueChange={(value) =>
-                          handleInputChange({
-                            target: { name: "status", value },
-                          })
+                          setFormData((prev) => ({ ...prev, project: value }))
                         }
                       >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="draft" id="draft" />
-                          <Label htmlFor="draft" className="mr-2">
-                            مسودة
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="published" id="published" />
-                          <Label htmlFor="published" className="mr-2">
-                            منشور
-                          </Label>
-                        </div>
-                      </RadioGroup>
+                        <SelectTrigger
+                          id="project"
+                          className={errors.project ? "border-red-500" : ""}
+                        >
+                          <SelectValue placeholder="اختر المشروع" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {projects.map((project) => (
+                            <SelectItem
+                              key={project.id}
+                              value={project.id.toString()}
+                            >
+                              {project.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.project && (
+                        <p className="text-sm text-red-500">
+                          {errors.project}
+                        </p>
+                      )}
                     </div>
+
                   </div>
                 </CardContent>
               </Card>
