@@ -1,6 +1,5 @@
 "use client";
-import { useMemo } from "react";
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import {
   Bath,
@@ -64,7 +63,7 @@ import { EnhancedSidebar } from "@/components/mainCOMP/enhanced-sidebar";
 import axiosInstance from "@/lib/axiosInstance";
 import useStore from "@/context/Store";
 
-// مكون SkeletonPropertyCard (لن يتغير شكله)
+
 function SkeletonPropertyCard() {
   return (
     <Card className="overflow-hidden animate-pulse">
@@ -93,6 +92,9 @@ function SkeletonPropertyCard() {
 }
 
 export function PropertiesManagementPage() {
+  // حالة للتحكم في فتح وإغلاق النافذة المنبثقة
+const [isLimitReached, setIsLimitReached] = useState(false);
+
   const router = useRouter();
   const {
     propertiesManagement: {
@@ -136,14 +138,12 @@ export function PropertiesManagementPage() {
     setPropertiesManagement({ favorites: newFavorites });
   };
 
-  // دالة حذف العقار
   const handleDeleteProperty = async (id: string) => {
     const confirmDelete = confirm("هل أنت متأكد أنك تريد حذف هذا العقار؟");
     if (confirmDelete) {
       try {
         await axiosInstance.delete(`properties/${id}`);
         toast.success("تم حذف العقار بنجاح");
-        // تحديث قائمة العقارات بعد الحذف
         setPropertiesManagement({
           properties: properties.filter((p) => p.id !== id),
         });
@@ -153,6 +153,7 @@ export function PropertiesManagementPage() {
       }
     }
   };
+
   useEffect(() => {
     if (!isInitialized && !loading) {
       fetchProperties();
@@ -338,7 +339,8 @@ export function PropertiesManagementPage() {
                       useAuthStore.getState().userData
                         ?.real_estate_limit_number;
                     if (propertiesLength >= limit) {
-                      toast.error(`لا يمكنك إضافة أكثر من ${limit} عقارات`);
+                      toast.error(`لا يمكنك إضافة أكثر من ${limit} عقار`);
+                      setIsLimitReached(true); // فتح النافذة المنبثقة
                     } else {
                       router.push("/properties/add");
                     }
@@ -349,6 +351,29 @@ export function PropertiesManagementPage() {
                 </Button>
               </div>
             </div>
+
+            {/* نافذة منبثقة عند الوصول للحد الأقصى */}
+            <Dialog open={isLimitReached} onOpenChange={setIsLimitReached}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="text-center text-red-500">لقد وصلت للحد الأقصى للإضافة</DialogTitle>
+                  <DialogDescription  className="text-center">
+                    برجاء ترقية الباقة لإضافة المزيد من العقارات.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsLimitReached(false)}
+                  >
+                    إلغاء
+                  </Button>
+                  <Button onClick={() => router.push("/settings")}>
+                    اشتراك
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             {loading ? (
               renderSkeletons()
@@ -395,7 +420,6 @@ export function PropertiesManagementPage() {
                     </div>
                   )}
                 </TabsContent>
-                {/* يمكن تكرار التعديلات في باقي TabsContent إذا لزم الأمر */}
               </Tabs>
             )}
           </div>
@@ -409,7 +433,7 @@ interface PropertyCardProps {
   property: any;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
-  onDelete: (id: string) => void; // إضافة خاصية onDelete
+  onDelete: (id: string) => void;
 }
 
 function PropertyCard({

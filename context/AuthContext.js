@@ -15,6 +15,7 @@ const useAuthStore = create((set, get) => ({
     email: null,
     token: null,
     username: null,
+    domain: null,
     first_name: null,
     last_name: null,
     is_free_plan: null,
@@ -65,9 +66,13 @@ const useAuthStore = create((set, get) => ({
             real_estate_limit_number:
               subscriptionDATA.membership.package.real_estate_limit_number ||
               null,
+              domain:
+              subscriptionDATA.domain ||
+              null,
           },
         });
       }
+      
       set({ IsDone: false, error: null });
     } catch (error) {
       set({

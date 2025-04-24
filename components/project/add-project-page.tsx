@@ -284,39 +284,39 @@ export default function AddProjectPage(): JSX.Element {
     if (!newProject.name.trim()) {
       errors.name = "اسم المشروع مطلوب";
     }
-    if (!newProject.location.trim()) {
-      errors.location = "الموقع مطلوب";
-    }
-    if (!newProject.price.trim()) {
-      errors.price = "السعر مطلوب";
-    }
-    if (!newProject.status) {
-      errors.status = "الحالة مطلوبة";
-    }
-    if (!newProject.completionDate.trim()) {
-      errors.completionDate = "تاريخ الإنجاز مطلوب";
-    }
-    if (!newProject.developer.trim()) {
-      errors.developer = "المطور مطلوب";
-    }
-    if (!newProject.description.trim()) {
-      errors.description = "الوصف مطلوب";
-    }
+    // if (!newProject.location.trim()) {
+    //   errors.location = "الموقع مطلوب";
+    // }
+    // if (!newProject.price.trim()) {
+    //   errors.price = "السعر مطلوب";
+    // }
+    // if (!newProject.status) {
+    //   errors.status = "الحالة مطلوبة";
+    // }
+    // if (!newProject.completionDate.trim()) {
+    //   errors.completionDate = "تاريخ الإنجاز مطلوب";
+    // }
+    // if (!newProject.developer.trim()) {
+    //   errors.developer = "المطور مطلوب";
+    // }
+    // if (!newProject.description.trim()) {
+    //   errors.description = "الوصف مطلوب";
+    // }
     if (!thumbnailImage) {
       errors.thumbnail = "صورة المشروع الرئيسية مطلوبة";
     }
-    if (!newProject.units) {
-      errors.units = "عدد الوحدات مطلوب";
-    }
-    if (isNaN(newProject.latitude) || isNaN(newProject.longitude)) {
-      errors.coordinates = "إحداثيات الموقع غير صحيحة";
-    }
-    if (galleryImages.length === 0) {
-      errors.galleryImages = "معرض صور المشروع مطلوب";
-    }
-    if (planImages.length === 0) {
-      errors.planImages = "مخططات المشروع مطلوبة";
-    }
+    // if (!newProject.units) {
+    //   errors.units = "عدد الوحدات مطلوب";
+    // }
+    // if (isNaN(newProject.latitude) || isNaN(newProject.longitude)) {
+    //   errors.coordinates = "إحداثيات الموقع غير صحيحة";
+    // }
+    // if (galleryImages.length === 0) {
+    //   errors.galleryImages = "معرض صور المشروع مطلوب";
+    // }
+    // if (planImages.length === 0) {
+    //   errors.planImages = "مخططات المشروع مطلوبة";
+    // }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -431,7 +431,7 @@ if (newProject.completionDate) {
     const publishedValue = status === "منشور" ? 1 : 0;
 
     const projectData = {
-      featured_image: featuredImagePath,
+          featured_image: featuredImagePath,
       min_price: minPrice,
       max_price: maxPrice,
       latitude: parseFloat(convertedLatitude),

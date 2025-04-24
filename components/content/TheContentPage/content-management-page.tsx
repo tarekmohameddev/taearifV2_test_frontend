@@ -57,6 +57,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useStore from "@/context/Store";
+
 export function ContentManagementPage() {
   const { contentManagement, fetchContentSections, setContentManagement } =
     useStore();
@@ -101,11 +102,37 @@ export function ContentManagementPage() {
   const setNewSectionIcon = (value) => {
     setContentManagement({ newSectionIcon: value });
   };
+
+  // مصفوفة المسارات التي تحتاج إلى مفتاح تبديل
+  const togglePaths = [
+    "/content/footer", // تذييل الصفحة
+    "/content/banner", // البانر الرئيسي
+    "/content/menu", // إدارة القائمة
+    "/content/about", // عن الشركة
+  ];
+
+  // دالة لمعالجة تبديل الحالة وإرسال طلب إلى API
+const handleToggleSection = async (sectionId, isActive) => { // إزالة المعامل event
+  const status = isActive ? "active" : "inactive";
+  // try {
+  //   await axiosInstance.put("/content/general", {
+  //     id: sectionId,
+  //     status: status,
+  //   });
+  //   fetchContentSections();
+  //   toast.success("تم تحديث حالة القسم بنجاح");
+  // } catch (error) {
+  //   toast.error("فشل في تحديث حالة القسم");
+  //   console.error("خطأ في طلب API:", error);
+  // }
+};
+
   useEffect(() => {
     if (sections.length === 0) {
       fetchContentSections();
     }
   }, [sections, fetchContentSections]);
+
   const availableIcons = {
     FileText: FileText,
     Briefcase: Briefcase,
@@ -142,7 +169,6 @@ export function ContentManagementPage() {
     toast.success(`تم إضافة القسم "${newSectionName}" بنجاح`);
   };
 
-  // إنشاء معرف فريد للقسم
   const newId = newSectionName
     .toLowerCase()
     .replace(/\s+/g, "-")
@@ -150,7 +176,6 @@ export function ContentManagementPage() {
     .replace(/--+/g, "-")
     .trim();
 
-  // ألوان عشوائية للمؤشر
   const colors = [
     "bg-red-100 text-red-800",
     "bg-blue-100 text-blue-800",
@@ -305,9 +330,7 @@ export function ContentManagementPage() {
               </div>
             </div>
           </div>
-          {/* على سبيل المثال، عند عرض الأقسام، استخدم المتغيرات المستخرجة من contentManagement */}
           {loading ? (
-            // عرض تحميل skeleton
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div
@@ -382,6 +405,14 @@ export function ContentManagementPage() {
                                 غير نشط
                               </Badge>
                             )}
+{togglePaths.includes(section.path) && (
+  <div onClick={(e) => e.stopPropagation()}> {/* إضافة div لمنع الانتشار */}
+    <Switch
+      checked={section.status === "active"}
+      onCheckedChange={(checked) => handleToggleSection(section.id, checked)}
+    />
+  </div>
+)}
                           </CardTitle>
                           <CardDescription>
                             {section.description}

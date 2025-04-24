@@ -188,7 +188,7 @@ export function EnhancedSidebar({
           </span>
           <span className="text-xs text-muted-foreground truncate">
             {!isCollapsed
-              ? `${useAuthStore.getState().userData?.username}.taearif.com`
+              ? `${useAuthStore.getState().userData?.domain || ""}`
               : ""}
           </span>
         </div>
@@ -204,7 +204,7 @@ export function EnhancedSidebar({
                 className="w-full justify-start gap-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 hover:border-primary text-foreground transition-all duration-200"
                 onClick={() =>
                   window.open(
-                    `https://${useAuthStore.getState().userData?.username}.taearif.com`,
+                    `${useAuthStore.getState().userData?.domain || ""}`,
                     "_blank",
                   )
                 }

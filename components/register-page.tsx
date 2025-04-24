@@ -495,7 +495,7 @@ export function RegisterPage() {
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                         <div className="flex items-center bg-gray-100 p-1.5 rounded-md">
                           <Image
-                            src="/saudi-flag.svg"
+                            src="/SAUDI_FLAG.svg"
                             alt="Saudi Arabia"
                             width={24}
                             height={16}

@@ -39,6 +39,15 @@ import { DashboardHeader } from "@/components/mainCOMP/dashboard-header";
 import { EnhancedSidebar } from "@/components/mainCOMP/enhanced-sidebar";
 import axiosInstance from "@/lib/axiosInstance";
 import useStore from "@/context/Store";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export interface IProject {
   id: number;
@@ -102,6 +111,7 @@ function SkeletonProjectCard() {
 }
 
 export function ProjectsManagementPage() {
+const [isLimitReached, setIsLimitReached] = useState(false);
   const router = useRouter();
   const {
     projectsManagement: {
@@ -212,8 +222,9 @@ export function ProjectsManagementPage() {
                     const limit =
                       useAuthStore.getState().userData?.project_limit_number;
 
-                    if (projectsLength >= limit) {
+                    if (projectsLength >= 1) {
                       toast.error(`لا يمكنك إضافة أكثر من ${limit} مشاريع`);
+                      setIsLimitReached(true); // فتح النافذة المنبثقة
                     } else {
                       router.push("/projects/add");
                     }
@@ -225,6 +236,29 @@ export function ProjectsManagementPage() {
               </div>
             </div>
 
+            {/* نافذة منبثقة عند الوصول للحد الأقصى */}
+            <Dialog open={isLimitReached} onOpenChange={setIsLimitReached}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="text-center text-red-500">لقد وصلت للحد الأقصى للإضافة</DialogTitle>
+                  <DialogDescription  className="text-center">
+                    برجاء ترقية الباقة لإضافة المزيد من المشاريع.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsLimitReached(false)}
+                  >
+                    إلغاء
+                  </Button>
+                  <Button onClick={() => router.push("/settings")}>
+                    اشتراك
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            
             {/* Tabs for filtering by status */}
             <Tabs defaultValue="all">
               <TabsList>
