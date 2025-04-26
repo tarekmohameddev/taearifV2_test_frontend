@@ -457,22 +457,30 @@ export function FooterManagementPage() {
               </Button>
             </div>
           </div>
-          <div
-  onClick={(e) => e.stopPropagation()}
-  className="flex flex-row items-center gap-3 mb-5"
->
-  <div
-    className={`px-3 py-1 text-white rounded-2xl font-semibold shadow-sm transition-colors duration-300 ${
-      footerData?.status === true ? "bg-emerald-600" : "bg-rose-600"
+          <div className="flex flex-col space-y-8 p-6">
+  <button
+    onClick={() => handleStatusChange(footerData?.status === true ? false : true)}
+    className={`relative flex h-12 w-[160px] items-center rounded-full px-4 transition-colors duration-500 ${
+      footerData?.status === true ? "bg-black" : "bg-gray-200"
     }`}
   >
-    {footerData?.status === true ? "التذييل مفعل" : "التذييل معطل"}
-  </div>
-  <Switch
-    checked={footerData?.status === true}
-    onCheckedChange={(checked) => handleStatusChange(checked)}
-  />
+    <span
+      className={`absolute text-sm font-medium ${
+        footerData?.status === true ? "left-6 text-white" : "right-3 text-gray-600"
+      } transition-[left,right] duration-1000 ease-in-out`}
+    >
+      {footerData?.status === true ? "التذييل مفعل" : "التذييل غير مفعل"}
+    </span>
+
+    <div
+          className={`absolute h-10 w-10 rounded-full bg-white shadow-md transition-transform duration-1000 ease-in-out ${
+            footerData?.status === true ? "translate-x-0" : "translate-x-[-112px]"
+          }`}
+          style={{ right: "4px" }}
+        />
+  </button>
 </div>
+
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
