@@ -198,20 +198,19 @@ export function EnhancedSidebar({
         <TooltipProvider delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 hover:border-primary text-foreground transition-all duration-200"
-                onClick={() =>
-                  window.open(
-                    `${useAuthStore.getState().userData?.domain || ""}`,
-                    "_blank",
-                  )
-                }
-              >
-                <ExternalLink className="h-4 w-4 text-primary" />
-                {!isCollapsed && <span>معاينة الموقع</span>}
-              </Button>
+            <Button
+  variant="outline"
+  size="sm"
+  className="w-full justify-start gap-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 hover:border-primary text-foreground transition-all duration-200"
+  onClick={() => {
+    const domain = useAuthStore.getState().userData?.domain || "";
+    const url = domain.startsWith("http") ? domain : `https://${domain}`;
+    window.open(url, "_blank");
+  }}
+>
+  <ExternalLink className="h-4 w-4 text-primary" />
+  {!isCollapsed && <span>معاينة الموقع</span>}
+</Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
               <p>فتح الموقع في نافذة جديدة</p>
