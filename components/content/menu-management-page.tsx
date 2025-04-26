@@ -68,7 +68,6 @@ interface MenuSettings {
   menuStyle: "buttons" | "underline" | "minimal";
   mobileMenuType: "hamburger" | "sidebar" | "fullscreen";
   isSticky: boolean;
-  status: boolean;
   isTransparent: boolean;
 }
 
@@ -81,7 +80,6 @@ export default function MenuManagementPage() {
     menuStyle: "buttons",
     mobileMenuType: "hamburger",
     isSticky: true,
-    status: true,
     isTransparent: false,
   });
   const [isLoaded, setIsLoaded] = useState(false);
@@ -250,9 +248,6 @@ export default function MenuManagementPage() {
     toast.success("تم تغيير حالة العنصر");
   };
 
-  const handleStatusChange = (value) => {
-    setSettings({ ...settings, status: value });
-  };
 
   const handleToggleMobile = (id) => {
     setMenuItems(
@@ -592,35 +587,6 @@ export default function MenuManagementPage() {
             </Button>
           </div>
 
-          <div className="flex flex-col space-y-8 p-6">
-            <button
-              onClick={() =>
-                handleStatusChange(settings?.status === true ? false : true)
-              }
-              className={`relative flex h-12 w-[120px] items-center rounded-full px-4 transition-colors duration-500 ${
-                settings?.status === true ? "bg-black" : "bg-gray-200"
-              }`}
-            >
-              <span
-                className={`absolute text-sm font-medium ${
-                  settings?.status === true
-                    ? "left-6 text-white"
-                    : "right-3 text-gray-600"
-                } transition-[left,right] duration-1000 ease-in-out`}
-              >
-                {settings?.status === true ? "مفعلة" : "غير مفعلة"}
-              </span>
-
-              <div
-                className={`absolute h-10 w-10 rounded-full bg-white shadow-md transition-transform duration-1000 ease-in-out ${
-                  settings?.status === true
-                    ? "translate-x-0"
-                    : "translate-x-[-72px]"
-                }`}
-                style={{ right: "4px" }}
-              />
-            </button>
-          </div>
 
           <Tabs defaultValue="menu" className="w-full">
             {/* <TabsList className="grid w-full grid-cols-2">

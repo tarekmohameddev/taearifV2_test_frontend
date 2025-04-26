@@ -366,7 +366,7 @@ export function ContentManagementPage() {
                           <CardTitle className="flex items-center gap-2 text-lg">
                             <IconComponent className="h-5 w-5 text-muted-foreground" />
                             {section.title}
-                            {section.status === "active" ? (
+                            {section.status === 1 ? (
                               <Badge
                                 variant="outline"
                                 className="bg-green-50 text-green-700 border-green-200 ml-2"
