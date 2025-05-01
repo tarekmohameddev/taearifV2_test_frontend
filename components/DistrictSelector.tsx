@@ -30,12 +30,12 @@ const DistrictSelector: React.FC<DistrictSelectorProps> = ({ selectedDistrictId,
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="w-[365px] justify-between text-black"
+          className="w-full] justify-between text-black"
         >
           {selectedDistrict ? selectedDistrict.name_ar : "اختر المنطقة"}
         </Button>
       </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className="w-[365px] p-0">
+      <PopoverContent side="bottom" align="start" className="w-full] p-0">
         <Command>
           <CommandInput placeholder="ابحث عن منطقة..." />
           <CommandList className="text-black max-h-[200px] overflow-y-auto">
