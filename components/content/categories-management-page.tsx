@@ -202,7 +202,7 @@ export default function CategoriesManagementPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="flex flex-col">
+                        {/* <div className="flex flex-col"> */}
                           {/* <Button
                             variant="ghost"
                             size="icon"
@@ -221,13 +221,8 @@ export default function CategoriesManagementPage() {
                           >
                             <ArrowDown className="h-4 w-4" />
                           </Button> */}
-                        </div>
-                        <div>
+                        {/* </div> */}
                           <h3 className="font-medium">{category.name}</h3>
-                          <p className="text-xs text-muted-foreground">
-                            الرابط: {category.slug}
-                          </p>
-                        </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
@@ -254,7 +249,7 @@ export default function CategoriesManagementPage() {
                         </Button> */}
                       </div>
                     </div>
-                    <p className="text-sm">{category.description}</p>
+                    {/* <p className="text-sm">{category.description}</p> */}
                   </div>
                 ))}
               </div>

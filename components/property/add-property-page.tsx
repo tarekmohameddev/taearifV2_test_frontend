@@ -718,66 +718,6 @@ export default function AddPropertyPage() {
 
               <Card className="md:col-span-2">
                 <CardHeader>
-                  <CardTitle>موقع العقار</CardTitle>
-                  <CardDescription>حدد موقع العقار على الخريطة</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="w-full md:w-2/3">
-                      <div className="border rounded-md h-[400px] overflow-hidden">
-                        <MapComponent
-                          latitude={formData.latitude}
-                          longitude={formData.longitude}
-                          onPositionChange={handleMapPositionChange}
-                          showSearch={true}
-                        />
-                      </div>
-                    </div>
-                    <div className="w-full md:w-1/3 space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <Label htmlFor="latitude">خط العرض</Label>
-                        </div>
-                        <Input
-                          id="latitude"
-                          name="latitude"
-                          type="number"
-                          step="0.000001"
-                          value={formData.latitude}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <Label htmlFor="longitude">خط الطول</Label>
-                        </div>
-                        <Input
-                          id="longitude"
-                          name="longitude"
-                          type="number"
-                          step="0.000001"
-                          value={formData.longitude}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      <div className="bg-muted p-4 rounded-md">
-                        <h4 className="text-sm font-medium mb-2">تعليمات:</h4>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          <li>• انقر على الخريطة لتحديد موقع العقار</li>
-                          <li>• اسحب العلامة لضبط الموقع بدقة</li>
-                          <li>• استخدم شريط البحث للعثور على موقع محدد</li>
-                          <li>• يمكنك أيضًا إدخال الإحداثيات يدويًا</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="md:col-span-2">
-                <CardHeader>
                   <CardTitle>صورة العقار الرئيسية</CardTitle>
                   <CardDescription>
                     قم بتحميل صورة رئيسية تمثل العقار
@@ -981,7 +921,65 @@ export default function AddPropertyPage() {
                   </div>
                 </CardContent>
               </Card>
-
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>موقع العقار</CardTitle>
+                  <CardDescription>حدد موقع العقار على الخريطة</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="w-full md:w-2/3">
+                      <div className="border rounded-md h-[400px] overflow-hidden">
+                        <MapComponent
+                          latitude={formData.latitude}
+                          longitude={formData.longitude}
+                          onPositionChange={handleMapPositionChange}
+                          showSearch={true}
+                        />
+                      </div>
+                    </div>
+                    <div className="w-full md:w-1/3 space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <Label htmlFor="latitude">خط العرض</Label>
+                        </div>
+                        <Input
+                          id="latitude"
+                          name="latitude"
+                          type="number"
+                          step="0.000001"
+                          value={formData.latitude}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <Label htmlFor="longitude">خط الطول</Label>
+                        </div>
+                        <Input
+                          id="longitude"
+                          name="longitude"
+                          type="number"
+                          step="0.000001"
+                          value={formData.longitude}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                      <div className="bg-muted p-4 rounded-md">
+                        <h4 className="text-sm font-medium mb-2">تعليمات:</h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• انقر على الخريطة لتحديد موقع العقار</li>
+                          <li>• اسحب العلامة لضبط الموقع بدقة</li>
+                          <li>• استخدم شريط البحث للعثور على موقع محدد</li>
+                          <li>• يمكنك أيضًا إدخال الإحداثيات يدويًا</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               <Card className="md:col-span-2">
                 <CardFooter className="flex flex-col items-end border-t p-6 space-y-4">
                   <div className="w-full">
