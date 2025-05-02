@@ -1,6 +1,12 @@
-// components/CitySelector.tsx
-import React from "react";
-import useStore from "@/context/Store";
+import React, { useState, useEffect } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import axios from "axios";
 import {
   Popover,
   PopoverTrigger,
@@ -12,19 +18,33 @@ import {
   CommandList,
   CommandItem,
 } from "@/components/ui/command";
+interface CitySelectorProps {
+  selectedCityId: number | null;
+  onCitySelect: (cityId: number) => void;
+}
 import { Button } from "@/components/ui/button";
 
-interface CitySelectorProps {
-  selectedCityId: string | number | null;
-  onCitySelect: (cityId: string | number) => void;
-}
-
 const CitySelector: React.FC<CitySelectorProps> = ({ selectedCityId, onCitySelect }) => {
-  const cities = useStore((state) => state.cities);
+  const [cities, setCities] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = React.useState(false);
 
-  const selectedCity = cities.find(city => city.id === selectedCityId);
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await axios.get("https://nzl-backend.com/api/cities?country_id=1");
+        setCities(response.data.data);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCities();
+  }, []);
 
+  const selectedCity = cities.find(city => city.id === selectedCityId);
+  
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

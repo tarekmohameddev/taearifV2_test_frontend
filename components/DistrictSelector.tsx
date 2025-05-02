@@ -1,6 +1,5 @@
 // components/DistrictSelector.tsx
-import React from "react";
-import useStore from "@/context/Store";
+import React, { useState, useEffect } from "react";
 import {
   Popover,
   PopoverTrigger,
@@ -13,15 +12,43 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 
 interface DistrictSelectorProps {
   selectedDistrictId: string | number | null;
   onDistrictSelect: (districtId: string | number) => void;
 }
 
-const DistrictSelector: React.FC<DistrictSelectorProps> = ({ selectedDistrictId, onDistrictSelect }) => {
-  const districts = useStore((state) => state.neighborhoods);
+const DistrictSelector: React.FC<DistrictSelectorProps> = ({ 
+  selectedCityId,
+  selectedDistrictId,
+  onDistrictSelect,
+ }) => {
+  const [districts, setDistricts] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = React.useState(false);
+
+  useEffect(() => {
+    if (selectedCityId) {
+      setLoading(true);
+      const fetchDistricts = async () => {
+        try {
+          const response = await axios.get(
+            `https://nzl-backend.com/api/districts?city_id=${selectedCityId}`
+          );
+          setDistricts(response.data.data);
+        } catch (error) {
+          console.error("Error fetching districts:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchDistricts();
+    } else {
+      setDistricts([]);
+    }
+  }, [selectedCityId]);
+
 
   const selectedDistrict = districts.find(district => district.id === selectedDistrictId);
 

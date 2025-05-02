@@ -22,8 +22,6 @@ const useStore = create((set, get) => {
     ...require("./store/projectsManagement")(set),
     ...require("./store/propertiesManagement")(set),
     ...require("./store/blogManagement")(set, get),
-    ...require("./store/cities"), // إضافة بيانات المدن
-    ...require("./store/neighborhoods"), // إضافة بيانات الأحياء
   };
 });
 

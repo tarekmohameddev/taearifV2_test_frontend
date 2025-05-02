@@ -61,8 +61,6 @@ export default function AddPropertyPage() {
     propertiesManagement: { properties, loading, isInitialized },
     setPropertiesManagement,
     fetchProperties,
-    cities,
-    neighborhoods,
   } = useStore();
   const [submitError, setSubmitError] = useState(null);
   const { userData, fetchUserData } = useAuthStore();
@@ -123,16 +121,16 @@ export default function AddPropertyPage() {
   }, []);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchProjects = async () => {
       try {
         const response = await axiosInstance.get("/user/projects");
         setProjects(response.data.data.user_projects);
       } catch (error) {
-        console.error("Error fetching categories:", error);
-        toast.error("حدث خطأ أثناء جلب أنواع العقارات.");
+        console.error("Error fetching projects:", error);
+        toast.error("حدث خطأ أثناء جلب المشاريع.");
       }
     };
-    fetchCategories();
+    fetchProjects();
   }, []);
 
   React.useEffect(() => {
@@ -257,21 +255,8 @@ export default function AddPropertyPage() {
 
     if (!formData.title) newErrors.title = "عنوان العقار مطلوب";
     if (!formData.address) newErrors.address = "عنوان العقار مطلوب";
-    // if (!formData.price) newErrors.price = "السعر مطلوب";
-    // if (!formData.category) newErrors.category = "نوع العقار مطلوب";
-    // if (!formData.transaction_type)
-    //   newErrors.transaction_type = "نوع القائمة مطلوب";
-    // if (!formData.bedrooms) newErrors.bedrooms = "عدد غرف النوم مطلوب";
-    // if (!formData.bathrooms) newErrors.bathrooms = "عدد الحمامات مطلوب";
-    // if (!formData.size) newErrors.size = "مساحة العقار مطلوبة";
-    // if (!formData.features) newErrors.features = "الميزات مطلوبة";
-    if (!images.thumbnail)
-      newErrors.thumbnail = "صورة رئيسية واحدة على الأقل مطلوبة";
-    // if (!images.gallery.length)
-    //   newErrors.gallery = "يجب تحميل صورة واحدة على الأقل في معرض الصور";
-    if (!formData.address) newErrors.address = "عنوان العقار مطلوب";
-    if (!formData.description)
-      newErrors.description = "من فضلك اكتب وصف للعقار";
+    if (!images.thumbnail) newErrors.thumbnail = "صورة رئيسية واحدة على الأقل مطلوبة";
+    if (!formData.description) newErrors.description = "من فضلك اكتب وصف للعقار";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -289,31 +274,18 @@ export default function AddPropertyPage() {
         let floorPlansPaths = [];
 
         if (images.thumbnail) {
-          const uploadedFile = await uploadSingleFile(
-            images.thumbnail,
-            "property",
-          );
+          const uploadedFile = await uploadSingleFile(images.thumbnail, "property");
           thumbnailPath = uploadedFile.path.replace("https://taearif.com", "");
         }
 
         if (images.gallery.length > 0) {
-          const uploadedFiles = await uploadMultipleFiles(
-            images.gallery,
-            "property",
-          );
-          galleryPaths = uploadedFiles.map((f) =>
-            f.path.replace("https://taearif.com", ""),
-          );
+          const uploadedFiles = await uploadMultipleFiles(images.gallery, "property");
+          galleryPaths = uploadedFiles.map((f) => f.path.replace("https://taearif.com", ""));
         }
 
         if (images.floorPlans.length > 0) {
-          const uploadedFiles = await uploadMultipleFiles(
-            images.floorPlans,
-            "property",
-          );
-          floorPlansPaths = uploadedFiles.map((f) =>
-            f.path.replace("https://taearif.com", ""),
-          );
+          const uploadedFiles = await uploadMultipleFiles(images.floorPlans, "property");
+          floorPlansPaths = uploadedFiles.map((f) => f.path.replace("https://taearif.com", ""));
         }
 
         const propertyData = {
@@ -344,15 +316,9 @@ export default function AddPropertyPage() {
         toast.success("تم نشر العقار بنجاح");
         const currentState = useStore.getState();
         const createdProject = response.data.user_property;
-        createdProject.status =
-          createdProject.status === true ? "منشور" : "مسودة";
-        const updatedProperties = [
-          createdProject,
-          ...currentState.propertiesManagement.properties,
-        ];
-        setPropertiesManagement({
-          properties: updatedProperties,
-        });
+        createdProject.status = createdProject.status === true ? "منشور" : "مسودة";
+        const updatedProperties = [createdProject, ...currentState.propertiesManagement.properties];
+        setPropertiesManagement({ properties: updatedProperties });
         router.push("/properties");
       } catch (error) {
         toast.error("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");
@@ -367,6 +333,10 @@ export default function AddPropertyPage() {
     }
   };
 
+  const handleCitySelect = (cityId) => {
+    setFormData((prev) => ({ ...prev, city_id: cityId, district_id: null }));
+  };
+
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
       <DashboardHeader />
@@ -375,50 +345,28 @@ export default function AddPropertyPage() {
         <main className="flex-1 p-4 md:p-6">
           <div className="space-y-6">
             {hasReachedLimit && (
-              <div
-                className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-6"
-                role="alert"
-              >
+              <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-6" role="alert">
                 <strong className="font-bold">تنبيه!</strong>
-                <span className="block sm:inline">
-                  {" "}
-                  لقد وصلت إلى الحد الأقصى لعدد العقارات المسموح به (10 عقارات).
-                  لا يمكنك إضافة المزيد من العقارات.
-                </span>
+                <span className="block sm:inline"> لقد وصلت إلى الحد الأقصى لعدد العقارات المسموح به (10 عقارات). لا يمكنك إضافة المزيد من العقارات.</span>
               </div>
             )}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => router.push("/properties")}
-                >
+                <Button variant="outline" size="icon" onClick={() => router.push("/properties")}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h1 className="text-2xl font-bold tracking-tight">
-                  إضافة عقار جديد
-                </h1>
+                <h1 className="text-2xl font-bold tracking-tight">إضافة عقار جديد</h1>
               </div>
               <div className="flex flex-col items-end gap-2">
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSubmit(false)}
-                    disabled={isLoading}
-                  >
+                  <Button variant="outline" onClick={() => handleSubmit(false)} disabled={isLoading}>
                     {isLoading ? "جاري الحفظ..." : "حفظ كمسودة"}
                   </Button>
-                  <Button
-                    onClick={() => handleSubmit(true)}
-                    disabled={isLoading}
-                  >
+                  <Button onClick={() => handleSubmit(true)} disabled={isLoading}>
                     {isLoading ? "جاري الحفظ..." : "نشر العقار"}
                   </Button>
                 </div>
-                {submitError && (
-                  <div className="text-red-500 text-sm mt-2">{submitError}</div>
-                )}
+                {submitError && <div className="text-red-500 text-sm mt-2">{submitError}</div>}
               </div>
             </div>
 
@@ -426,9 +374,7 @@ export default function AddPropertyPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>معلومات العقار الأساسية</CardTitle>
-                  <CardDescription>
-                    أدخل المعلومات الأساسية للعقار
-                  </CardDescription>
+                  <CardDescription>أدخل المعلومات الأساسية للعقار</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -441,9 +387,7 @@ export default function AddPropertyPage() {
                       onChange={handleInputChange}
                       className={errors.title ? "border-red-500" : ""}
                     />
-                    {errors.title && (
-                      <p className="text-sm text-red-500">{errors.title}</p>
-                    )}
+                    {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -457,11 +401,7 @@ export default function AddPropertyPage() {
                       onChange={handleInputChange}
                       className={errors.description ? "border-red-500" : ""}
                     />
-                    {errors.description && (
-                      <p className="text-sm text-red-500">
-                        {errors.description}
-                      </p>
-                    )}
+                    {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -474,9 +414,7 @@ export default function AddPropertyPage() {
                       onChange={handleInputChange}
                       className={errors.address ? "border-red-500" : ""}
                     />
-                    {errors.address && (
-                      <p className="text-sm text-red-500">{errors.address}</p>
-                    )}
+                    {errors.address && <p className="text-sm text-red-500">{errors.address}</p>}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -491,9 +429,7 @@ export default function AddPropertyPage() {
                         onChange={handleInputChange}
                         className={errors.price ? "border-red-500" : ""}
                       />
-                      {errors.price && (
-                        <p className="text-sm text-red-500">{errors.price}</p>
-                      )}
+                      {errors.price && <p className="text-sm text-red-500">{errors.price}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -501,18 +437,9 @@ export default function AddPropertyPage() {
                       <Select
                         name="transaction_type"
                         value={formData.transaction_type}
-                        onValueChange={(value) =>
-                          handleInputChange({
-                            target: { name: "transaction_type", value },
-                          })
-                        }
+                        onValueChange={(value) => handleInputChange({ target: { name: "transaction_type", value } })}
                       >
-                        <SelectTrigger
-                          id="transaction_type"
-                          className={
-                            errors.transaction_type ? "border-red-500" : ""
-                          }
-                        >
+                        <SelectTrigger id="transaction_type" className={errors.transaction_type ? "border-red-500" : ""}>
                           <SelectValue placeholder="اختر النوع" />
                         </SelectTrigger>
                         <SelectContent>
@@ -522,11 +449,7 @@ export default function AddPropertyPage() {
                           <SelectItem value="rented">مؤجرة</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.transaction_type && (
-                        <p className="text-sm text-red-500">
-                          {errors.transaction_type}
-                        </p>
-                      )}
+                      {errors.transaction_type && <p className="text-sm text-red-500">{errors.transaction_type}</p>}
                     </div>
                   </div>
 
@@ -536,32 +459,20 @@ export default function AddPropertyPage() {
                       <Select
                         name="category"
                         value={formData.category}
-                        onValueChange={(value) =>
-                          setFormData((prev) => ({ ...prev, category: value }))
-                        }
+                        onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
                       >
-                        <SelectTrigger
-                          id="category"
-                          className={errors.category ? "border-red-500" : ""}
-                        >
+                        <SelectTrigger id="category" className={errors.category ? "border-red-500" : ""}>
                           <SelectValue placeholder="اختر النوع" />
                         </SelectTrigger>
                         <SelectContent>
                           {categories.map((category) => (
-                            <SelectItem
-                              key={category.id}
-                              value={category.id.toString()}
-                            >
+                            <SelectItem key={category.id} value={category.id.toString()}>
                               {category.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      {errors.category && (
-                        <p className="text-sm text-red-500">
-                          {errors.category}
-                        </p>
-                      )}
+                      {errors.category && <p className="text-sm text-red-500">{errors.category}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -569,35 +480,23 @@ export default function AddPropertyPage() {
                       <Select
                         name="project"
                         value={formData.project_id}
-                        onValueChange={(value) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            project_id: value,
-                          }))
-                        }
+                        onValueChange={(value) => setFormData((prev) => ({ ...prev, project_id: value }))}
                       >
-                        <SelectTrigger
-                          id="project"
-                          className={errors.project_id ? "border-red-500" : ""}
-                        >
+                        <SelectTrigger id="project" className={errors.project_id ? "border-red-500" : ""}>
                           <SelectValue placeholder="اختر المشروع" />
                         </SelectTrigger>
                         <SelectContent>
                           {projects.map((project) => (
-                            <SelectItem
-                              key={project.id}
-                              value={project.id.toString()}
-                            >
+                            <SelectItem key={project.id} value={project.id.toString()}>
                               {project.title}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      {errors.project && (
-                        <p className="text-sm text-red-500">{errors.project}</p>
-                      )}
+                      {errors.project && <p className="text-sm text-red-500">{errors.project}</p>}
                     </div>
                   </div>
+
                   <div className="space-y-4 z-9999">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col space-y-2">
@@ -605,11 +504,9 @@ export default function AddPropertyPage() {
                           اختر المدينة
                         </Label>
                         <CitySelector
-                    selectedCityId={formData.city_id}
-                    onCitySelect={(cityId) =>
-                      setFormData((prev) => ({ ...prev, city_id: cityId }))
-                    }
-                  />
+                          selectedCityId={formData.city_id}
+                          onCitySelect={handleCitySelect}
+                        />
                       </div>
 
                       <div className="flex flex-col space-y-2">
@@ -617,9 +514,10 @@ export default function AddPropertyPage() {
                           اختر الحي
                         </Label>
                         <DistrictSelector
-      selectedDistrictId={formData.district_id}
-      onDistrictSelect={(districtId) => setFormData((prev) => ({ ...prev, district_id: districtId }))}
-    />
+                          selectedCityId={formData.city_id}
+                          selectedDistrictId={formData.district_id}
+                          onDistrictSelect={(districtId) => setFormData((prev) => ({ ...prev, district_id: districtId }))}
+                        />
                       </div>
                     </div>
                   </div>
@@ -644,11 +542,7 @@ export default function AddPropertyPage() {
                         onChange={handleInputChange}
                         className={errors.bedrooms ? "border-red-500" : ""}
                       />
-                      {errors.bedrooms && (
-                        <p className="text-sm text-red-500">
-                          {errors.bedrooms}
-                        </p>
-                      )}
+                      {errors.bedrooms && <p className="text-sm text-red-500">{errors.bedrooms}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -662,11 +556,7 @@ export default function AddPropertyPage() {
                         onChange={handleInputChange}
                         className={errors.bathrooms ? "border-red-500" : ""}
                       />
-                      {errors.bathrooms && (
-                        <p className="text-sm text-red-500">
-                          {errors.bathrooms}
-                        </p>
-                      )}
+                      {errors.bathrooms && <p className="text-sm text-red-500">{errors.bathrooms}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -680,9 +570,7 @@ export default function AddPropertyPage() {
                         onChange={handleInputChange}
                         className={errors.size ? "border-red-500" : ""}
                       />
-                      {errors.size && (
-                        <p className="text-sm text-red-500">{errors.size}</p>
-                      )}
+                      {errors.size && <p className="text-sm text-red-500">{errors.size}</p>}
                     </div>
                   </div>
 
@@ -696,18 +584,14 @@ export default function AddPropertyPage() {
                       onChange={handleInputChange}
                       className={errors.features ? "border-red-500" : ""}
                     />
-                    {errors.features && (
-                      <p className="text-sm text-red-500">{errors.features}</p>
-                    )}
+                    {errors.features && <p className="text-sm text-red-500">{errors.features}</p>}
                   </div>
 
                   <div className="flex items-center space-x-2 pt-4">
                     <Switch
                       id="featured"
                       checked={formData.featured}
-                      onCheckedChange={(checked) =>
-                        handleSwitchChange("featured", checked)
-                      }
+                      onCheckedChange={(checked) => handleSwitchChange("featured", checked)}
                     />
                     <Label htmlFor="featured" className="mr-2">
                       عرض هذا العقار في الصفحة الرئيسية
@@ -719,9 +603,7 @@ export default function AddPropertyPage() {
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>صورة العقار الرئيسية</CardTitle>
-                  <CardDescription>
-                    قم بتحميل صورة رئيسية تمثل العقار
-                  </CardDescription>
+                  <CardDescription>قم بتحميل صورة رئيسية تمثل العقار</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-col md:flex-row items-center gap-6">
@@ -772,14 +654,9 @@ export default function AddPropertyPage() {
                         </div>
                       </Button>
                       <p className="text-sm text-muted-foreground">
-                        يمكنك رفع صورة بصيغة JPG أو PNG. الحد الأقصى لحجم الملف
-                        هو 5 ميجابايت.
+                        يمكنك رفع صورة بصيغة JPG أو PNG. الحد الأقصى لحجم الملف هو 5 ميجابايت.
                       </p>
-                      {errors.thumbnail && (
-                        <p className="text-xs text-red-500">
-                          {errors.thumbnail}
-                        </p>
-                      )}
+                      {errors.thumbnail && <p className="text-xs text-red-500">{errors.thumbnail}</p>}
                     </div>
                   </div>
                 </CardContent>
@@ -788,18 +665,13 @@ export default function AddPropertyPage() {
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>معرض صور العقار</CardTitle>
-                  <CardDescription>
-                    قم بتحميل صور متعددة لعرض تفاصيل العقار
-                  </CardDescription>
+                  <CardDescription>قم بتحميل صور متعددة لعرض تفاصيل العقار</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {previews.gallery.map((preview, index) => (
-                        <div
-                          key={index}
-                          className="border rounded-md p-2 relative"
-                        >
+                        <div key={index} className="border rounded-md p-2 relative">
                           <div className="h-40 bg-muted rounded-md overflow-hidden">
                             <img
                               src={preview}
@@ -815,9 +687,7 @@ export default function AddPropertyPage() {
                           >
                             <X className="h-3 w-3" />
                           </Button>
-                          <p className="text-xs text-center mt-2 truncate">
-                            صورة {index + 1}
-                          </p>
+                          <p className="text-xs text-center mt-2 truncate">صورة {index + 1}</p>
                         </div>
                       ))}
                       <div
@@ -831,9 +701,7 @@ export default function AddPropertyPage() {
                             <ImageIcon className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          إضافة صورة
-                        </p>
+                        <p className="text-sm text-muted-foreground">إضافة صورة</p>
                       </div>
                     </div>
                     <input
@@ -844,12 +712,9 @@ export default function AddPropertyPage() {
                       className="hidden"
                       onChange={(e) => handleFileChange(e, "gallery")}
                     />
-                    {errors.gallery && (
-                      <p className="text-red-500 text-sm">{errors.gallery}</p>
-                    )}
+                    {errors.gallery && <p className="text-red-500 text-sm">{errors.gallery}</p>}
                     <p className="text-sm text-muted-foreground">
-                      يمكنك رفع صور بصيغة JPG أو PNG. الحد الأقصى لعدد الصور هو
-                      10.
+                      يمكنك رفع صور بصيغة JPG أو PNG. الحد الأقصى لعدد الصور هو 10.
                     </p>
                   </div>
                 </CardContent>
@@ -858,18 +723,13 @@ export default function AddPropertyPage() {
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>مخططات الطوابق</CardTitle>
-                  <CardDescription>
-                    قم بتحميل مخططات الطوابق والتصاميم الهندسية للعقار
-                  </CardDescription>
+                  <CardDescription>قم بتحميل مخططات الطوابق والتصاميم الهندسية للعقار</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {previews.floorPlans.map((preview, index) => (
-                        <div
-                          key={index}
-                          className="border rounded-md p-2 relative"
-                        >
+                        <div key={index} className="border rounded-md p-2 relative">
                           <div className="h-40 bg-muted rounded-md overflow-hidden">
                             <img
                               src={preview}
@@ -885,9 +745,7 @@ export default function AddPropertyPage() {
                           >
                             <X className="h-3 w-3" />
                           </Button>
-                          <p className="text-xs text-center mt-2 truncate">
-                            مخطط {index + 1}
-                          </p>
+                          <p className="text-xs text-center mt-2 truncate">مخطط {index + 1}</p>
                         </div>
                       ))}
                       <div
@@ -901,9 +759,7 @@ export default function AddPropertyPage() {
                             <Plus className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          إضافة مخطط
-                        </p>
+                        <p className="text-sm text-muted-foreground">إضافة مخطط</p>
                       </div>
                     </div>
                     <input
@@ -915,12 +771,12 @@ export default function AddPropertyPage() {
                       onChange={(e) => handleFileChange(e, "floorPlans")}
                     />
                     <p className="text-sm text-muted-foreground">
-                      يمكنك رفع مخططات بصيغة JPG أو PNG. الحد الأقصى لعدد
-                      المخططات هو 5.
+                      يمكنك رفع مخططات بصيغة JPG أو PNG. الحد الأقصى لعدد المخططات هو 5.
                     </p>
                   </div>
                 </CardContent>
               </Card>
+
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>موقع العقار</CardTitle>
@@ -980,14 +836,12 @@ export default function AddPropertyPage() {
                   </div>
                 </CardContent>
               </Card>
+
               <Card className="md:col-span-2">
                 <CardFooter className="flex flex-col items-end border-t p-6 space-y-4">
                   <div className="w-full">
                     <div className="flex justify-between w-full">
-                      <Button
-                        variant="outline"
-                        onClick={() => router.push("/properties")}
-                      >
+                      <Button variant="outline" onClick={() => router.push("/properties")}>
                         إلغاء
                       </Button>
                       <div className="flex flex-col items-end gap-2">
@@ -999,18 +853,11 @@ export default function AddPropertyPage() {
                           >
                             {isLoading ? "جاري الحفظ..." : "حفظ كمسودة"}
                           </Button>
-                          <Button
-                            onClick={() => handleSubmit(true)}
-                            disabled={isLoading}
-                          >
+                          <Button onClick={() => handleSubmit(true)} disabled={isLoading}>
                             {isLoading ? "جاري الحفظ..." : "نشر العقار"}
                           </Button>
                         </div>
-                        {submitError && (
-                          <div className="text-red-500 text-sm mt-2">
-                            {submitError}
-                          </div>
-                        )}
+                        {submitError && <div className="text-red-500 text-sm mt-2">{submitError}</div>}
                       </div>
                     </div>
                   </div>
