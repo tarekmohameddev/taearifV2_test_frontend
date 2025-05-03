@@ -654,7 +654,7 @@ export default function AddPropertyPage() {
                     {errors.features && <p className="text-sm text-red-500">{errors.features}</p>}
                   </div>
 
-                  <div className="flex items-center space-x-2 pt-4">
+                  <div className="flex items-center space-x-2 pt-4 gap-2">
                     <Switch
                       id="featured"
                       checked={formData.featured}
@@ -795,10 +795,10 @@ export default function AddPropertyPage() {
                   </div>
 
                   {/* مرافق العقار - Property Features */}
-                  <div className="space-y-4">
+                  <div className="space-y-4  whitespace-nowraps">
                     <h3 className="text-lg font-semibold text-right">مرافق العقار</h3>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 whitespace-nowraps ">
                       <PropertyCounter
                         label="الغرف"
                         value={formData.rooms}
@@ -819,9 +819,7 @@ export default function AddPropertyPage() {
                         value={formData.driver_room}
                         onChange={(value) => handleCounterChange("driver_room", value)}
                       />
-                    </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <PropertyCounter
                         label="غرفة الخادمات"
                         value={formData.maid_room}
@@ -842,9 +840,7 @@ export default function AddPropertyPage() {
                         value={formData.majlis}
                         onChange={(value) => handleCounterChange("majlis", value)}
                       />
-                    </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <PropertyCounter
                         label="المخزن"
                         value={formData.storage_room}
@@ -865,9 +861,7 @@ export default function AddPropertyPage() {
                         value={formData.kitchen}
                         onChange={(value) => handleCounterChange("kitchen", value)}
                       />
-                    </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <PropertyCounter
                         label="الشرفة"
                         value={formData.balcony}
@@ -888,9 +882,7 @@ export default function AddPropertyPage() {
                         value={formData.elevator}
                         onChange={(value) => handleCounterChange("elevator", value)}
                       />
-                    </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <PropertyCounter
                         label="موقف سيارة مخصص"
                         value={formData.private_parking}
