@@ -677,7 +677,15 @@ export default function AddPropertyPage() {
                           id="size"
                           name="size"
                           value={formData.size}
-                          onChange={handleInputChange}
+                          inputMode="numeric"
+pattern="[0-9]*"
+onChange={(e) => {
+      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
+      handleInputChange({
+        // نمرر نفس الحدث لكن بقيمة منقحة
+        target: { name: e.currentTarget.name, value: onlyDigits },
+      });
+    }}
                           dir="rtl"
                         />
                         <span className="text-sm text-gray-500 block text-right">قدم مربع</span>
@@ -689,7 +697,15 @@ export default function AddPropertyPage() {
                           id="length"
                           name="length"
                           value={formData.length}
-                          onChange={handleInputChange}
+                          inputMode="numeric"
+pattern="[0-9]*"
+onChange={(e) => {
+      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
+      handleInputChange({
+        // نمرر نفس الحدث لكن بقيمة منقحة
+        target: { name: e.currentTarget.name, value: onlyDigits },
+      });
+    }}
                           dir="rtl"
                         />
                         <span className="text-sm text-gray-500 block text-right">متر</span>
@@ -701,7 +717,15 @@ export default function AddPropertyPage() {
                           id="width"
                           name="width"
                           value={formData.width}
-                          onChange={handleInputChange}
+                          inputMode="numeric"
+pattern="[0-9]*"
+onChange={(e) => {
+      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
+      handleInputChange({
+        // نمرر نفس الحدث لكن بقيمة منقحة
+        target: { name: e.currentTarget.name, value: onlyDigits },
+      });
+    }}
                           dir="rtl"
                         />
                         <span className="text-sm text-gray-500 block text-right">متر</span>
@@ -731,7 +755,15 @@ export default function AddPropertyPage() {
                           id="street_width_north"
                           name="street_width_north"
                           value={formData.street_width_north}
-                          onChange={handleInputChange}
+                          inputMode="numeric"
+pattern="[0-9]*"
+onChange={(e) => {
+      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
+      handleInputChange({
+        // نمرر نفس الحدث لكن بقيمة منقحة
+        target: { name: e.currentTarget.name, value: onlyDigits },
+      });
+    }}
                           dir="rtl"
                         />
                         <span className="text-sm text-gray-500 block text-right">متر</span>
@@ -743,7 +775,15 @@ export default function AddPropertyPage() {
                           id="street_width_south"
                           name="street_width_south"
                           value={formData.street_width_south}
-                          onChange={handleInputChange}
+                          inputMode="numeric"
+pattern="[0-9]*"
+onChange={(e) => {
+      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
+      handleInputChange({
+        // نمرر نفس الحدث لكن بقيمة منقحة
+        target: { name: e.currentTarget.name, value: onlyDigits },
+      });
+    }}
                           dir="rtl"
                         />
                         <span className="text-sm text-gray-500 block text-right">متر</span>
@@ -755,7 +795,15 @@ export default function AddPropertyPage() {
                           id="street_width_east"
                           name="street_width_east"
                           value={formData.street_width_east}
-                          onChange={handleInputChange}
+                          inputMode="numeric"
+pattern="[0-9]*"
+onChange={(e) => {
+      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
+      handleInputChange({
+        // نمرر نفس الحدث لكن بقيمة منقحة
+        target: { name: e.currentTarget.name, value: onlyDigits },
+      });
+    }}
                           dir="rtl"
                         />
                         <span className="text-sm text-gray-500 block text-right">متر</span>
@@ -766,7 +814,15 @@ export default function AddPropertyPage() {
                           id="street_width_west"
                           name="street_width_west"
                           value={formData.street_width_west}
-                          onChange={handleInputChange}
+                          inputMode="numeric"
+pattern="[0-9]*"
+onChange={(e) => {
+      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
+      handleInputChange({
+        // نمرر نفس الحدث لكن بقيمة منقحة
+        target: { name: e.currentTarget.name, value: onlyDigits },
+      });
+    }}
                           dir="rtl"
                         />
                         <span className="text-sm text-gray-500 block text-right">متر</span>
