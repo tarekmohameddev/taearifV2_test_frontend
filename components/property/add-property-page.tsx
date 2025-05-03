@@ -611,7 +611,7 @@ export default function AddPropertyPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                       <Label htmlFor="bedrooms">غرف النوم</Label>
                       <Input
                         id="bedrooms"
@@ -623,9 +623,9 @@ export default function AddPropertyPage() {
                         className={errors.bedrooms ? "border-red-500" : ""}
                       />
                       {errors.bedrooms && <p className="text-sm text-red-500">{errors.bedrooms}</p>}
-                    </div>
+                    </div> */}
 
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                       <Label htmlFor="bathrooms">الحمامات</Label>
                       <Input
                         id="bathrooms"
@@ -637,21 +637,8 @@ export default function AddPropertyPage() {
                         className={errors.bathrooms ? "border-red-500" : ""}
                       />
                       {errors.bathrooms && <p className="text-sm text-red-500">{errors.bathrooms}</p>}
-                    </div>
+                    </div> */}
 
-                    <div className="space-y-2">
-                      <Label htmlFor="size">المساحة (قدم مربع)</Label>
-                      <Input
-                        id="size"
-                        name="size"
-                        type="number"
-                        placeholder="1200"
-                        value={formData.size}
-                        onChange={handleInputChange}
-                        className={errors.size ? "border-red-500" : ""}
-                      />
-                      {errors.size && <p className="text-sm text-red-500">{errors.size}</p>}
-                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -683,6 +670,19 @@ export default function AddPropertyPage() {
                     <h3 className="text-lg font-semibold text-right">الخصائص</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                    <div className="space-y-2">
+                        <Label htmlFor="size">المساحة</Label>
+                        <Input
+                          id="size"
+                          name="size"
+                          value={formData.size}
+                          onChange={handleInputChange}
+                          dir="rtl"
+                        />
+                        <span className="text-sm text-gray-500 block text-right">قدم مربع</span>
+                      </div>
+
                       <div className="space-y-2">
                         <Label htmlFor="length">طول القطعة</Label>
                         <Input
@@ -725,9 +725,6 @@ export default function AddPropertyPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="street_width_north">عرض الشارع الشمالي</Label>
                         <Input
@@ -763,9 +760,6 @@ export default function AddPropertyPage() {
                         />
                         <span className="text-sm text-gray-500 block text-right">متر</span>
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="street_width_west">عرض الشارع الغربي</Label>
                         <Input
