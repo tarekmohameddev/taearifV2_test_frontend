@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Download,
   Filter,
@@ -33,131 +32,16 @@ import {
 } from "@/components/ui/dialog";
 import { DashboardHeader } from "@/components/mainCOMP/dashboard-header";
 import { EnhancedSidebar } from "@/components/mainCOMP/enhanced-sidebar";
+import { useState, useEffect } from "react";
+import axiosInstance from "@/lib/axiosInstance";
+import toast from "react-hot-toast";
 
 export function AppsPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("apps");
-
-  const apps = [
-    {
-      id: "1",
-      name: "نموذج الاتصال برو",
-      description: "نموذج اتصال متقدم مع حماية من البريد المزعج وحقول مخصصة",
-      category: "نماذج",
-      icon: "/placeholder.svg?height=80&width=80",
-      rating: 4.8,
-      reviews: 245,
-      installed: true,
-      price: "مجاني",
-      developer: "فورم ووركس",
-      featured: true,
-    },
-    {
-      id: "2",
-      name: "محسن SEO",
-      description: "تحسين موقعك تلقائيًا لمحركات البحث",
-      category: "تسويق",
-      icon: "/placeholder.svg?height=80&width=80",
-      rating: 4.6,
-      reviews: 189,
-      installed: true,
-      price: "$4.99/شهر",
-      developer: "أدوات SEO",
-      featured: true,
-    },
-    {
-      id: "3",
-      name: "تغذية وسائل التواصل الاجتماعي",
-      description: "عرض أحدث منشورات وسائل التواصل الاجتماعي على موقعك",
-      category: "اجتماعي",
-      icon: "/placeholder.svg?height=80&width=80",
-      rating: 4.3,
-      reviews: 127,
-      installed: false,
-      price: "مجاني",
-      developer: "سوشيال كونكت",
-      featured: false,
-    },
-    {
-      id: "4",
-      name: "لوحة تحليلات",
-      description: "تحليلات مفصلة للموقع وتتبع الزوار",
-      category: "تحليلات",
-      icon: "/placeholder.svg?height=80&width=80",
-      rating: 4.9,
-      reviews: 312,
-      installed: false,
-      price: "$9.99/شهر",
-      developer: "داتا متريكس",
-      featured: true,
-    },
-    {
-      id: "5",
-      name: "التجارة الإلكترونية لايت",
-      description: "وظائف التجارة الإلكترونية البسيطة لموقعك",
-      category: "تجارة إلكترونية",
-      icon: "/placeholder.svg?height=80&width=80",
-      rating: 4.5,
-      reviews: 203,
-      installed: false,
-      price: "$14.99/شهر",
-      developer: "شوب سيستمز",
-      featured: false,
-    },
-    {
-      id: "6",
-      name: "الدردشة المباشرة",
-      description: "الدردشة مع زوار موقعك في الوقت الفعلي",
-      category: "اتصالات",
-      icon: "/placeholder.svg?height=80&width=80",
-      rating: 4.7,
-      reviews: 178,
-      installed: false,
-      price: "$7.99/شهر",
-      developer: "شات ووركس",
-      featured: false,
-    },
-    {
-      id: "7",
-      name: "موافقة ملفات تعريف الارتباط",
-      description: "شريط موافقة ملفات تعريف الارتباط وإدارتها متوافق مع GDPR",
-      category: "قانوني",
-      icon: "/placeholder.svg?height=80&width=80",
-      rating: 4.4,
-      reviews: 92,
-      installed: true,
-      price: "مجاني",
-      developer: "أدوات الخصوصية",
-      featured: false,
-    },
-    {
-      id: "8",
-      name: "معرض الصور برو",
-      description: "معارض صور وشرائح جميلة ومتجاوبة",
-      category: "وسائط",
-      icon: "/placeholder.svg?height=80&width=80",
-      rating: 4.6,
-      reviews: 156,
-      installed: false,
-      price: "$3.99/شهر",
-      developer: "ميديا ووركس",
-      featured: false,
-    },
-    {
-      id: "9",
-      name: "جدولة المواعيد",
-      description: "السماح للعملاء بحجز المواعيد على موقعك",
-      category: "أعمال",
-      icon: "/placeholder.svg?height=80&width=80",
-      rating: 4.8,
-      reviews: 211,
-      installed: false,
-      price: "$12.99/شهر",
-      developer: "بوكينج برو",
-      featured: true,
-    },
-  ];
+  const [apps, setApps] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const categories = [
     "الكل",
@@ -171,24 +55,94 @@ export function AppsPage() {
     "وسائط",
     "أعمال",
   ];
+  
 
   const [installedApps, setInstalledApps] = useState(
     apps.filter((app) => app.installed),
   );
 
-  const handleInstall = (appId: string) => {
-    const appToInstall = apps.find((app) => app.id === appId);
-    if (appToInstall && !installedApps.some((app) => app.id === appId)) {
-      setInstalledApps([
-        ...installedApps,
-        { ...appToInstall, installed: true },
-      ]);
+  useEffect(() => {
+    const fetchApps = async () => {
+      const loadingToast = toast.loading("جاري تحميل التطبيقات...");
+      try {
+        const res = await axiosInstance.get("/apps");
+        const fetchedApps = res.data.data.apps;
+        setApps(fetchedApps);
+  
+        const installed = fetchedApps.filter((app) => app.installed === true);
+        setInstalledApps(installed);
+        toast.dismiss(loadingToast);
+        toast.success("تم تحميل التطبيقات بنجاح");
+      } catch (err) {
+        toast.dismiss(loadingToast);
+        toast.error("فشل في تحميل التطبيقات");
+        console.error("Failed to load apps:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchApps();
+  }, []);
+  
+
+  
+  const handleInstall = async (appId: string) => {
+    const loadingToast = toast.loading("جاري تثبيت التطبيق...");
+    try {
+      await axiosInstance.post("/apps/install", {
+        app_id: Number(appId),
+      });
+  
+      const updatedApps = apps.map((app) => {
+        if (app.id === appId) {
+          return { ...app, installed: true };
+        }
+        return app;
+      });
+  
+      setApps(updatedApps);
+  
+      const updatedInstalledApps = updatedApps.filter((app) => app.installed === true);
+      setInstalledApps(updatedInstalledApps);
+
+      toast.dismiss(loadingToast);
+      toast.success("تم تثبيت التطبيق بنجاح");
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      toast.error("فشل في تثبيت التطبيق");
+      console.error("فشل في تثبيت التطبيق:", error);
     }
   };
+  
+  
 
-  const handleUninstall = (appId: string) => {
-    setInstalledApps(installedApps.filter((app) => app.id !== appId));
+  const handleUninstall = async (appId: string) => {
+    const loadingToast = toast.loading("جاري إزالة التطبيق...");
+    try {
+      await axiosInstance.post(`/apps/uninstall/${appId}`);
+  
+      const updatedApps = apps.map((app) => {
+        if (app.id === appId) {
+          return { ...app, installed: false };
+        }
+        return app;
+      });
+  
+      setApps(updatedApps);
+  
+      const updatedInstalledApps = updatedApps.filter((app) => app.installed === true);
+      setInstalledApps(updatedInstalledApps);
+
+      toast.dismiss(loadingToast);
+      toast.success("تم إزالة التطبيق بنجاح");
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      toast.error("فشل في إزالة التطبيق");
+      console.error("فشل في إزالة تثبيت التطبيق:", error);
+    }
   };
+  
+  
 
   const filteredApps = apps.filter(
     (app) =>
@@ -196,6 +150,11 @@ export function AppsPage() {
       app.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+  if (loading) {
+    return <div className="p-6 text-center">جاري تحميل التطبيقات...</div>;
+  }
+
+  
 
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
@@ -337,7 +296,7 @@ export function AppsPage() {
             </div>
 
             <Tabs defaultValue="all">
-              <TabsList className="flex w-full overflow-auto">
+              {/* <TabsList className="flex w-full overflow-auto">
                 {categories.map((category) => (
                   <TabsTrigger
                     key={category}
@@ -346,7 +305,7 @@ export function AppsPage() {
                     {category}
                   </TabsTrigger>
                 ))}
-              </TabsList>
+              </TabsList> */}
 
               <TabsContent value="all" className="mt-6">
                 <div className="mb-6">

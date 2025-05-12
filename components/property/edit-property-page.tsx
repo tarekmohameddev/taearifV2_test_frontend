@@ -412,8 +412,6 @@ export default function EditPropertyPage() {
           );
           floorPlansUrls = uploadedFiles.map((f) => f.url);
         }
-
-        console.log("11111111111111111111111");
         const propertyData = {
           title: formData.title,
           address: formData.address,
@@ -464,35 +462,26 @@ export default function EditPropertyPage() {
           elevator: parseInt(formData.elevator) || 0,
           private_parking: parseInt(formData.private_parking) || 0,
         };
-        console.log("222222222222222");
         const response = await axiosInstance.post(
           `/properties/${id}`,
           propertyData,
         );
-        console.log("33333333333333333");
         toast.success(
           publish ? "تم تحديث ونشر العقار بنجاح" : "تم حفظ التغييرات كمسودة",
         );
-        console.log("4444444444444444444");
         setIsLoading(false);
-        console.log("5555555555555555555555");
         const currentState = useStore.getState();
         const updatedProperty = response.data.property;
-        console.log("updatedProperty", updatedProperty);
-        console.log("6666666666666666666");
         updatedProperty.status =
           updatedProperty.status === 1 ? "منشور" : "مسودة";
-        console.log("77777777777777777777");
         const updatedProperties =
           currentState.propertiesManagement.properties.map((prop) =>
             prop.id === updatedProperty.id ? updatedProperty : prop,
           );
-        console.log("888888888888888888");
         setPropertiesManagement({
           properties: updatedProperties,
         });
 
-        console.log("99999999999999");
         router.push("/properties");
       } catch (error) {
         setSubmitError("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");
