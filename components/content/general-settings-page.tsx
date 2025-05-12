@@ -20,6 +20,9 @@ import { useRouter } from "next/navigation";
 interface AdditionalSettings {
   theme_color: string;
   timezone: string;
+  primary_color: string;
+  secondary_color: string;
+  accent_color: string;
   social_links: {
     facebook: string;
     twitter: string;
@@ -33,6 +36,9 @@ export function GeneralSettingsPage() {
     site_name: "",
     tagline: "",
     description: "",
+    primary_color: "#4F46E5",
+    secondary_color: "#10B981",
+    accent_color: "#EF4444",
     logo: "",
     favicon: "",
     maintenance_mode: false,
@@ -75,6 +81,9 @@ export function GeneralSettingsPage() {
         const settings = response.data.data.settings;
         setFormData({
           ...settings,
+          primary_color: settings.primary_color || "#4F46E5",
+          secondary_color: settings.secondary_color || "#10B981",
+          accent_color: settings.accent_color || "#EF4444",
           additional_settings: settings.additional_settings || {
             theme_color: "#FF5733",
             timezone: "Asia/Riyadh",
@@ -251,6 +260,63 @@ export function GeneralSettingsPage() {
                     هذا الوصف سيظهر في نتائج البحث ومشاركات وسائل التواصل
                     الاجتماعي.
                   </p>
+                </div>
+                <div>
+                  <Label>ألوان الموقع</Label>
+                  <div className="flex gap-4 mt-2">
+                    {["primary_color", "secondary_color", "accent_color"].map(
+                      (colorKey) => (
+                        <div
+                          key={colorKey}
+                          className="flex flex-col items-center gap-2"
+                        >
+                          <div className="relative w-12 h-12">
+                            {/* العنصر الذي يعكس اللون ويملأ الدائرة */}
+                            <div
+                              className="absolute inset-0 rounded-full border-2 border-muted"
+                              style={{
+                                backgroundColor:
+                                  formData[colorKey as keyof typeof formData] ||
+                                  "#ffffff",
+                              }}
+                            ></div>
+                            {/* حقل اختيار اللون المخفي */}
+                            <input
+                              type="color"
+                              value={
+                                formData[colorKey as keyof typeof formData] ||
+                                "#ffffff"
+                              }
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  [colorKey]: e.target.value,
+                                })
+                              }
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground capitalize">
+                            {colorKey.replace("_", " ")}
+                          </span>
+                          <input
+                            type="text"
+                            value={
+                              formData[colorKey as keyof typeof formData] || ""
+                            }
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                [colorKey]: e.target.value,
+                              })
+                            }
+                            className="text-xs w-24 text-center border rounded p-1"
+                            placeholder="Hex code"
+                          />
+                        </div>
+                      ),
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

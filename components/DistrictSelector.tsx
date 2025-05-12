@@ -19,11 +19,11 @@ interface DistrictSelectorProps {
   onDistrictSelect: (districtId: string | number) => void;
 }
 
-const DistrictSelector: React.FC<DistrictSelectorProps> = ({ 
+const DistrictSelector: React.FC<DistrictSelectorProps> = ({
   selectedCityId,
   selectedDistrictId,
   onDistrictSelect,
- }) => {
+}) => {
   const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = React.useState(false);
@@ -34,7 +34,7 @@ const DistrictSelector: React.FC<DistrictSelectorProps> = ({
       const fetchDistricts = async () => {
         try {
           const response = await axios.get(
-            `https://nzl-backend.com/api/districts?city_id=${selectedCityId}`
+            `https://nzl-backend.com/api/districts?city_id=${selectedCityId}`,
           );
           setDistricts(response.data.data);
         } catch (error) {
@@ -49,8 +49,9 @@ const DistrictSelector: React.FC<DistrictSelectorProps> = ({
     }
   }, [selectedCityId]);
 
-
-  const selectedDistrict = districts.find(district => district.id === selectedDistrictId);
+  const selectedDistrict = districts.find(
+    (district) => district.id === selectedDistrictId,
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

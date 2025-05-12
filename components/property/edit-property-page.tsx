@@ -40,7 +40,7 @@ import axiosInstance from "@/lib/axiosInstance";
 import { uploadSingleFile } from "@/utils/uploadSingle";
 import { uploadMultipleFiles } from "@/utils/uploadMultiple";
 import useStore from "@/context/Store";
-import { PropertyCounter } from "@/components/property/propertyCOMP/property-counter"
+import { PropertyCounter } from "@/components/property/propertyCOMP/property-counter";
 
 const MapComponent = dynamic(() => import("@/components/map-component"), {
   ssr: false,
@@ -63,6 +63,7 @@ export default function EditPropertyPage() {
     title: "",
     description: "",
     project_id: "",
+    category_id: "",
     address: "",
     price: "",
     type: "",
@@ -75,6 +76,7 @@ export default function EditPropertyPage() {
     featured: false,
     latitude: 24.766316905850978,
     longitude: 46.73579692840576,
+    category: "",
     size: "",
     length: "",
     width: "",
@@ -130,18 +132,18 @@ export default function EditPropertyPage() {
   const [projects, setProjects] = useState([]);
   const [facades, setFacades] = useState([]);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axiosInstance.get("/user/projects");
-        setProjects(response.data.data.user_projects);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        toast.error("حدث خطأ أثناء جلب أنواع العقارات.");
-      }
-    };
-    fetchCategories();
-  }, []);
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const response = await axiosInstance.get("/user/projects");
+  //       setProjects(response.data.data.user_projects);
+  //     } catch (error) {
+  //       console.error("Error fetching categories:", error);
+  //       toast.error("حدث خطأ أثناء جلب أنواع العقارات.");
+  //     }
+  //   };
+  //   fetchCategories();
+  // }, []);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -173,9 +175,20 @@ export default function EditPropertyPage() {
       try {
         const response = await axiosInstance.get(`/properties/${id}`);
         const property = response.data.data.property;
+        const projectsResponse = await axiosInstance.get("/user/projects");
+        const projects = projectsResponse.data.data.user_projects;
+        setProjects(projects);
+
+        // البحث عن المشروع المطابق
+        const matchedProject = projects.find(
+          (p) => p.id === property.project_id,
+        );
+
         setFormData({
+          ...formData,
+          project_id: matchedProject ? matchedProject.id.toString() : "",
           title: property.title || "",
-          project_id: property.project_id || "",
+          category_id: property.category_id || "",
           description: property.description || "",
           address: property.address || "",
           price: property.price || "",
@@ -189,6 +202,7 @@ export default function EditPropertyPage() {
           featured: property.featured || false,
           latitude: property.latitude || 24.766316905850978,
           longitude: property.longitude || 46.73579692840576,
+          category: property.category_id?.toString() || "",
           size: property.size?.toString() || "",
           length: property.length?.toString() || "",
           width: property.width?.toString() || "",
@@ -244,8 +258,8 @@ export default function EditPropertyPage() {
     }
   };
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSwitchChange = (name: string, checked: boolean) => {
     setFormData((prev) => ({ ...prev, [name]: checked }));
@@ -399,12 +413,16 @@ export default function EditPropertyPage() {
           floorPlansUrls = uploadedFiles.map((f) => f.url);
         }
 
+        console.log("11111111111111111111111");
         const propertyData = {
           title: formData.title,
           address: formData.address,
           price: formData.price,
+
           project_id: formData.project_id,
+          category_id: parseInt(formData.category),
           type: formData.type,
+
           beds: parseInt(formData.bedrooms),
           bath: parseInt(formData.bathrooms),
           area: parseInt(formData.area),
@@ -419,7 +437,6 @@ export default function EditPropertyPage() {
           longitude: formData.longitude,
           featured: formData.featured,
           city_id: 1,
-          category_id: 1,
           size: parseInt(formData.size) || 0,
           length: parseFloat(formData.length) || 0,
           width: parseFloat(formData.width) || 0,
@@ -447,27 +464,35 @@ export default function EditPropertyPage() {
           elevator: parseInt(formData.elevator) || 0,
           private_parking: parseInt(formData.private_parking) || 0,
         };
+        console.log("222222222222222");
         const response = await axiosInstance.post(
           `/properties/${id}`,
           propertyData,
         );
+        console.log("33333333333333333");
         toast.success(
           publish ? "تم تحديث ونشر العقار بنجاح" : "تم حفظ التغييرات كمسودة",
         );
+        console.log("4444444444444444444");
         setIsLoading(false);
-
+        console.log("5555555555555555555555");
         const currentState = useStore.getState();
-        const updatedProperty = response.data.user_property;
+        const updatedProperty = response.data.property;
+        console.log("updatedProperty", updatedProperty);
+        console.log("6666666666666666666");
         updatedProperty.status =
           updatedProperty.status === 1 ? "منشور" : "مسودة";
+        console.log("77777777777777777777");
         const updatedProperties =
           currentState.propertiesManagement.properties.map((prop) =>
             prop.id === updatedProperty.id ? updatedProperty : prop,
           );
+        console.log("888888888888888888");
         setPropertiesManagement({
           properties: updatedProperties,
         });
 
+        console.log("99999999999999");
         router.push("/properties");
       } catch (error) {
         setSubmitError("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");
@@ -592,21 +617,19 @@ export default function EditPropertyPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="transaction_type">نوع القائمة</Label>
+                      <Label htmlFor="type">نوع القائمة</Label>
                       <Select
-                        name="transaction_type"
-                        value={formData.transaction_type}
+                        name="type"
+                        value={formData.type}
                         onValueChange={(value) =>
                           handleInputChange({
-                            target: { name: "transaction_type", value },
+                            target: { name: "type", value },
                           } as any)
                         }
                       >
                         <SelectTrigger
-                          id="transaction_type"
-                          className={
-                            errors.transaction_type ? "border-red-500" : ""
-                          }
+                          id="type"
+                          className={errors.type ? "border-red-500" : ""}
                         >
                           <SelectValue placeholder="اختر النوع" />
                         </SelectTrigger>
@@ -615,10 +638,8 @@ export default function EditPropertyPage() {
                           <SelectItem value="للإيجار">للإيجار</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.transaction_type && (
-                        <p className="text-sm text-red-500">
-                          {errors.transaction_type}
-                        </p>
+                      {errors.type && (
+                        <p className="text-sm text-red-500">{errors.type}</p>
                       )}
                     </div>
                   </div>
@@ -700,7 +721,7 @@ export default function EditPropertyPage() {
                   <CardDescription>أدخل مواصفات وميزات العقار</CardDescription>
                 </CardHeader>
                 <CardContent>
-<div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     {/* <div className="space-y-2">
                       <Label htmlFor="bedrooms">غرف النوم</Label>
                       <Input
@@ -728,7 +749,6 @@ export default function EditPropertyPage() {
                       />
                       {errors.bathrooms && <p className="text-sm text-red-500">{errors.bathrooms}</p>}
                     </div> */}
-
                   </div>
 
                   <div className="space-y-2">
@@ -741,44 +761,57 @@ export default function EditPropertyPage() {
                       onChange={handleInputChange}
                       className={errors.features ? "border-red-500" : ""}
                     />
-                    {errors.features && <p className="text-sm text-red-500">{errors.features}</p>}
+                    {errors.features && (
+                      <p className="text-sm text-red-500">{errors.features}</p>
+                    )}
                   </div>
 
                   <div className="flex items-center space-x-2 pt-4 gap-2">
                     <Switch
                       id="featured"
                       checked={formData.featured}
-                      onCheckedChange={(checked) => handleSwitchChange("featured", checked)}
+                      onCheckedChange={(checked) =>
+                        handleSwitchChange("featured", checked)
+                      }
                     />
                     <Label htmlFor="featured" className="mr-2">
                       عرض هذا العقار في الصفحة الرئيسية
                     </Label>
                   </div>
-                    
+
                   {/* الخصائص - Property Specifications */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-right">الخصائص</h3>
+                    <h3 className="text-lg font-semibold text-right">
+                      الخصائص
+                    </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                    <div className="space-y-2">
+                      <div className="space-y-2">
                         <Label htmlFor="size">المساحة</Label>
                         <Input
                           id="size"
                           name="size"
                           value={formData.size}
                           inputMode="numeric"
-pattern="[0-9]*"
-onChange={(e) => {
-      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
-      handleInputChange({
-        // نمرر نفس الحدث لكن بقيمة منقحة
-        target: { name: e.currentTarget.name, value: onlyDigits },
-      });
-    }}
+                          pattern="[0-9]*"
+                          onChange={(e) => {
+                            const onlyDigits = e.currentTarget.value.replace(
+                              /\D/g,
+                              "",
+                            );
+                            handleInputChange({
+                              // نمرر نفس الحدث لكن بقيمة منقحة
+                              target: {
+                                name: e.currentTarget.name,
+                                value: onlyDigits,
+                              },
+                            });
+                          }}
                           dir="rtl"
                         />
-                        <span className="text-sm text-gray-500 block text-right">قدم مربع</span>
+                        <span className="text-sm text-gray-500 block text-right">
+                          قدم مربع
+                        </span>
                       </div>
 
                       <div className="space-y-2">
@@ -788,17 +821,25 @@ onChange={(e) => {
                           name="length"
                           value={formData.length}
                           inputMode="numeric"
-pattern="[0-9]*"
-onChange={(e) => {
-      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
-      handleInputChange({
-        // نمرر نفس الحدث لكن بقيمة منقحة
-        target: { name: e.currentTarget.name, value: onlyDigits },
-      });
-    }}
+                          pattern="[0-9]*"
+                          onChange={(e) => {
+                            const onlyDigits = e.currentTarget.value.replace(
+                              /\D/g,
+                              "",
+                            );
+                            handleInputChange({
+                              // نمرر نفس الحدث لكن بقيمة منقحة
+                              target: {
+                                name: e.currentTarget.name,
+                                value: onlyDigits,
+                              },
+                            });
+                          }}
                           dir="rtl"
                         />
-                        <span className="text-sm text-gray-500 block text-right">متر</span>
+                        <span className="text-sm text-gray-500 block text-right">
+                          متر
+                        </span>
                       </div>
 
                       <div className="space-y-2">
@@ -808,31 +849,44 @@ onChange={(e) => {
                           name="width"
                           value={formData.width}
                           inputMode="numeric"
-pattern="[0-9]*"
-onChange={(e) => {
-      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
-      handleInputChange({
-        // نمرر نفس الحدث لكن بقيمة منقحة
-        target: { name: e.currentTarget.name, value: onlyDigits },
-      });
-    }}
+                          pattern="[0-9]*"
+                          onChange={(e) => {
+                            const onlyDigits = e.currentTarget.value.replace(
+                              /\D/g,
+                              "",
+                            );
+                            handleInputChange({
+                              // نمرر نفس الحدث لكن بقيمة منقحة
+                              target: {
+                                name: e.currentTarget.name,
+                                value: onlyDigits,
+                              },
+                            });
+                          }}
                           dir="rtl"
                         />
-                        <span className="text-sm text-gray-500 block text-right">متر</span>
+                        <span className="text-sm text-gray-500 block text-right">
+                          متر
+                        </span>
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="facade_id">الواجهة</Label>
                         <Select
                           value={formData.facade_id?.toString() || ""}
-                          onValueChange={(value) => handleSelectChange("facade_id", value)}
+                          onValueChange={(value) =>
+                            handleSelectChange("facade_id", value)
+                          }
                         >
                           <SelectTrigger id="facade_id" dir="rtl">
                             <SelectValue placeholder="اختر الواجهة" />
                           </SelectTrigger>
                           <SelectContent>
                             {facades.map((facade) => (
-                              <SelectItem key={facade.id} value={facade.id.toString()}>
+                              <SelectItem
+                                key={facade.id}
+                                value={facade.id.toString()}
+                              >
                                 {facade.name}
                               </SelectItem>
                             ))}
@@ -840,204 +894,278 @@ onChange={(e) => {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="street_width_north">عرض الشارع الشمالي</Label>
+                        <Label htmlFor="street_width_north">
+                          عرض الشارع الشمالي
+                        </Label>
                         <Input
                           id="street_width_north"
                           name="street_width_north"
                           value={formData.street_width_north}
                           inputMode="numeric"
-pattern="[0-9]*"
-onChange={(e) => {
-      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
-      handleInputChange({
-        // نمرر نفس الحدث لكن بقيمة منقحة
-        target: { name: e.currentTarget.name, value: onlyDigits },
-      });
-    }}
+                          pattern="[0-9]*"
+                          onChange={(e) => {
+                            const onlyDigits = e.currentTarget.value.replace(
+                              /\D/g,
+                              "",
+                            );
+                            handleInputChange({
+                              // نمرر نفس الحدث لكن بقيمة منقحة
+                              target: {
+                                name: e.currentTarget.name,
+                                value: onlyDigits,
+                              },
+                            });
+                          }}
                           dir="rtl"
                         />
-                        <span className="text-sm text-gray-500 block text-right">متر</span>
+                        <span className="text-sm text-gray-500 block text-right">
+                          متر
+                        </span>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="street_width_south">عرض الشارع الجنوبي</Label>
+                        <Label htmlFor="street_width_south">
+                          عرض الشارع الجنوبي
+                        </Label>
                         <Input
                           id="street_width_south"
                           name="street_width_south"
                           value={formData.street_width_south}
                           inputMode="numeric"
-pattern="[0-9]*"
-onChange={(e) => {
-      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
-      handleInputChange({
-        // نمرر نفس الحدث لكن بقيمة منقحة
-        target: { name: e.currentTarget.name, value: onlyDigits },
-      });
-    }}
+                          pattern="[0-9]*"
+                          onChange={(e) => {
+                            const onlyDigits = e.currentTarget.value.replace(
+                              /\D/g,
+                              "",
+                            );
+                            handleInputChange({
+                              // نمرر نفس الحدث لكن بقيمة منقحة
+                              target: {
+                                name: e.currentTarget.name,
+                                value: onlyDigits,
+                              },
+                            });
+                          }}
                           dir="rtl"
                         />
-                        <span className="text-sm text-gray-500 block text-right">متر</span>
+                        <span className="text-sm text-gray-500 block text-right">
+                          متر
+                        </span>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="street_width_east">عرض الشارع الشرقي</Label>
+                        <Label htmlFor="street_width_east">
+                          عرض الشارع الشرقي
+                        </Label>
                         <Input
                           id="street_width_east"
                           name="street_width_east"
                           value={formData.street_width_east}
                           inputMode="numeric"
-pattern="[0-9]*"
-onChange={(e) => {
-      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
-      handleInputChange({
-        // نمرر نفس الحدث لكن بقيمة منقحة
-        target: { name: e.currentTarget.name, value: onlyDigits },
-      });
-    }}
+                          pattern="[0-9]*"
+                          onChange={(e) => {
+                            const onlyDigits = e.currentTarget.value.replace(
+                              /\D/g,
+                              "",
+                            );
+                            handleInputChange({
+                              // نمرر نفس الحدث لكن بقيمة منقحة
+                              target: {
+                                name: e.currentTarget.name,
+                                value: onlyDigits,
+                              },
+                            });
+                          }}
                           dir="rtl"
                         />
-                        <span className="text-sm text-gray-500 block text-right">متر</span>
+                        <span className="text-sm text-gray-500 block text-right">
+                          متر
+                        </span>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="street_width_west">عرض الشارع الغربي</Label>
+                        <Label htmlFor="street_width_west">
+                          عرض الشارع الغربي
+                        </Label>
                         <Input
                           id="street_width_west"
                           name="street_width_west"
                           value={formData.street_width_west}
                           inputMode="numeric"
-pattern="[0-9]*"
-onChange={(e) => {
-      const onlyDigits = e.currentTarget.value.replace(/\D/g, "");
-      handleInputChange({
-        // نمرر نفس الحدث لكن بقيمة منقحة
-        target: { name: e.currentTarget.name, value: onlyDigits },
-      });
-    }}
+                          pattern="[0-9]*"
+                          onChange={(e) => {
+                            const onlyDigits = e.currentTarget.value.replace(
+                              /\D/g,
+                              "",
+                            );
+                            handleInputChange({
+                              // نمرر نفس الحدث لكن بقيمة منقحة
+                              target: {
+                                name: e.currentTarget.name,
+                                value: onlyDigits,
+                              },
+                            });
+                          }}
                           dir="rtl"
                         />
-                        <span className="text-sm text-gray-500 block text-right">متر</span>
+                        <span className="text-sm text-gray-500 block text-right">
+                          متر
+                        </span>
                       </div>
 
                       <div className="space-y-2">
-  <Label htmlFor="building_age">سنة البناء</Label>
-  <Select
-    value={formData.building_age}
-    onValueChange={(value) => handleSelectChange("building_age", value)}
-  >
-    <SelectTrigger id="building_age" dir="rtl">
-      <SelectValue placeholder="اختر سنة البناء" />
-    </SelectTrigger>
-    <SelectContent>
-      {years.map((year) => (
-        <SelectItem key={year} value={String(year)}>
-          {year}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-</div>
-
+                        <Label htmlFor="building_age">سنة البناء</Label>
+                        <Select
+                          value={formData.building_age}
+                          onValueChange={(value) =>
+                            handleSelectChange("building_age", value)
+                          }
+                        >
+                          <SelectTrigger id="building_age" dir="rtl">
+                            <SelectValue placeholder="اختر سنة البناء" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {years.map((year) => (
+                              <SelectItem key={year} value={String(year)}>
+                                {year}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
-                                  {/* مرافق العقار - Property Features */}
-                                  <div className="space-y-4  whitespace-nowraps">
-                    <h3 className="text-lg font-semibold text-right">مرافق العقار</h3>
+                  {/* مرافق العقار - Property Features */}
+                  <div className="space-y-4  whitespace-nowraps">
+                    <h3 className="text-lg font-semibold text-right">
+                      مرافق العقار
+                    </h3>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 whitespace-nowraps ">
                       <PropertyCounter
                         label="الغرف"
                         value={formData.rooms}
-                        onChange={(value) => handleCounterChange("rooms", value)}
+                        onChange={(value) =>
+                          handleCounterChange("rooms", value)
+                        }
                       />
                       <PropertyCounter
                         label="الأدوار"
                         value={formData.floors}
-                        onChange={(value) => handleCounterChange("floors", value)}
+                        onChange={(value) =>
+                          handleCounterChange("floors", value)
+                        }
                       />
                       <PropertyCounter
                         label="رقم الدور"
                         value={formData.floor_number}
-                        onChange={(value) => handleCounterChange("floor_number", value)}
+                        onChange={(value) =>
+                          handleCounterChange("floor_number", value)
+                        }
                       />
                       <PropertyCounter
                         label="غرفة السائق"
                         value={formData.driver_room}
-                        onChange={(value) => handleCounterChange("driver_room", value)}
+                        onChange={(value) =>
+                          handleCounterChange("driver_room", value)
+                        }
                       />
 
                       <PropertyCounter
                         label="غرفة الخادمات"
                         value={formData.maid_room}
-                        onChange={(value) => handleCounterChange("maid_room", value)}
+                        onChange={(value) =>
+                          handleCounterChange("maid_room", value)
+                        }
                       />
                       <PropertyCounter
                         label="غرفة الطعام"
                         value={formData.dining_room}
-                        onChange={(value) => handleCounterChange("dining_room", value)}
+                        onChange={(value) =>
+                          handleCounterChange("dining_room", value)
+                        }
                       />
                       <PropertyCounter
                         label="الصالة"
                         value={formData.living_room}
-                        onChange={(value) => handleCounterChange("living_room", value)}
+                        onChange={(value) =>
+                          handleCounterChange("living_room", value)
+                        }
                       />
                       <PropertyCounter
                         label="المجلس"
                         value={formData.majlis}
-                        onChange={(value) => handleCounterChange("majlis", value)}
+                        onChange={(value) =>
+                          handleCounterChange("majlis", value)
+                        }
                       />
 
                       <PropertyCounter
                         label="المخزن"
                         value={formData.storage_room}
-                        onChange={(value) => handleCounterChange("storage_room", value)}
+                        onChange={(value) =>
+                          handleCounterChange("storage_room", value)
+                        }
                       />
                       <PropertyCounter
                         label="القبو"
                         value={formData.basement}
-                        onChange={(value) => handleCounterChange("basement", value)}
+                        onChange={(value) =>
+                          handleCounterChange("basement", value)
+                        }
                       />
                       <PropertyCounter
                         label="المسبح"
                         value={formData.swimming_pool}
-                        onChange={(value) => handleCounterChange("swimming_pool", value)}
+                        onChange={(value) =>
+                          handleCounterChange("swimming_pool", value)
+                        }
                       />
                       <PropertyCounter
                         label="المطبخ"
                         value={formData.kitchen}
-                        onChange={(value) => handleCounterChange("kitchen", value)}
+                        onChange={(value) =>
+                          handleCounterChange("kitchen", value)
+                        }
                       />
 
                       <PropertyCounter
                         label="الشرفة"
                         value={formData.balcony}
-                        onChange={(value) => handleCounterChange("balcony", value)}
+                        onChange={(value) =>
+                          handleCounterChange("balcony", value)
+                        }
                       />
                       <PropertyCounter
                         label="الحديقة"
                         value={formData.garden}
-                        onChange={(value) => handleCounterChange("garden", value)}
+                        onChange={(value) =>
+                          handleCounterChange("garden", value)
+                        }
                       />
                       <PropertyCounter
                         label="الملحق"
                         value={formData.annex}
-                        onChange={(value) => handleCounterChange("annex", value)}
+                        onChange={(value) =>
+                          handleCounterChange("annex", value)
+                        }
                       />
                       <PropertyCounter
                         label="المصعد"
                         value={formData.elevator}
-                        onChange={(value) => handleCounterChange("elevator", value)}
+                        onChange={(value) =>
+                          handleCounterChange("elevator", value)
+                        }
                       />
 
                       <PropertyCounter
                         label="موقف سيارة مخصص"
                         value={formData.private_parking}
-                        onChange={(value) => handleCounterChange("private_parking", value)}
+                        onChange={(value) =>
+                          handleCounterChange("private_parking", value)
+                        }
                       />
+                    </div>
                   </div>
-                  </div>
-
-
-
                 </CardContent>
               </Card>
 

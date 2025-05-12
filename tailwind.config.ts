@@ -19,7 +19,7 @@ const config = {
     },
     extend: {
       zIndex: {
-        '9999': '9999',
+        "9999": "9999",
       },
       animation: {
         "bounce-in": "bounce-in 0.5s ease-out",

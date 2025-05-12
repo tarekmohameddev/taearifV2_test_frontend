@@ -23,15 +23,17 @@ import { useState, useEffect } from "react";
 
 export default function CategoriesManagementPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [categories, setCategories] = useState([{
-    "id": null,
-    "is_active": false
-}]);
+  const [categories, setCategories] = useState([
+    {
+      id: null,
+      is_active: false,
+    },
+  ]);
   const [newCategory, setNewCategory] = useState({
     name: "",
     description: "",
   });
-  
+
   const fetchCategories = async () => {
     try {
       const response = await axiosInstance.get("/user/categories");
@@ -46,12 +48,11 @@ export default function CategoriesManagementPage() {
       toast.error("حدث خطأ أثناء جلب التصنيفات.");
     }
   };
-  
+
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  
   const handleAddCategory = () => {
     if (newCategory.name.trim() === "") return;
 
@@ -203,7 +204,7 @@ export default function CategoriesManagementPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {/* <div className="flex flex-col"> */}
-                          {/* <Button
+                        {/* <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6"
@@ -222,7 +223,7 @@ export default function CategoriesManagementPage() {
                             <ArrowDown className="h-4 w-4" />
                           </Button> */}
                         {/* </div> */}
-                          <h3 className="font-medium">{category.name}</h3>
+                        <h3 className="font-medium">{category.name}</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">

@@ -24,7 +24,10 @@ interface CitySelectorProps {
 }
 import { Button } from "@/components/ui/button";
 
-const CitySelector: React.FC<CitySelectorProps> = ({ selectedCityId, onCitySelect }) => {
+const CitySelector: React.FC<CitySelectorProps> = ({
+  selectedCityId,
+  onCitySelect,
+}) => {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = React.useState(false);
@@ -32,7 +35,9 @@ const CitySelector: React.FC<CitySelectorProps> = ({ selectedCityId, onCitySelec
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const response = await axios.get("https://nzl-backend.com/api/cities?country_id=1");
+        const response = await axios.get(
+          "https://nzl-backend.com/api/cities?country_id=1",
+        );
         setCities(response.data.data);
       } catch (error) {
         console.error("Error fetching cities:", error);
@@ -43,8 +48,8 @@ const CitySelector: React.FC<CitySelectorProps> = ({ selectedCityId, onCitySelec
     fetchCities();
   }, []);
 
-  const selectedCity = cities.find(city => city.id === selectedCityId);
-  
+  const selectedCity = cities.find((city) => city.id === selectedCityId);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
