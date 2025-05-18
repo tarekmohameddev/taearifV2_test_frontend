@@ -58,6 +58,7 @@ const MapComponent = dynamic(() => import("@/components/map-component"), {
 });
 
 export default function AddPropertyPage() {
+  const { homepage: { setupProgressData, fetchSetupProgressData } } = useStore();
   const {
     propertiesManagement: { properties, loading, isInitialized },
     setPropertiesManagement,
@@ -415,6 +416,11 @@ export default function AddPropertyPage() {
           ...currentState.propertiesManagement.properties,
         ];
         setPropertiesManagement({ properties: updatedProperties });
+        const setpOB = {
+          "step": "properties"
+     }
+        await axiosInstance.post("/steps/complete", setpOB);
+        await fetchSetupProgressData();
         router.push("/properties");
       } catch (error) {
         toast.error("حدث خطأ أثناء حفظ العقار. يرجى المحاولة مرة أخرى.");

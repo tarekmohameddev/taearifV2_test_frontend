@@ -41,6 +41,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import useStore from "@/context/Store";
 import { Badge } from "@/components/ui/badge";
 import {
   DndContext,
@@ -119,6 +120,7 @@ export function FooterManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const { homepage: { setupProgressData, fetchSetupProgressData } } = useStore();
 
   useEffect(() => {
     const fetchFooterData = async () => {
@@ -367,6 +369,11 @@ export function FooterManagementPage() {
         "https://taearif.com/api/content/footer",
         footerData,
       );
+      const setpOB = {
+        "step": "footer"
+   }
+      await axiosInstance.post("/steps/complete", setpOB);
+      await fetchSetupProgressData();
 
       if (response.data.status === "success") {
         toast.success("تم حفظ التغييرات بنجاح");

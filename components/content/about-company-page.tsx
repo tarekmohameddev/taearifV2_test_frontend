@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { uploadSingleFile } from "@/utils/uploadSingle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
+import useStore from "@/context/Store";
 
 export function AboutCompanyPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +35,7 @@ export function AboutCompanyPage() {
     image_path: "",
     features: [],
   });
+  const { homepage: { setupProgressData, fetchSetupProgressData } } = useStore();
 
   const handleImageUploadClick = () => {
     fileInputRef.current.click();
@@ -142,6 +144,11 @@ export function AboutCompanyPage() {
         "https://taearif.com/api/content/about",
         newAboutData,
       );
+      const setpOB = {
+        "step": "homepage_about_update"
+   }
+      await axiosInstance.post("/steps/complete", setpOB);
+      await fetchSetupProgressData();
 
       if (response.data.status === "success") {
         toast.dismiss(); // إزالة إشعار التحميل

@@ -50,6 +50,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import useStore from "@/context/Store";
 
 interface MenuItem {
   id: number;
@@ -92,6 +93,7 @@ export default function MenuManagementPage() {
     showOnMobile: true,
     showOnDesktop: true,
   });
+  const { homepage: { setupProgressData, fetchSetupProgressData } } = useStore();
   const [editingItem, setEditingItem] = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [formErrors, setFormErrors] = useState<{
@@ -328,7 +330,11 @@ export default function MenuManagementPage() {
         menuItems: updatedItems,
         settings: settings,
       });
-
+      const setpOB = {
+        "step": "menu_builder"
+   }
+      await axiosInstance.post("/steps/complete", setpOB);
+      await fetchSetupProgressData();
       toast.success("تم حفظ التغييرات بنجاح", { id: loadingToast });
     } catch (error) {
       toast.error("فشل في حفظ التغييرات", { id: loadingToast });

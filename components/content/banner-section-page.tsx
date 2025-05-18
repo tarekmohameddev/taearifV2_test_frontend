@@ -16,6 +16,7 @@ import toast from "react-hot-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import axiosInstance from "@/lib/axiosInstance";
 import { uploadSingleFile } from "@/utils/uploadSingle";
+import useStore from "@/context/Store";
 
 interface BannerSettings {
   banner_type: string;
@@ -53,6 +54,7 @@ export function BannerSectionPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [bannerType, setBannerType] = useState("static");
   const [bannerData, setBannerData] = useState<BannerSettings | null>(null);
+  const { homepage: { setupProgressData, fetchSetupProgressData } } = useStore();
   const staticFileInputRef = useRef(null);
   const [staticBannerImage, setStaticBannerImage] = useState<string | null>(
     null,
@@ -203,8 +205,12 @@ export function BannerSectionPage() {
           fullWidth: true,
         },
       };
-
+      const setpOB = {
+           "step": "banner"
+      }
+      await axiosInstance.post("/steps/complete", setpOB);
       await axiosInstance.post("/content/banner", formData);
+      await fetchSetupProgressData();
       toast.success("تم تحديث إعدادات البانر بنجاح");
     } catch (error) {
       toast.error("فشل في حفظ الإعدادات");

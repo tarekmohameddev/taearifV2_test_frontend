@@ -79,6 +79,7 @@ export default function AddProjectPage(): JSX.Element {
   const plansInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { homepage: { setupProgressData, fetchSetupProgressData } } = useStore();
   const [newProject, setNewProject] = useState({
     id: "",
     name: "",
@@ -521,6 +522,11 @@ export default function AddProjectPage(): JSX.Element {
           total: (currentState.projectsManagement.pagination?.total || 0) + 1,
         },
       });
+      const setpOB = {
+        "step": "projects"
+   }
+      await axiosInstance.post("/steps/complete", setpOB);
+      await fetchSetupProgressData();
 
       router.push("/projects");
     } catch (error: any) {
