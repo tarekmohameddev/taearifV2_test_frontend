@@ -4,7 +4,7 @@ import { EnhancedSidebar } from "@/components/mainCOMP/enhanced-sidebar";
 import { GuidedTour } from "@/components/mainCOMP/guided-tour";
 
 export const metadata = {
-  title: "Taearif Dashboard",
+  title: "لوحة تحكم تعارف",
 };
 
 export default function Page() {

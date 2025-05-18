@@ -1,6 +1,6 @@
 import EditPropertyPage from "@/components/property/edit-property-page";
 export const metadata = {
-  title: "Property Edit",
+  title: "تعديل العقار",
 };
 export default function Page() {
   return <EditPropertyPage />;

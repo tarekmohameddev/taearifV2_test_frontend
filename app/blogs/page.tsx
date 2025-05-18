@@ -1,6 +1,6 @@
 import BlogsPage from "@/components/blogs-page";
 export const metadata = {
-  title: "Blogs",
+  title: "المدونة",
 };
 export default function Blogs() {
   return <BlogsPage />;

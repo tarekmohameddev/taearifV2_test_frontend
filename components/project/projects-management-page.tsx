@@ -48,6 +48,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import EmptyState from "@/components/empty-state";
 
 export interface IProject {
   id: number;
@@ -270,7 +271,13 @@ export function ProjectsManagementPage() {
                 <TabsTrigger value="featured">مميز</TabsTrigger>
               </TabsList>
               <TabsContent value="all" className="mt-4">
-                {loading ? renderSkeletons() : renderProjectCards(projects)}
+              
+                  {loading ? renderSkeletons() :
+              projects.length === 0 ? (
+    <EmptyState 
+    type="مشاريع"/>
+  ) : renderProjectCards(projects)
+}
               </TabsContent>
               <TabsContent value="1" className="mt-4">
                 {loading

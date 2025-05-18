@@ -62,6 +62,7 @@ import { DashboardHeader } from "@/components/mainCOMP/dashboard-header";
 import { EnhancedSidebar } from "@/components/mainCOMP/enhanced-sidebar";
 import axiosInstance from "@/lib/axiosInstance";
 import useStore from "@/context/Store";
+import EmptyState from "@/components/empty-state";
 
 function SkeletonPropertyCard() {
   return (
@@ -394,7 +395,10 @@ export function PropertiesManagementPage() {
                   <TabsTrigger value="featured">مميزة</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all" className="mt-4">
-                  {viewMode === "grid" ? (
+                  {normalizedProperties.length === 0 ? (
+                    <EmptyState 
+                    type="عقارات"/>
+                  ) : viewMode === "grid" ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                       {normalizedProperties.map((property) => (
                         <PropertyCard

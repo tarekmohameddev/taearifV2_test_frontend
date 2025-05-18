@@ -1,6 +1,6 @@
 import { BannerSectionPage } from "@/components/content/banner-section-page";
 export const metadata = {
-  title: "Banner",
+  title: "البانر",
 };
 export default function Page() {
   return <BannerSectionPage />;
