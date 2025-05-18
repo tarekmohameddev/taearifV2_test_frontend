@@ -41,6 +41,9 @@ import { uploadSingleFile } from "@/utils/uploadSingle";
 import { uploadMultipleFiles } from "@/utils/uploadMultiple";
 import useStore from "@/context/Store";
 import { PropertyCounter } from "@/components/property/propertyCOMP/property-counter";
+import CitySelector from "@/components/CitySelector";
+import DistrictSelector from "@/components/DistrictSelector";
+
 
 const MapComponent = dynamic(() => import("@/components/map-component"), {
   ssr: false,
@@ -102,6 +105,8 @@ export default function EditPropertyPage() {
     garden: "",
     annex: "",
     elevator: "",
+    city_id: null,
+    district_id: null,
     private_parking: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -229,6 +234,8 @@ export default function EditPropertyPage() {
           annex: property.annex?.toString() || "",
           elevator: property.elevator?.toString() || "",
           private_parking: property.private_parking?.toString() || "",
+          city_id: property.city_id,
+          district_id: property.state_id,
         });
         setPreviews({
           thumbnail: property.featured_image || null,
@@ -358,7 +365,7 @@ export default function EditPropertyPage() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.title) newErrors.title = "عنوان العقار مطلوب";
+    if (!formData.title) newErrors.title = "إسم العقار مطلوب";
     if (!formData.description) newErrors.description = "وصف العقار مطلوب";
     // if (!formData.address) newErrors.address = "عنوان العقار مطلوب";
     // if (!formData.price) newErrors.price = "السعر مطلوب";
@@ -434,7 +441,8 @@ export default function EditPropertyPage() {
           latitude: formData.latitude,
           longitude: formData.longitude,
           featured: formData.featured,
-          city_id: 1,
+          city_id: formData.city_id,
+          state_id: formData.district_id,
           size: parseInt(formData.size) || 0,
           length: parseFloat(formData.length) || 0,
           width: parseFloat(formData.width) || 0,
@@ -502,6 +510,10 @@ export default function EditPropertyPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleCitySelect = (cityId) => {
+    setFormData((prev) => ({ ...prev, city_id: cityId, district_id: null }));
+  };
+
   return (
     <div className="flex min-h-screen flex-col" dir="rtl">
       <DashboardHeader />
@@ -547,7 +559,7 @@ export default function EditPropertyPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title">عنوان العقار</Label>
+                    <Label htmlFor="title">إسم العقار</Label>
                     <Input
                       id="title"
                       name="title"
@@ -578,7 +590,7 @@ export default function EditPropertyPage() {
                     <Input
                       id="address"
                       name="address"
-                      placeholder="123 شارع الرئيسي، دبي، الإمارات العربية المتحدة"
+                      placeholder="123 شارع الرئيسي"
                       value={formData.address}
                       onChange={handleInputChange}
                       className={errors.address ? "border-red-500" : ""}
@@ -701,6 +713,36 @@ export default function EditPropertyPage() {
                       {errors.project && (
                         <p className="text-sm text-red-500">{errors.project}</p>
                       )}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4 z-9999">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col space-y-2">
+                        <Label htmlFor="city" className="mb-1">
+                          اختر المدينة
+                        </Label>
+                        <CitySelector
+                          selectedCityId={formData.city_id}
+                          onCitySelect={handleCitySelect}
+                        />
+                      </div>
+
+                      <div className="flex flex-col space-y-2">
+                        <Label htmlFor="neighborhood" className="mb-1">
+                          اختر الحي
+                        </Label>
+                        <DistrictSelector
+                          selectedCityId={formData.city_id}
+                          selectedDistrictId={formData.district_id}
+                          onDistrictSelect={(districtId) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              district_id: districtId,
+                            }))
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
                 </CardContent>
