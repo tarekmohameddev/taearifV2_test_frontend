@@ -42,7 +42,7 @@ export default function EmptyState({ type }) {
               <path
                 d="M60 85C60 82.2386 62.2386 80 65 80H95L105 90H175C177.761 90 180 92.2386 180 95V160C180 162.761 177.761 165 175 165H65C62.2386 165 60 162.761 60 160V85Z"
                 fill="white"
-                stroke="#94A3B8"
+                stroke="#CBD5E1"
                 strokeWidth="2"
               />
 

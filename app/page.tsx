@@ -4,7 +4,7 @@ import { EnhancedSidebar } from "@/components/mainCOMP/enhanced-sidebar";
 import { GuidedTour } from "@/components/mainCOMP/guided-tour";
 
 export const metadata = {
-  title: "لوحة تحكم تعارف",
+  title: "لوحة تحكم تعاريف",
 };
 
 export default function Page() {
