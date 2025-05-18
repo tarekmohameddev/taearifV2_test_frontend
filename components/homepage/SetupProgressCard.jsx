@@ -35,7 +35,25 @@ export function SetupProgressCard() {
   if (!isSetupProgressDataUpdated) {
     return (
       <Card className="col-span-3">
-        {/* … كما في كودك الأصلي */}
+        <CardHeader>
+          <Skeleton className="h-6 w-24 mb-2" />
+          <Skeleton className="h-4 w-40" />
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-2 w-full" />
+          </div>
+          <div className="space-y-2">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Skeleton className="h-6 w-6 rounded-full" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ))}
+          </div>
+          <Skeleton className="h-8 w-full" />
+        </CardContent>
       </Card>
     );
   }
