@@ -170,7 +170,7 @@ export function WelcomeDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardSummary?.bounce_rate.toFixed(2) || 0} %
+            {dashboardSummary?.bounce_rate ? Number(dashboardSummary.bounce_rate).toFixed(2) : 0} %
             </div>
             <p className="text-xs text-muted-foreground">
               <span
