@@ -82,7 +82,6 @@ export function WelcomeDashboard() {
     fetchDashboardSummary,
     fetchTrafficSources,
   ]);
-
   return (
     <div className="space-y-6">
       <div>
@@ -169,9 +168,12 @@ export function WelcomeDashboard() {
             <CardTitle className="text-sm font-medium">معدل الارتداد</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-            {dashboardSummary?.bounce_rate ? Number(dashboardSummary.bounce_rate).toFixed(2) : 0} %
-            </div>
+          <div className="text-2xl font-bold">
+          {dashboardSummary?.bounce_rate !== undefined && dashboardSummary.bounce_rate !== "N/A"
+  ? Number(dashboardSummary.bounce_rate).toFixed(2)
+  : 0} %
+
+</div>
             <p className="text-xs text-muted-foreground">
               <span
                 className={
