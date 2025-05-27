@@ -840,33 +840,57 @@ useEffect(() => {
   </div>
 
   {/* عرض الميزات المضافة */}
-  <div className="mt-4">
-    <Label>الميزات المضافة</Label>
-    <div className="flex flex-wrap gap-2 mt-2">
-      {formData.features.map((feature, index) => (
-        <div
-          key={index}
-          className="bg-gray-200 px-3 py-1 rounded-full flex items-center gap-2"
+  <div className="mt-4 space-y-2">
+  <Label className="text-foreground">الميزات المضافة</Label>
+  <div className="flex flex-wrap gap-2">
+    {formData.features.map((feature, index) => (
+      <div
+        key={index}
+        className="
+          bg-secondary/50 dark:bg-secondary/30 
+          text-secondary-foreground 
+          px-3 py-1.5 
+          rounded-full 
+          flex items-center gap-2
+          text-sm
+          transition-colors
+          hover:bg-secondary/70 dark:hover:bg-secondary/50
+          group
+        "
+      >
+        <span className="select-none">{feature}</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setFormData((prev) => ({
+              ...prev,
+              features: prev.features.filter(
+                (_, i) => i !== index
+              ),
+            }));
+          }}
+          className="
+            h-auto p-0 
+            hover:bg-transparent 
+            text-muted-foreground 
+            hover:text-destructive
+            transition-colors
+            -mr-1
+          "
         >
-          {feature}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setFormData((prev) => ({
-                ...prev,
-                features: prev.features.filter(
-                  (_, i) => i !== index
-                ),
-              }));
-            }}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      ))}
-    </div>
+          <X className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    ))}
   </div>
+  {formData.features.length > 0 && (
+    <p className="text-xs text-muted-foreground mt-1">
+      {formData.features.length} ميزة مضافة
+    </p>
+  )}
+</div>
 
   {/* رسالة خطأ إذا لزم الأمر */}
   {errors.features && (

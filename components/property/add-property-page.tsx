@@ -774,33 +774,55 @@ export default function AddPropertyPage() {
                   </div>
 
                   <div className="mt-4">
-                    <Label>الميزات المضافة</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {formData.features.map((feature, index) => (
-                        <div
-                          key={index}
-                          className="bg-gray-200 px-3 py-1 rounded-full flex items-center gap-2"
-                        >
-                          {feature}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setFormData((prev) => ({
-                                ...prev,
-                                features: prev.features.filter(
-                                  (_, i) => i !== index
-                                ),
-                              }));
-                            }}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
+  <Label className="text-foreground">الميزات المضافة</Label>
+  <div className="flex flex-wrap gap-2 mt-2">
+    {formData.features.map((feature, index) => (
+      <div
+        key={index}
+        className="
+          bg-gray-200 dark:bg-gray-700
+          text-gray-800 dark:text-gray-200
+          px-2 sm:px-3 
+          py-1 sm:py-1.5
+          text-sm sm:text-base
+          rounded-full 
+          flex items-center gap-1 sm:gap-2
+          transition-all duration-200
+          hover:bg-gray-300 dark:hover:bg-gray-600
+          group
+        "
+      >
+        <span className="max-w-[100px] sm:max-w-none truncate">{feature}</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setFormData((prev) => ({
+              ...prev,
+              features: prev.features.filter(
+                (_, i) => i !== index
+              ),
+            }));
+          }}
+          className="
+            h-auto w-auto p-0.5 sm:p-1
+            hover:bg-transparent
+            text-gray-500 dark:text-gray-400
+            hover:text-red-600 dark:hover:text-red-400
+            transition-colors duration-200
+          "
+        >
+          <X className="h-3 w-3 sm:h-4 sm:w-4" />
+        </Button>
+      </div>
+    ))}
+  </div>
+  {formData.features.length > 0 && (
+    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2">
+      {formData.features.length} ميزة مضافة
+    </p>
+  )}
+</div>
                   <div className="flex items-center space-x-2 pt-4 gap-2">
                     <Switch
                       id="featured"
