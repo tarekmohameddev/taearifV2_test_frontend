@@ -686,7 +686,7 @@ export default function PropertyForm({ mode }) {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="price">السعر</Label>
+                      <Label htmlFor="price">المبلغ</Label>
                       <Input
                         id="price"
                         name="price"
