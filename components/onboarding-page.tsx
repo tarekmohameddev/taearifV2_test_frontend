@@ -47,12 +47,22 @@ const COLOR_PALETTES = [
   { primary: "#0f172a", secondary: "#334155", accent: "#94a3b8" },
 ];
 
+interface FormErrors {
+  title?: string;
+  valLicense?: string;
+  workingHours?: string;
+  address?: string;
+  [key: string]: string | undefined;
+}
+
 const OnboardingPage: React.FC = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errors, setErrors] = useState<string>("");
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [uploadError, setUploadError] = useState<string>("");
   const [whereErrors, setWhereError] = useState<string>("");
   const { setOnboardingCompleted } = useAuthStore();
+  
   const [websiteData, setWebsiteData] = useState({
     title: "",
     logo: null as string | null,
@@ -61,6 +71,9 @@ const OnboardingPage: React.FC = () => {
     faviconFile: null as File | null,
     category: "realestate",
     colors: { ...COLOR_PALETTES[0] },
+    valLicense: "",
+    workingHours: "",
+    address: "",
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -80,7 +93,7 @@ const OnboardingPage: React.FC = () => {
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setWhereError("");
-    setErrors("");
+    setUploadError("");
     setIsLoading(false);
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -104,7 +117,7 @@ const OnboardingPage: React.FC = () => {
   const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setWhereError("");
     setIsLoading(false);
-    setErrors("");
+    setUploadError("");
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const reader = new FileReader();
@@ -127,7 +140,7 @@ const OnboardingPage: React.FC = () => {
   const useLogoAsFavicon = () => {
     setWhereError("");
     setIsLoading(false);
-    setErrors("");
+    setUploadError("");
     if (websiteData.logo && websiteData.logoFile) {
       setWebsiteData({
         ...websiteData,
@@ -162,11 +175,26 @@ const OnboardingPage: React.FC = () => {
     router.push("/");
   };
 
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    
+    if (!websiteData.title.trim()) {
+      newErrors.title = "يرجى إدخال عنوان الموقع";
+    }
+    
+    // التحقق من رقم الرخصة (اختياري، ولكن إذا تم إدخاله يجب أن يكون 10 أرقام)
+    if (websiteData.valLicense && websiteData.valLicense.length !== 10) {
+      newErrors.valLicense = "رقم الرخصة يجب أن يكون 10 أرقام";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const completeOnboarding = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!websiteData.title.trim()) {
-      toast.error("يرجى إدخال عنوان الموقع");
+    if (!validateForm()) {
       return;
     }
 
@@ -186,8 +214,8 @@ const OnboardingPage: React.FC = () => {
             "logo",
           );
           logoUrl = logoResponse.url;
-        } catch (error) {
-          setErrors(error.response.data.message);
+        } catch (error: any) {
+          setUploadError(error.response?.data?.message || "خطأ في رفع الشعار");
           setWhereError("Logo");
           setIsLoading(false);
           return;
@@ -202,9 +230,9 @@ const OnboardingPage: React.FC = () => {
             "logo",
           );
           faviconUrl = faviconResponse.url;
-        } catch (error) {
+        } catch (error: any) {
           setWhereError("favicon");
-          setErrors(error.response.data.message);
+          setUploadError(error.response?.data?.message || "خطأ في رفع الأيقونة");
           setIsLoading(false);
           return;
         }
@@ -216,6 +244,9 @@ const OnboardingPage: React.FC = () => {
         colors: websiteData.colors,
         logo: logoUrl,
         favicon: faviconUrl,
+        valLicense: websiteData.valLicense || null,
+        workingHours: websiteData.workingHours || null,
+        address: websiteData.address || null,
       };
 
       const response = await axiosInstance.post("/onboarding", onboardingData);
@@ -226,26 +257,27 @@ const OnboardingPage: React.FC = () => {
       setTimeout(() => {
         router.push("/");
       }, 2000);
-    } catch (error) {
+    } catch (error: any) {
       setIsLoading(false);
-      toast.error("حدث خطأ أثناء إكمال الإعداد");
+      toast.error(error.response?.data?.message || "حدث خطأ أثناء إكمال الإعداد");
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-background" dir="rtl">
       {/* Simple Menu */}
-<div className="w-full flex justify-center md:justify-end mb-8 md:mb-6">
-  <div className="md:absolute md:top-1 md:right-10">
-    <Image
-      src="/logo.png"
-      alt="Website Builder Logo"
-      width={200}
-      height={142}
-      className="h-[7rem] md:h-[7rem] w-auto object-contain dark:invert"
-    />
-  </div>
-</div>
+      <div className="w-full flex justify-center md:justify-end mb-8 md:mb-6">
+        <div className="md:absolute md:top-1 md:right-10">
+          <Image
+            src="/logo.png"
+            alt="Website Builder Logo"
+            width={200}
+            height={142}
+            className="h-[7rem] md:h-[7rem] w-auto object-contain dark:invert"
+          />
+        </div>
+      </div>
+      
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
@@ -257,17 +289,83 @@ const OnboardingPage: React.FC = () => {
           <form onSubmit={completeOnboarding} className="space-y-8">
             {/* Website Title */}
             <div className="space-y-2">
-              <Label htmlFor="website-title" className="text-foreground">اسم الموقع *</Label>
+              <Label htmlFor="website-title" className="text-foreground">
+                اسم الموقع *
+              </Label>
               <Input
                 id="website-title"
                 placeholder="مثال: شركة الأفق للعقارات"
                 value={websiteData.title}
-                onChange={(e) =>
-                  setWebsiteData({ ...websiteData, title: e.target.value })
-                }
-                className="h-12"
+                onChange={(e) => {
+                  setWebsiteData({ ...websiteData, title: e.target.value });
+                  if (errors.title) {
+                    setErrors({ ...errors, title: "" });
+                  }
+                }}
+                className={`h-12 ${errors.title ? "border-red-500" : ""}`}
                 required
               />
+              {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
+            </div>
+
+            {/* VAL License Number */}
+            <div className="space-y-2">
+              <Label htmlFor="val-license">رقم رخصة فال</Label>
+              <Input
+                id="val-license"
+                placeholder="مثال: 1234567890"
+                value={websiteData.valLicense}
+                onChange={(e) => {
+                  // Allow only numbers
+                  const value = e.target.value.replace(/\D/g, "");
+                  setWebsiteData({ ...websiteData, valLicense: value });
+                  if (errors.valLicense) {
+                    setErrors({ ...errors, valLicense: "" });
+                  }
+                }}
+                maxLength={10}
+                className={`h-12 ${errors.valLicense ? "border-red-500" : ""}`}
+              />
+              {errors.valLicense && <p className="text-sm text-red-500">{errors.valLicense}</p>}
+              {!errors.valLicense && (
+                <p className="text-xs text-gray-500">رقم رخصة فال يتكون من 10 أرقام (اختياري)</p>
+              )}
+            </div>
+
+            {/* Working Hours */}
+            <div className="space-y-2">
+              <Label htmlFor="working-hours">ساعات العمل</Label>
+              <Input
+                id="working-hours"
+                placeholder="مثال: السبت - الخميس: 9:00 صباحاً - 6:00 مساءً"
+                value={websiteData.workingHours}
+                onChange={(e) => {
+                  setWebsiteData({ ...websiteData, workingHours: e.target.value });
+                  if (errors.workingHours) {
+                    setErrors({ ...errors, workingHours: "" });
+                  }
+                }}
+                className={`h-12 ${errors.workingHours ? "border-red-500" : ""}`}
+              />
+              {errors.workingHours && <p className="text-sm text-red-500">{errors.workingHours}</p>}
+            </div>
+
+            {/* Address */}
+            <div className="space-y-2">
+              <Label htmlFor="address">العنوان</Label>
+              <Input
+                id="address"
+                placeholder="مثال: شارع الملك فهد، حي العليا، الرياض"
+                value={websiteData.address}
+                onChange={(e) => {
+                  setWebsiteData({ ...websiteData, address: e.target.value });
+                  if (errors.address) {
+                    setErrors({ ...errors, address: "" });
+                  }
+                }}
+                className={`h-12 ${errors.address ? "border-red-500" : ""}`}
+              />
+              {errors.address && <p className="text-sm text-red-500">{errors.address}</p>}
             </div>
 
             {/* Logo and Favicon */}
@@ -466,11 +564,17 @@ const OnboardingPage: React.FC = () => {
             </div>
 
             {/* Error Messages */}
-            {errors && (
+            {uploadError && (
               <div className="text-center text-destructive text-sm bg-destructive/10 p-3 rounded-lg border border-destructive/20">
-                في ال {whereErrors} نوع الملف{" "}
-                {errors.replace("Invalid file type: ", "")} غير مدعوم، يرجى
-                استخدام JPG أو PNG.
+                {whereErrors === "Logo" || whereErrors === "favicon" ? (
+                  <>
+                    في ال {whereErrors} نوع الملف{" "}
+                    {uploadError.replace("Invalid file type: ", "")} غير مدعوم، يرجى
+                    استخدام JPG أو PNG.
+                  </>
+                ) : (
+                  uploadError
+                )}
               </div>
             )}
 

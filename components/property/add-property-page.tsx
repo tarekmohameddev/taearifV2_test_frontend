@@ -306,14 +306,12 @@ export default function AddPropertyPage() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.title) newErrors.title = "عنوان العقار مطلوب";
+    if (!formData.title) newErrors.title = "اسم العقار مطلوب";
     if (!formData.address) newErrors.address = "عنوان العقار مطلوب";
     if (!images.thumbnail)
       newErrors.thumbnail = "صورة رئيسية واحدة على الأقل مطلوبة";
     if (!formData.description)
       newErrors.description = "من فضلك اكتب وصف للعقار";
-    if (formData.features.length === 0)
-      newErrors.features = "يجب إضافة ميزة واحدة على الأقل";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -508,7 +506,7 @@ export default function AddPropertyPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title">عنوان العقار</Label>
+                    <Label htmlFor="title">اسم العقار</Label>
                     <Input
                       id="title"
                       name="title"
