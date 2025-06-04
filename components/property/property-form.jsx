@@ -631,13 +631,6 @@ export default function PropertyForm({ mode }) {
             createdProperty.status === true ? "منشور" : "مسودة";
           const updatedProperties = [
             createdProperty,
-            createdProperty,
-            createdProperty,
-            createdProperty,
-            createdProperty,
-            createdProperty,
-            createdProperty,
-            createdProperty,
             ...currentState.propertiesManagement.properties,
           ];
           setPropertiesManagement({ properties: updatedProperties });
