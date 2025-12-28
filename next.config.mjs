@@ -16,7 +16,7 @@ const nextConfig = {
   experimental: {
     // في Next.js 16، Turbopack هو الافتراضي
     // تحسينات للأداء
-    optimizeCss: true,
+    // optimizeCss: true, // DISABLED - causes 45min+ build times with critters on large projects
     scrollRestoration: true,
   },
   // تحسينات للأداء
@@ -43,6 +43,7 @@ const nextConfig = {
             : []),
         "**/trash/**",
         "**/docs/**",
+        "**/node_modules/**",
       ],
     };
 
@@ -69,8 +70,7 @@ const nextConfig = {
     return config;
   },
   // إعدادات Turbopack (Next.js 16)
-  // إضافة turbopack فارغة لإيقاف تحذير webpack config
-  turbopack: {},
+  // تم إزالة turbopack: {} الفارغة لتجنب مشاكل البناء
 };
 
 mergeConfig(nextConfig, userConfig);
